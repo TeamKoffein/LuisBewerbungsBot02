@@ -1,16 +1,13 @@
 ﻿<%@ Page Language="C#" AutoEventWireup="true" CodeBehind="Xing.aspx.cs" Inherits="ProactiveBot.Xing" %>
 
-<!--
-    # Xing Dialog -> alternative zu cards: Links
-    # Statt Textdatei direkt string nutzen (überspringe Text)
-    -->
 
 <!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-   <script src="http://cdn.jsdelivr.net/g/filesaver.js"></script>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <link rel="stylesheet" href="Xing_Login.css"/>
+    <script src="http://cdn.jsdelivr.net/g/filesaver.js"></script>
    <title>liseBot - Xing Login</title>
 </head>
 <body>
