@@ -17,6 +17,8 @@ namespace Bewerbungs.Bot.Luis
     [LuisModel("9c8b155a-ab34-44f0-9da9-5d17c901cc8a", "fbd3e635d95341d28f6cdaa45891da16")]
     public class SuperDialog : LuisDialog<object>
     {
+        string Text;
+        LuisResult mainResult;
         List<string> FAQDatabase = new List<string>() { "","Holiday", "WorkingHours", "Salary", "FlexTime", "HolidayDistribution",
             "Location", "HomeOffice", "PublicTransport", "Parking", "Benefits", "Client", "Ethics", "StaffTraining", "Promotion", "Eliza",
             "Requirements"};
@@ -25,6 +27,8 @@ namespace Bewerbungs.Bot.Luis
             "StartDate"};
         List<bool> Question = new List<bool>() {true, false, false, false, false, false, false, false, false, false, false,
             false, false, false, false};
+        string[] askingPersonal;
+        string[] askingFormal;
         bool safeDataConfirmation;
         int jobID = -1;
         int du = -1;
@@ -62,14 +66,29 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Name")]
         public async Task Name(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
-            var myKey = AnswerDatabase.IndexOf("Name");
-            Question[index: myKey] = true;
-            DatabaseConnector databaseConnector = new DatabaseConnector();
             var message = await activity;
-            applicantID = databaseConnector.insertDatabaseEntry("Name", message.Text);
-            await context.PostAsync(result.TopScoringIntent.Intent.ToString());
+            Text = message.Text;
+            mainResult = result;
+            context.Call(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName);
+
+        }
+
+        private async Task AfterName(IDialogContext context, IAwaitable<object> result)
+        {
+            bool accept = Convert.ToBoolean( await result);
+            if (accept)
+            {
+                var myKey = AnswerDatabase.IndexOf("Name");
+                Question[index: myKey] = true;
+                DatabaseConnector databaseConnector = new DatabaseConnector();
+                applicantID = databaseConnector.insertDatabaseEntry("Name", Text);
+            }
+            int index = Question.FindIndex(x => x == false);
+            AskingDialog send = new AskingDialog(context);
+            send.SendMessage(index);
             context.Wait(this.MessageReceived);
         }
+
         [LuisIntent("Job")]
         [LuisIntent("Adress")]
         [LuisIntent("Birthday")]

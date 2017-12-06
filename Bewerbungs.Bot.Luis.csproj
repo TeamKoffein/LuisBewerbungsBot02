@@ -202,6 +202,7 @@
     <Compile Include="Communications\DataCollector.cs" />
     <Compile Include="Communications\DatabaseConnector.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
+    <Compile Include="Dialogs\Acceptance.cs" />
     <Compile Include="Dialogs\AnswerDialog.cs" />
     <Compile Include="Dialogs\AskingDialog.cs" />
     <Compile Include="Dialogs\FAQDialog.cs" />
