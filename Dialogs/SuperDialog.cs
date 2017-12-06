@@ -32,7 +32,9 @@ namespace Bewerbungs.Bot.Luis
         string[] FAQQuestions;
         bool safeDataConfirmation;
         int jobID = -1;
-        int du = -1;
+
+        //1= Du , 2 = Sie
+        int du = -1; 
         int applicantID = -1;
 
         override public async Task StartAsync(IDialogContext Chat)
