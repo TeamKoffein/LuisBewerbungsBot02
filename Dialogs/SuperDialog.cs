@@ -75,14 +75,16 @@ namespace Bewerbungs.Bot.Luis
 
         private async Task AfterName(IDialogContext context, IAwaitable<object> result)
         {
+            DatabaseConnector databaseConnector = new DatabaseConnector();
             bool accept = Convert.ToBoolean( await result);
             if (accept)
             {
                 var myKey = AnswerDatabase.IndexOf("Name");
                 Question[index: myKey] = true;
-                DatabaseConnector databaseConnector = new DatabaseConnector();
                 applicantID = databaseConnector.insertDatabaseEntry("Name", Text);
             }
+            //askingPersonal = databaseConnector.getFAQQuestions(1);
+            //askingFormal = databaseConnector.getFAQQuestions(2);
             int index = Question.FindIndex(x => x == false);
             AskingDialog send = new AskingDialog(context);
             send.SendMessage(index);

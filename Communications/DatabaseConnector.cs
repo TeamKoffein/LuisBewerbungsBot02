@@ -113,10 +113,9 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
-
         public string[] getData(int bewerberID)
         {
-            string[] active = new string[11];
+            string[] active = new string[17];
             //buildDB();
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = "chatbotlcd2017db.database.windows.net";
@@ -133,7 +132,7 @@ namespace Bewerbungs.Bot.Luis
                     //sqlCommand(Object conn, Object command, String commandText)
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
-                    command.CommandText = "SELECT * FROM BewerberTable";
+                    command.CommandText = "SELECT * FROM BewerberdatenLuis";
 
                     conn.Open();
                     SqlDataReader reader = command.ExecuteReader(CommandBehavior.SchemaOnly);
@@ -156,7 +155,7 @@ namespace Bewerbungs.Bot.Luis
                     //sqlCommand(Object conn, Object command, String commandText, int id, String parametersAdd1, Object parametersAdd2)
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
-                    command.CommandText = "SELECT * FROM BewerberTable WHERE BewerberID =@aktuellerBewerber";
+                    command.CommandText = "SELECT * FROM BewerberdatenLuis WHERE BewerberID =@aktuellerBewerber";
                     command.Parameters.Add("@aktuellerBewerber", SqlDbType.Int).Value = bewerberID;
 
                     conn.Open();
@@ -179,7 +178,7 @@ namespace Bewerbungs.Bot.Luis
                     //sqlCommand(Object conn, Object command, String commandText, int id, String parametersAdd1, Object parametersAdd2)
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
-                    command.CommandText = "SELECT COUNT (BeworbeneStelle) FROM BewerberTable WHERE BeworbeneStelle = @paramStellenID";
+                    command.CommandText = "SELECT COUNT (BeworbeneStelle) FROM BewerberdatenLuis WHERE Job = @paramStellenID";
                     command.Parameters.Add("@paramStellenID", SqlDbType.VarChar).Value = active[1];
 
                     conn.Open();
@@ -246,6 +245,47 @@ namespace Bewerbungs.Bot.Luis
                     while (reader.Read())
                     {
                         DBEntry[i] = reader.GetString(0);
+                        i++;
+                    }
+                    reader.Close();
+                    return DBEntry;
+                }
+            }
+        }
+
+        public String[] getFAQQuestions(int anrede)
+        {
+            int count;
+            String[] DBEntry;
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT COUNT (FAQFragenID) FROM FAQFragen";
+                    conn.Open();
+                    count = (Int32)command.ExecuteScalar();
+                    conn.Close();
+                }
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT * FROM FAQFragen";
+                    conn.Open();
+
+                    SqlDataReader reader = command.ExecuteReader();
+                    int i = 1;
+                    DBEntry = new String[count+1];
+                    while (reader.Read())
+                    {
+                        DBEntry[i] = reader.GetString(anrede);
                         i++;
                     }
                     reader.Close();
