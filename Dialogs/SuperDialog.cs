@@ -29,6 +29,7 @@ namespace Bewerbungs.Bot.Luis
             false, false, false, false};
         string[] askingPersonal;
         string[] askingFormal;
+        string[] FAQQuestions;
         bool safeDataConfirmation;
         int jobID = -1;
         int du = -1;
@@ -83,11 +84,13 @@ namespace Bewerbungs.Bot.Luis
                 Question[index: myKey] = true;
                 applicantID = databaseConnector.insertDatabaseEntry("Name", Text);
             }
-            //askingPersonal = databaseConnector.getFAQQuestions(1);
-            //askingFormal = databaseConnector.getFAQQuestions(2);
             int index = Question.FindIndex(x => x == false);
             AskingDialog send = new AskingDialog(context);
-            send.SendMessage(index);
+            if (du != -1)
+            {
+                FAQQuestions = databaseConnector.getFAQQuestions(du);
+            }
+            send.SendMessage(index, FAQQuestions);
             context.Wait(this.MessageReceived);
         }
 
