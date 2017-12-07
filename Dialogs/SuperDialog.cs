@@ -32,10 +32,9 @@ namespace Bewerbungs.Bot.Luis
              "Career", "EducationalBackground", "ProgrammingLanguage", "SocialEngagement", "Language", "PrivateProjects",
             "StartDate"};
         List<bool> Question = new List<bool>() {true, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false};
+            false, false, false, false, false};
         string[] askingPersonal;
         string[] askingFormal;
-        string[] FAQQuestions;
         bool safeDataConfirmation;
         int jobID = -1;
 
@@ -193,22 +192,31 @@ namespace Bewerbungs.Bot.Luis
                
             }
             int index = Question.FindIndex(x => x == false);
-            
-            if (du == 1)
+            if (index == -1)
             {
-                if (index == 1)
-                {
-                    context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
-                }
-                await context.PostAsync(askingPersonal[index]);
+                await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
+                //context.Done();
             }
             else
             {
-                if (index == 1)
+
+                if (du == 1)
                 {
-                    context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
+                    if (index == 1)
+                    {
+                        context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
+                    }
+                    await context.PostAsync(askingPersonal[index]);
+
                 }
-                await context.PostAsync(askingFormal[index]);
+                else
+                {
+                    if (index == 1)
+                    {
+                        context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);    
+                    }
+                    await context.PostAsync(askingFormal[index]);
+                }
             }
             context.Wait(this.MessageReceived);
         }
