@@ -14,7 +14,7 @@ namespace Bewerbungs.Bot.Luis
     [LuisModel("9c8b155a-ab34-44f0-9da9-5d17c901cc8a", "fbd3e635d95341d28f6cdaa45891da16")]
     public class Acceptance : LuisDialog<object>
     {
-        private bool accept = false;
+        private int accept = 0;
         private string intent;
         private string messagecontext;
 
@@ -33,12 +33,13 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Acceptance")]
         public async Task Accept(IDialogContext context, LuisResult result)
         {
-            accept = true;
+            accept = 1;
             context.Done(accept);
         }
         [LuisIntent("Negative")]
         public async Task Negative(IDialogContext context, LuisResult result)
         {
+            accept = 0;
             context.Done(accept);
         }
         [LuisIntent("Farewell")]

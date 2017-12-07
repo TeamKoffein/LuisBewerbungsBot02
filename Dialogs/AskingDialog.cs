@@ -18,11 +18,7 @@ namespace Bewerbungs.Bot.Luis
         }
         public async void SendMessage(int pos, string[] questions)
         {
-            IMessageActivity message = Activity.CreateMessageActivity();
-            message.Text = questions[pos];
-            message.TextFormat = "plain";
-            message.Locale = "en-Us";
-            await chat.PostAsync(message);
+            await chat.PostAsync(questions[pos]);
 
         }
     }
