@@ -49,6 +49,7 @@ namespace Bewerbungs.Bot.Luis
         int du = -1; 
         int applicantID = -1;
 
+        //StartAsync startet den Gesprächbeginn
         override public async Task StartAsync(IDialogContext Chat)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
@@ -56,7 +57,7 @@ namespace Bewerbungs.Bot.Luis
             safeDataConfirmation = false;
 
 
-            //
+            //Speicherung der Fragen für Du und Sie
             askingPersonal = databaseConnector.getFAQQuestions(1);
             askingFormal = databaseConnector.getFAQQuestions(2);
 
@@ -69,6 +70,7 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Farewell")]
         [LuisIntent("")]
         [LuisIntent("None")]
+        //Abfang von Luis nicht einordbaren Bewerberaussagen
         public async Task None(IDialogContext context, LuisResult result)
         {
             string message = $"Sorry, I did not understand '{result.Query}'. Type 'help' if you need assistance.";
@@ -79,24 +81,31 @@ namespace Bewerbungs.Bot.Luis
         }
 
         [LuisIntent("Name")]
+        //Die erste Frage, die dem Bewerber gestellt werden soll, da durch die Eingabe die des Namens eine neue BewerberID vergeben wird, die notwendig ist um alle folgenden 
+        // Antworten zu speichern.
+        //Weitergabe an AfterName
         public async Task Name(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
             var message = await activity;
             Text = message.Text;
             await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
-
         }
 
+        /* AfterName speichert den Namen des Bewerber ab und stellt die Frage nach der Stelle
+         * 
+         */
         private async Task AfterName(IDialogContext context, IAwaitable<object> result)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int accept =Convert.ToInt32(await result);
             if (accept == 1)
             {
+                //Namenspeicherung
                 var myKey = AnswerDatabase.IndexOf("Name");
                 Question[index: myKey] = true;
                 applicantID = databaseConnector.insertDatabaseEntry("Name", Text);
             }
+            //Nächste, nicht-beantwortete Frage
             int index = Question.FindIndex(x => x == false);
             if (accept == 0)
             {
@@ -106,11 +115,12 @@ namespace Bewerbungs.Bot.Luis
             {
                 if (index == 1)
                 {
-                    //await context.Forward(new AskingJob(askingFormal[index]), AfterStellen, context, CancellationToken.None);
+                    //Frage nach beworbene Stelle mit Du
                      context.Call(new AskingJob(askingFormal[index]), AfterStellen);
                 }
                 else
                 {
+                    //Frage nach beworbene Stelle mit Sie
                     await context.PostAsync(askingPersonal[index]);
                     context.Wait(this.MessageReceived);
                 }
@@ -143,6 +153,8 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("ProgrammingLanguage")]
         [LuisIntent("SocialEngagement")]
         [LuisIntent("StartDate")]
+
+        //Filtern nach dem erwarteten Intent, Weitergabe an AfterAnswer
         public async Task Answer(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
             var message = await activity;
@@ -150,6 +162,11 @@ namespace Bewerbungs.Bot.Luis
             LuisTopIntention = result.TopScoringIntent.Intent.ToString();
             await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterAnswer, message, CancellationToken.None);
         }
+
+        /*Speicherung der letzten Antwort des Bewerbers, nachdem diese bestätigt wurde
+         * Sofern noch Fragen unbeantwortet sind, werden diese dem Bewerber gestellt.
+         * Wenn keine Fragen offen sind, wird dies dem Bewerber mitgeteilt und die Daten werden an den Recruiter übermittelt.
+         */
         public async Task AfterAnswer(IDialogContext context, IAwaitable<object> result)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
@@ -162,6 +179,8 @@ namespace Bewerbungs.Bot.Luis
                
             }
             int index = Question.FindIndex(x => x == false);
+
+            //Fragendialogabschluss wird erkannt, wenn die Liste @questions den Wert -1 zurückgibt.
             if (index == -1)
             {
                 DataAssembler assemble = new DataAssembler();
@@ -173,7 +192,6 @@ namespace Bewerbungs.Bot.Luis
             }
             else
             {
-
                 if (du == 1)
                 {
                     if (index == 1)
@@ -181,7 +199,6 @@ namespace Bewerbungs.Bot.Luis
                         context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
                     }
                     await context.PostAsync(askingPersonal[index]);
-
                 }
                 else
                 {
@@ -194,6 +211,9 @@ namespace Bewerbungs.Bot.Luis
             }
             context.Wait(this.MessageReceived);
         }
+
+        /*Wenn der Bewerber angegeben hat auf welche Stelle er sich bewerben möchte, wird dies hinterlegt und die dementsprechende Fachfrage zur der Psoition gestellt
+         */ 
         public async Task AfterStellen(IDialogContext context, IAwaitable<object> result)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
@@ -234,6 +254,8 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Salary")]
         [LuisIntent("StaffTraining")]
         [LuisIntent("WorkingHours")]
+
+        //Wenn der Intent nach einer FAQ an Lise erkannt wird, wird der entsprechende Antworteintrag abhängig von der gewählten Anrede ausgelesen.
         public async Task FAQ(IDialogContext context, LuisResult result)
         {
             if (safeDataConfirmation)
@@ -250,7 +272,6 @@ namespace Bewerbungs.Bot.Luis
                     {
                         await context.PostAsync("Bitte verrate mir vorher, ob wir beim 'Du' bleiben sollen");
                     }
-
                 }
                 else
                 {
@@ -268,7 +289,7 @@ namespace Bewerbungs.Bot.Luis
             context.Wait(this.MessageReceived);
         }
 
-
+        //Begrüßen des Bewerbers
         [LuisIntent("Greetings")]
         public async Task Greetings(IDialogContext context, LuisResult result)
         {
@@ -276,6 +297,7 @@ namespace Bewerbungs.Bot.Luis
             context.Wait(this.MessageReceived);
         }
 
+        //Akzeptanz durch den Bewerber
         [LuisIntent("Acceptance")]
         public async Task Acceptance(IDialogContext context, LuisResult result)
         {
@@ -283,6 +305,7 @@ namespace Bewerbungs.Bot.Luis
             context.Wait(this.MessageReceived);
         }
 
+        //Xing-Anbindung
         [LuisIntent("Xing")]
         public async Task Xing(IDialogContext context, LuisResult result)
         {
@@ -294,6 +317,7 @@ namespace Bewerbungs.Bot.Luis
             context.Wait(this.MessageReceived);
         }
 
+        //Aufruf der Upload-Funktion
         [LuisIntent("Upload")]
         public async Task Upload(IDialogContext context, LuisResult result)
         {
@@ -321,6 +345,7 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+        //Verneinung durch den Bewerber
         [LuisIntent("Negative")]
         public async Task Negative(IDialogContext context, LuisResult result)
         {
@@ -328,6 +353,7 @@ namespace Bewerbungs.Bot.Luis
             context.Wait(this.MessageReceived);
         }
 
+        //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung
         public async Task FindAcceptance(IDialogContext context, bool result)
         {
             if (!safeDataConfirmation)
@@ -356,8 +382,6 @@ namespace Bewerbungs.Bot.Luis
                     du = 2;
                     await context.PostAsync(askingFormal[2]);
                 }
-
-
             }
         }
 
