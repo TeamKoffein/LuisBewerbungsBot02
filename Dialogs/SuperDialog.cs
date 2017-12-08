@@ -16,7 +16,7 @@ using Microsoft.WindowsAzure.Storage; // Namespace for CloudStorageAccount
 using Microsoft.WindowsAzure.Storage.Blob; // Namespace for Blob storage types
 using System.Configuration;
 using System.Net.Http.Headers;
-
+using System.IO;
 
 namespace Bewerbungs.Bot.Luis
 {
@@ -286,8 +286,11 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Xing")]
         public async Task Xing(IDialogContext context, LuisResult result)
         {
+            string xingPath = "Xing.aspx";
+            string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, xingPath);
 
-            await context.PostAsync("./Xing.aspx");
+
+            await context.PostAsync(destPath);
             context.Wait(this.MessageReceived);
         }
 
