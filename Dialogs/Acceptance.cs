@@ -11,7 +11,7 @@ using Microsoft.Bot.Builder.Luis.Models;
 namespace Bewerbungs.Bot.Luis
 {
     [Serializable]
-    [LuisModel("9c8b155a-ab34-44f0-9da9-5d17c901cc8a", "fbd3e635d95341d28f6cdaa45891da16")]
+    [LuisModel("9c8b155a-ab34-44f0-9da9-5d17c901cc8a", "19ec3bb52da54d3b855d0fd331c195b8", domain: "eastus2.api.cognitive.microsoft.com")]
     public class Acceptance : LuisDialog<object>
     {
         private int accept = 0;
@@ -78,6 +78,7 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("WorkingHours")]
         [LuisIntent("Greetings")]
         [LuisIntent("Xing")]
+        [LuisIntent("Upload")]
         public async Task Other(IDialogContext context, LuisResult result)
         {
             await context.PostAsync("Bitte bestätigen oder verneinen");
