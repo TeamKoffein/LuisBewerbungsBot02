@@ -85,7 +85,7 @@ namespace Bewerbungs.Bot.Luis
                 await context.PostAsync("Es wurde kein Datei erkannt!");
             }
 
-            context.Done(true);
+            context.Done(value: 0);
         }
     }
 }

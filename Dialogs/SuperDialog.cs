@@ -180,7 +180,10 @@ namespace Bewerbungs.Bot.Luis
                
             }
             int index = Question.FindIndex(x => x == false);
-
+            if (Question[2] == false)
+            {
+                index = 2;
+            }
             //Fragendialogabschluss wird erkannt, wenn die Liste @questions den Wert -1 zurückgibt.
             if (index == -1)
             {
@@ -341,29 +344,9 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Upload")]
         public async Task Upload(IDialogContext context, LuisResult result)
         {
-            context.Call(new Upload(), AfterStellen);
+            context.Call(new Upload(), AfterAnswer);
         }
-        public async Task AfterUpload(IDialogContext context, LuisResult result)
-        {
-            int index = Question.FindIndex(x => x == false);
-            if (Question[2] == false)
-            {
-                index = 2;
-            }
-            if (du == 1)
-            {
-                if (index == 1)
-                {
-                    //await context.Forward(new AskingJob(askingFormal[index]), AfterStellen, context, CancellationToken.None);
-                    context.Call(new AskingJob(askingFormal[index]), AfterStellen);
-                }
-                else
-                {
-                    await context.PostAsync(askingPersonal[index]);
-                    context.Wait(this.MessageReceived);
-                }
-            }
-        }
+        
 
         //Verneinung durch den Bewerber
         [LuisIntent("Negative")]
