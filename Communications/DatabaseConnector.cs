@@ -253,6 +253,8 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+
+
         public String[] getFAQQuestions(int anrede)
         {
             int count;
@@ -291,6 +293,36 @@ namespace Bewerbungs.Bot.Luis
                     reader.Close();
                     return DBEntry;
                 }
+            }
+        }
+
+        public String getTechQuestion(int jobID)
+        {
+
+            String DBEntry ="";
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT Frage FROM Fachfragen WHERE FragenID = @jobID";
+                    command.Parameters.Add("@jobID", SqlDbType.Int).Value = jobID;
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        DBEntry = reader.GetString(0);
+                    }
+                    reader.Close();
+                    conn.Close();
+                }
+                return DBEntry;
             }
         }
     }

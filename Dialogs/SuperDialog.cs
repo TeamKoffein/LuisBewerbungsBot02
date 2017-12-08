@@ -17,6 +17,7 @@ using Microsoft.WindowsAzure.Storage.Blob; // Namespace for Blob storage types
 using System.Configuration;
 using System.Net.Http.Headers;
 
+
 namespace Bewerbungs.Bot.Luis
 {
     [Serializable]
@@ -155,8 +156,12 @@ namespace Bewerbungs.Bot.Luis
             int index = Question.FindIndex(x => x == false);
             if (index == -1)
             {
+                DataAssembler assemble = new DataAssembler();
+                assemble.sendData(applicantID);
                 await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
-                //context.Done();
+
+                await Task.Delay(10000);
+                await context.PostAsync("Der Recruiter hat deine Daten eingesehen und wird dich demnächst zu einem Gespräch einladen");
             }
             else
             {
@@ -186,7 +191,11 @@ namespace Bewerbungs.Bot.Luis
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int accept = Convert.ToInt32(await result);
             Question[index: 1] = true;
-            databaseConnector.updateDatabase("Job", applicantID, Convert.ToString(accept-1));
+            databaseConnector.updateDatabase("Job", applicantID, Convert.ToString(accept));
+
+            string technicalQuestion = databaseConnector.getTechQuestion(accept);
+            await context.PostAsync(technicalQuestion);
+
             int index = Question.FindIndex(x => x == false);
             AskingDialog send = new AskingDialog(context);
             if (du == 1)
@@ -199,6 +208,8 @@ namespace Bewerbungs.Bot.Luis
             }
             context.Wait(this.MessageReceived);
         }
+
+
         [LuisIntent("Benefits")]
         [LuisIntent("Client")]
         [LuisIntent("Eliza")]
@@ -267,7 +278,7 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Xing")]
         public async Task Xing(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync($"Xing.html");
+            await context.PostAsync("http://localhost:3984/Xing.aspx");
             context.Wait(this.MessageReceived);
         }
 
