@@ -300,7 +300,7 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Xing")]
         public async Task Xing(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("Xing.html");
+            await context.PostAsync($"Xing.html");
             context.Wait(this.MessageReceived);
         }
 
