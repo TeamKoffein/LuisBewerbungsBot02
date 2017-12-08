@@ -279,13 +279,7 @@ namespace Bewerbungs.Bot.Luis
         public async Task Xing(IDialogContext context, LuisResult result)
         {
 
-            //System.Web.UI.WebControls.HyperLink linkXing = new System.Web.UI.WebControls.HyperLink();
-            //linkXing.ID = "linkXing";
-            //linkXing.Text = "Ja, ich moechte mich in Xing anmelden!";
-            //linkXing.Visible = true;
-            //linkXing.NavigateUrl = "Xing.aspx";
-
-            await context.PostAsync("Fickdich");
+            await context.PostAsync("./Xing.aspx");
             context.Wait(this.MessageReceived);
         }
 
