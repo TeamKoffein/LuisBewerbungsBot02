@@ -318,13 +318,14 @@ namespace Bewerbungs.Bot.Luis
             string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, xingPath);
             await context.PostAsync(destPath);
             */
-
+            string xingPath = "Xing.aspx";
+            string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, xingPath);
             AdaptiveCard card_url = new AdaptiveCard();
             card_url.Actions.Add(new OpenUrlAction()
             {
                 Title = "Xing Login",
                 Type = "Action.OpenUrl",
-                Url = "Bewerbungs.Bot.Luis/Xing.html"
+                Url = destPath
             });
 
             Attachment card_attachment = new Attachment()
