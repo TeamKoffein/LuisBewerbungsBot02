@@ -45,12 +45,6 @@ namespace Bewerbungs.Bot.Luis
             //Willkommenstext und Datenschutzerklaerung beim Starten des Bots
             await Chat.PostAsync("Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst. Damit du dich erfolgreich bewerben kannst, musst du folgende Datenschutzerklaerung lesen und akzeptieren, sonst koennen wir leider mit der Bewerbung nicht fortfahren: Im Rahmen dieses Gespraechs mit dem Bot werden personenbezogene Daten über dich erhoben, jedoch nur zu Zwecken der Bewerbung erhoben, gespeichert, verarbeitet und genutzt, die in Zusammenhang mit deinem Interesse an einer Stelle bei uns steht. Es erfolgt keine Weitergabe an Dritte. Du kannst deine Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen und wir löschen dann deine Daten umgehend. Bitte schreibe uns in diesem Falll unter Angabe deines vollständigen Namens eine Email. Bitte bestätige, dass du die Erklaerung gelesen hast und sie akzeptierst, indem du folgendes abschreibst: 'Ja, ich bestaetige.'");
 
-            await Chat.PostAsync("Bewerbungs.Bot.Luis/Xing.html");
-            /*
-            //Xing Test (Card Aufruf)
-            XingDialog xingtest = new XingDialog(Chat);
-            xingtest.createCardUrl();*/
-
             Chat.Wait(this.MessageReceived);
         }
 
