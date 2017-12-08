@@ -7,6 +7,7 @@ using System.Web;
 
 namespace Bewerbungs.Bot.Luis
 {
+    //Diese Klasse setzt die aktuelle nicht beantwortete Frage in den Chat
     [Serializable]
     public class AskingDialog
     {
