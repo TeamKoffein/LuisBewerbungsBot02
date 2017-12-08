@@ -4,13 +4,18 @@ using System.Data.SqlClient;
 
 namespace Bewerbungs.Bot.Luis
 {
+    //Diese Klasse dient als Sammelstelle für alle Datenbankanbindungen
     public class DatabaseConnector
     {
+        //Methode um die richtige Anrede aus der entsprechenden Spalte der FAQ zu filtern
         public String getDBEntry(int ID, String commandText)
         {
             return getDBEntry(ID, commandText, 0);
         }
 
+
+        //Diese Methode übergibt einen einzelnen Eintrag aus der DB
+        //benötigt werden die @ID der gesuchten Zeile, der @key als Spaltenangabe (0) für den reader und der @commandText als SQL-Befehl 
         public String getDBEntry(int ID, String commandText, int key)
         {
             String DBEntry = "";
@@ -113,6 +118,8 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+        //Die Methode getData sammelt alle Einträge über den Bewerber mit der übergebenen @bewerberID
+        //Die gesammelten Daten werden als Array an den DataAssembler weitergegeben.
         public string[] getData(int bewerberID)
         {
             string[] active = new string[17];
@@ -254,7 +261,8 @@ namespace Bewerbungs.Bot.Luis
         }
 
 
-
+        // Diese Methode übergibt alle hinterlegten FAQ-Fragen unter Angabe der @anrede
+        //Diese Fragen werden gestellt um Daten über den Bewerber zu sammeln
         public String[] getFAQQuestions(int anrede)
         {
             int count;
@@ -296,6 +304,7 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+        //Liest die Fachfrage zu der angegebenen @StellenID aus
         public String getTechQuestion(int jobID)
         {
 
