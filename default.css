@@ -1,0 +1,61 @@
+﻿body, html {
+    font-family: Calibri;
+    background-image: url("paulearleBackground.jpg");
+    background-size: cover;
+    text-rendering: optimizeLegibility !important;
+    -webkit-font-smoothing: antialiased !important;
+    color: #777;
+}
+
+p {
+    font-family: 'Open Sans', sans-serif;
+}
+
+a {
+    color: #0dad8d;
+}
+
+    a:hover, a:focus {
+        text-decoration: none;
+        color: #222;
+    }
+
+/* Home Style */
+header {
+    background-size: cover;
+    color: #cfcfcf;
+    position: relative;
+    height: 100%;
+}
+
+    header p {
+        color: rgba(255,255,255,0.8);
+        font-size: 20px;
+        margin-bottom: 80px;
+    }
+
+.intro-text {
+    position: center;
+    padding-top: 250px;
+    padding-right: 0;
+    padding-left: 0;
+    padding-bottom: 170px;
+    text-align: center;
+    font-family: Calibri;
+}
+
+    .intro-text H1 {
+        font-size: 60px;
+        text-transform: uppercase;
+        color: #fff;
+    }
+
+hr {
+    height: 3px;
+    width: 60px;
+    text-align: center;
+    position: relative;
+    background: #0dad8d;
+    border: 0;
+    margin: 10px auto 30px;
+}
