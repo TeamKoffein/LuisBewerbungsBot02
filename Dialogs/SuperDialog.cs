@@ -17,6 +17,7 @@ using Microsoft.WindowsAzure.Storage.Blob; // Namespace for Blob storage types
 using System.Configuration;
 using System.Net.Http.Headers;
 using System.IO;
+using AdaptiveCards;
 
 namespace Bewerbungs.Bot.Luis
 {
@@ -309,11 +310,30 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Xing")]
         public async Task Xing(IDialogContext context, LuisResult result)
         {
+            /*
             string xingPath = "Xing.aspx";
             string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, xingPath);
-
-
             await context.PostAsync(destPath);
+            */
+
+            AdaptiveCard card_url = new AdaptiveCard();
+            card_url.Actions.Add(new OpenUrlAction()
+            {
+                Title = "Xing Login",
+                Type = "Action.OpenUrl",
+                Url = "Xing.aspx"
+            });
+
+            Attachment card_attachment = new Attachment()
+            {
+                ContentType = AdaptiveCard.ContentType,
+                Content = card_url
+            };
+
+            Activity replyToConversation = (Activity)context.MakeMessage();
+            replyToConversation.Attachments.Add(card_attachment);
+            await context.PostAsync(replyToConversation);
+
             context.Wait(this.MessageReceived);
         }
 
