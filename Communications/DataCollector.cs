@@ -6,6 +6,8 @@ namespace Application.Bot.Luis
 {
     public class DataCollector
     {
+        //Die Methode getData sammelt alle Einträge über den Bewerber mit der übergebenen @bewerberID
+        //Die gesammelten Daten werden als Array an den DataAssembler weitergegeben.
         public string[] getData(int bewerberID)
         {
             string[] active = new string[11];

@@ -10,6 +10,7 @@ using Bewerbungs.Bot.Luis;
 
 namespace Bewerbungs.Bot.Luis
 {
+    //Diese Klasse listet alle aktuell hinterlegten Stellenausschreibungen aus der DB auf 
     [Serializable]
     public class AskingJob : IDialog<object>
     {
@@ -20,6 +21,7 @@ namespace Bewerbungs.Bot.Luis
             this.title = title;
         }
 
+        //Ausgabe aller Jobs
         public async Task StartAsync(IDialogContext context)
         {
             await context.PostAsync(title);
@@ -35,6 +37,8 @@ namespace Bewerbungs.Bot.Luis
             context.Wait(this.MessageReceivedAsync);
         }
 
+        //erwartet als Antwort des Bewerbers einen integer-Wert im Bereich der angegebenen Stellen
+        //Bei Erfolg wird der Dialog beendet, sonst wird Frage neu gestellt
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result;
@@ -46,12 +50,11 @@ namespace Bewerbungs.Bot.Luis
 
                 if ((jobID > 0) && (jobID < jobs.Length + 1))
                 {
-                    /* Completes the dialog, removes it from the dialog stack, and returns the result to the parent/calling
-                        dialog. */
+                    //Beendet den Dialog
                     context.Done(jobID);
                 }
             }
-            /* Else, try again by re-prompting the user. */
+            //Ansonsten erneute Abfrage
             else
             {
 

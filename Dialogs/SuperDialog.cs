@@ -20,6 +20,12 @@ using System.Net.Http.Headers;
 
 namespace Bewerbungs.Bot.Luis
 {
+
+    /*Die Klasse Superdialog dient als Rahmen für die Kommunikation mit dem Bewerber.
+     * Im Superdialog beginnt das Gespräch mit dem Bewerber und alle Dialog-Queues werden innerhalb des Gesprächs aufgerufen.
+     * Die Liste @FAQDatabase beinhaltet alle Intents für die FAQ-Abfragen und @AnswerDatabase alle Intents für Antwortmöglichkeiten.
+     * Liste @Questions markiert alle noch nicht beantworteten Fragen des Bewerbers
+     */
     [Serializable]
     [LuisModel("9c8b155a-ab34-44f0-9da9-5d17c901cc8a", "19ec3bb52da54d3b855d0fd331c195b8", domain: "eastus2.api.cognitive.microsoft.com")]
     public class SuperDialog : LuisDialog<object>
@@ -49,6 +55,8 @@ namespace Bewerbungs.Bot.Luis
             //Initialisierung der Grundvariablen
             safeDataConfirmation = false;
 
+
+            //
             askingPersonal = databaseConnector.getFAQQuestions(1);
             askingFormal = databaseConnector.getFAQQuestions(2);
 
