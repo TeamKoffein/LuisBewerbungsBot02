@@ -42,6 +42,7 @@ namespace Bewerbungs.Bot.Luis
                         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                     }
                     string newFileName = "tmpData/" + attachment.Name;
+                    string azureName = attachment.Name;
                     string destinationContainer = "files";
                     string sourceUrl = attachment.ContentUrl;
                     var attachmentUrl = message.Attachments[0].ContentUrl;
@@ -52,7 +53,7 @@ namespace Bewerbungs.Bot.Luis
                     CloudStorageAccount csa = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
                     CloudBlobClient blobClient = csa.CreateCloudBlobClient();
                     var blobContainer = blobClient.GetContainerReference(destinationContainer);
-                    var newBlockBlob = blobContainer.GetBlockBlobReference(newFileName);
+                    var newBlockBlob = blobContainer.GetBlockBlobReference(azureName);
                     string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, newFileName);
                     File.WriteAllBytes(destPath, attachmentData);
                     newBlockBlob.UploadFromFile(destPath);
