@@ -207,7 +207,6 @@
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Communications\DataAssembler.cs" />
-    <Compile Include="Communications\DataCollector.cs" />
     <Compile Include="Communications\DatabaseConnector.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Dialogs\Acceptance.cs" />
