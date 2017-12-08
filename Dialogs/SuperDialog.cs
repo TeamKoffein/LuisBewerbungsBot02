@@ -309,36 +309,11 @@ namespace Bewerbungs.Bot.Luis
             context.Wait(this.MessageReceived);
         }
 
-        //Xing-Anbindung
+        //Xing-Anbindung 
         [LuisIntent("Xing")]
         public async Task Xing(IDialogContext context, LuisResult result)
         {
-            /*
-            string xingPath = "Xing.aspx";
-            string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, xingPath);
-            await context.PostAsync(destPath);
-            */
-            string xingPath = "Xing.aspx";
-            string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, xingPath);
-            AdaptiveCard card_url = new AdaptiveCard();
-            card_url.Actions.Add(new OpenUrlAction()
-            {
-                Title = "Xing Login",
-                Type = "Action.OpenUrl",
-                Url = destPath
-            });
-
-            Attachment card_attachment = new Attachment()
-            {
-                ContentType = AdaptiveCard.ContentType,
-                Content = card_url
-            };
-
-            Activity replyToConversation = (Activity)context.MakeMessage();
-            replyToConversation.Attachments.Add(card_attachment);
-            await context.PostAsync(replyToConversation);
-
-
+            await context.PostAsync("http://luisbewerbungsbot02.azurewebsites.net/Xing.aspx");
             context.Wait(this.MessageReceived);
         }
 
