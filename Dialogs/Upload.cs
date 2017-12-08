@@ -9,6 +9,11 @@ using Microsoft.Bot.Connector;
 using Bewerbungs.Bot.Luis;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Auth;
+using Microsoft.WindowsAzure.Storage.Blob;
+using System.Configuration;
+using System.IO;
 
 namespace Bewerbungs.Bot.Luis
 {
@@ -36,7 +41,21 @@ namespace Bewerbungs.Bot.Luis
                         var token = await new MicrosoftAppCredentials().GetTokenAsync();
                         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                     }
+                    string newFileName = attachment.Name;
+                    string destinationContainer = "files";
+                    string sourceUrl = attachment.ContentUrl;
+                    var attachmentUrl = message.Attachments[0].ContentUrl;
 
+                    var connector = new ConnectorClient(new Uri(message.ServiceUrl));
+
+                    var attachmentData = connector.HttpClient.GetByteArrayAsync(attachmentUrl).Result;
+                    CloudStorageAccount csa = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
+                    CloudBlobClient blobClient = csa.CreateCloudBlobClient();
+                    var blobContainer = blobClient.GetContainerReference(destinationContainer);
+                    var newBlockBlob = blobContainer.GetBlockBlobReference(newFileName);
+                    string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, newFileName);
+                    File.WriteAllBytes(destPath, attachmentData);
+                    newBlockBlob.UploadFromFile(destPath);
                     var responseMessage = await httpClient.GetAsync(attachment.ContentUrl);
 
                     var contentLenghtBytes = responseMessage.Content.Headers.ContentLength;
@@ -49,7 +68,7 @@ namespace Bewerbungs.Bot.Luis
                 await context.PostAsync("Hi there! I'm a bot created to show you how I can receive message attachments, but no attachment was sent to me. Please, try again sending a new message including an attachment.");
             }
 
-            context.Wait(this.MessageReceivedAsync);
+            context.Done(true);
         }
     }
 }
