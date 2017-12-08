@@ -10,6 +10,12 @@ using System.Linq;
 using Microsoft.Bot.Builder.ConnectorEx;
 using System.Data.SqlClient;
 using System.Data;
+using System.Threading;
+using Microsoft.WindowsAzure; // Namespace for CloudConfigurationManager
+using Microsoft.WindowsAzure.Storage; // Namespace for CloudStorageAccount
+using Microsoft.WindowsAzure.Storage.Blob; // Namespace for Blob storage types
+using System.Configuration;
+using System.Net.Http.Headers;
 
 namespace Bewerbungs.Bot.Luis
 {
@@ -18,7 +24,7 @@ namespace Bewerbungs.Bot.Luis
     public class SuperDialog : LuisDialog<object>
     {
         string Text;
-        LuisResult mainResult;
+        string LuisTopIntention;
         List<string> FAQDatabase = new List<string>() { "","Holiday", "WorkingHours", "Salary", "FlexTime", "HolidayDistribution",
             "Location", "HomeOffice", "PublicTransport", "Parking", "Benefits", "Client", "Ethics", "StaffTraining", "Promotion", "Eliza",
             "Requirements"};
@@ -26,10 +32,9 @@ namespace Bewerbungs.Bot.Luis
              "Career", "EducationalBackground", "ProgrammingLanguage", "SocialEngagement", "Language", "PrivateProjects",
             "StartDate"};
         List<bool> Question = new List<bool>() {true, false, false, false, false, false, false, false, false, false, false,
-            false, false, false, false};
+            false, false, false, false, false};
         string[] askingPersonal;
         string[] askingFormal;
-        string[] FAQQuestions;
         bool safeDataConfirmation;
         int jobID = -1;
 
@@ -39,8 +44,12 @@ namespace Bewerbungs.Bot.Luis
 
         override public async Task StartAsync(IDialogContext Chat)
         {
+            DatabaseConnector databaseConnector = new DatabaseConnector();
             //Initialisierung der Grundvariablen
             safeDataConfirmation = false;
+
+            askingPersonal = databaseConnector.getFAQQuestions(1);
+            askingFormal = databaseConnector.getFAQQuestions(2);
 
             //Willkommenstext und Datenschutzerklaerung beim Starten des Bots
             await Chat.PostAsync("Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst. Damit du dich erfolgreich bewerben kannst, musst du folgende Datenschutzerklaerung lesen und akzeptieren, sonst koennen wir leider mit der Bewerbung nicht fortfahren: Im Rahmen dieses Gespraechs mit dem Bot werden personenbezogene Daten über dich erhoben, jedoch nur zu Zwecken der Bewerbung erhoben, gespeichert, verarbeitet und genutzt, die in Zusammenhang mit deinem Interesse an einer Stelle bei uns steht. Es erfolgt keine Weitergabe an Dritte. Du kannst deine Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen und wir löschen dann deine Daten umgehend. Bitte schreibe uns in diesem Falll unter Angabe deines vollständigen Namens eine Email. Bitte bestätige, dass du die Erklaerung gelesen hast und sie akzeptierst, indem du folgendes abschreibst: 'Ja, ich bestaetige.'");
@@ -50,6 +59,39 @@ namespace Bewerbungs.Bot.Luis
 
         [LuisIntent("Farewell")]
         [LuisIntent("")]
+        public async Task Upload(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
+        {
+            var message = await activity;
+            string FileName = message.Attachments[0].Name;
+            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["AzureWebJobsStorage"]);
+            if (message.Attachments != null && message.Attachments.Any())
+            {
+                var attachment = message.Attachments.First();
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    // Skype & MS Teams attachment URLs are secured by a JwtToken, so we need to pass the token from our bot.
+                    if ((message.ChannelId.Equals("skype", StringComparison.InvariantCultureIgnoreCase) || message.ChannelId.Equals("msteams", StringComparison.InvariantCultureIgnoreCase))
+                        && new Uri(attachment.ContentUrl).Host.EndsWith("skype.com"))
+                    {
+                        var token = await new MicrosoftAppCredentials().GetTokenAsync();
+                        httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                    }
+
+                    var responseMessage = await httpClient.GetAsync(attachment.ContentUrl);
+
+                    var contentLenghtBytes = responseMessage.Content.Headers.ContentLength;
+
+                    await context.PostAsync($"Attachment of {attachment.ContentType} type and size of {contentLenghtBytes} bytes received.");
+                }
+            }
+            else
+            {
+                await context.PostAsync("Hi there! I'm a bot created to show you how I can receive message attachments, but no attachment was sent to me. Please, try again sending a new message including an attachment.");
+            }
+            await context.PostAsync(message);
+
+            context.Wait(this.MessageReceived);
+        }
         [LuisIntent("None")]
         public async Task None(IDialogContext context, LuisResult result)
         {
@@ -65,29 +107,50 @@ namespace Bewerbungs.Bot.Luis
         {
             var message = await activity;
             Text = message.Text;
-            mainResult = result;
-            context.Call(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName);
+            await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
 
         }
 
         private async Task AfterName(IDialogContext context, IAwaitable<object> result)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
-            bool accept = Convert.ToBoolean( await result);
-            if (accept)
+            int accept =Convert.ToInt32(await result);
+            if (accept == 1)
             {
                 var myKey = AnswerDatabase.IndexOf("Name");
                 Question[index: myKey] = true;
                 applicantID = databaseConnector.insertDatabaseEntry("Name", Text);
             }
             int index = Question.FindIndex(x => x == false);
-            AskingDialog send = new AskingDialog(context);
-            if (du != -1)
+            if (accept == 0)
             {
-                FAQQuestions = databaseConnector.getFAQQuestions(du);
+                index = 2;
             }
-            send.SendMessage(index, FAQQuestions);
-            context.Wait(this.MessageReceived);
+            if (du == 1)
+            {
+                if (index == 1)
+                {
+                    //await context.Forward(new AskingJob(askingFormal[index]), AfterStellen, context, CancellationToken.None);
+                     context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                }
+                else
+                {
+                    await context.PostAsync(askingPersonal[index]);
+                    context.Wait(this.MessageReceived);
+                }
+            }
+            else
+            {
+                if (index == 1)
+                {
+                    await context.Forward(new AskingJob(askingFormal[index]), AfterStellen, context, CancellationToken.None);
+                }
+                else
+                {
+                    await context.PostAsync(askingFormal[index]);
+                    context.Wait(this.MessageReceived);
+                }
+            }
         }
 
         [LuisIntent("Job")]
@@ -106,17 +169,67 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("StartDate")]
         public async Task Answer(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
-            var myKey = AnswerDatabase.IndexOf(result.TopScoringIntent.Intent.ToString());
-            Question[myKey] = true;
-            DatabaseConnector databaseConnector = new DatabaseConnector();
             var message = await activity;
-            databaseConnector.updateDatabase(result.TopScoringIntent.Intent.ToString(), applicantID, message.Text);
-            if (result.TopScoringIntent.Intent.ToString().Equals("Job"))
+            Text = message.Text;
+            LuisTopIntention = result.TopScoringIntent.Intent.ToString();
+            await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterAnswer, message, CancellationToken.None);
+        }
+        public async Task AfterAnswer(IDialogContext context, IAwaitable<object> result)
+        {
+            DatabaseConnector databaseConnector = new DatabaseConnector();
+            int accept = Convert.ToInt32(await result);
+            if (accept == 1)
             {
-                String[] jobList = databaseConnector.getStellenDBEntry();
-                jobID = Array.IndexOf(jobList, message.Text);
+                var myKey = AnswerDatabase.IndexOf(LuisTopIntention);
+                Question[index: myKey] = true;
+                databaseConnector.updateDatabase(LuisTopIntention, applicantID, Text);
+               
             }
-            await context.PostAsync(result.TopScoringIntent.Intent.ToString());
+            int index = Question.FindIndex(x => x == false);
+            if (index == -1)
+            {
+                await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
+                //context.Done();
+            }
+            else
+            {
+
+                if (du == 1)
+                {
+                    if (index == 1)
+                    {
+                        context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
+                    }
+                    await context.PostAsync(askingPersonal[index]);
+
+                }
+                else
+                {
+                    if (index == 1)
+                    {
+                        context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);    
+                    }
+                    await context.PostAsync(askingFormal[index]);
+                }
+            }
+            context.Wait(this.MessageReceived);
+        }
+        public async Task AfterStellen(IDialogContext context, IAwaitable<object> result)
+        {
+            DatabaseConnector databaseConnector = new DatabaseConnector();
+            int accept = Convert.ToInt32(await result);
+            Question[index: 1] = true;
+            databaseConnector.updateDatabase("Job", applicantID, Convert.ToString(accept-1));
+            int index = Question.FindIndex(x => x == false);
+            AskingDialog send = new AskingDialog(context);
+            if (du == 1)
+            {
+                await context.PostAsync(askingPersonal[index]);
+            }
+            else
+            {
+                await context.PostAsync(askingFormal[index]);
+            }
             context.Wait(this.MessageReceived);
         }
         [LuisIntent("Benefits")]
@@ -207,15 +320,20 @@ namespace Bewerbungs.Bot.Luis
             }
             else if (du == -1)
             {
+                await context.PostAsync("Dann fangen wir mal an!");
                 if (result)
                 {
                     du = 1;
+                    await context.PostAsync(askingPersonal[2]);
+
                 }
                 else
                 {
                     du = 2;
+                    await context.PostAsync(askingFormal[2]);
                 }
-                await context.PostAsync("Dann fangen wir mal an!");
+
+
             }
         }
     }
