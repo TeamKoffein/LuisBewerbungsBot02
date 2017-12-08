@@ -23,11 +23,15 @@
 
                      <script>
                          //'use strict';
+                         //Methode: Erhält das (JSON) Objekt nach dem erfolgreichen Login des Users und 
+                         //verarbeitet diese, indem readXingData aufgerufen wird und zur Kontrolle das Objekt in einer 
+                         //Textdatei gespeichert wird
                          function onXingAuthLogin(response) {
                              var output;
                              var filecontent;
                              var filename
 
+                             //Kontrolle des erfolgreichen Logins
                              if (response.user) {
                                  output = 'Successful login for ' + response.user.display_name;
                              }
@@ -39,6 +43,7 @@
                              filecontent = JSON.stringify(response);
                              filename = "jsonXing";
 
+                             //Rufe c# Methode auf, um das Objekt auszuwerten
                              PageMethods.readXingData(filecontent);
                              var blob = new Blob([filecontent], { type: "text/plain;charset=utf-8" }); saveAs(blob, filename + ".json");
                          }
@@ -54,6 +59,7 @@
                     <p id='output'></p>
                     <br />
 
+                    <!-- Xing Plugin Anbindung -->
                     <script>
                         (function (d) {
                             var js, id = 'lwx';

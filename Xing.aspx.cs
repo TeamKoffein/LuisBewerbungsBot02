@@ -17,6 +17,7 @@ namespace ProactiveBot
         }
 
         [WebMethod]
+        //Methode: Lies JSON Objekt aus und schreibe diese formatiert zur Kontrolle in einer Textdatei auf dem Desktop gespeichert
         public static void readXingData(String rawText)
         {
             try
@@ -31,6 +32,7 @@ namespace ProactiveBot
             }
         }
 
+        //Methode: Schreibe formatiertes Objekt (mit all den Profildaten) als Textdatei und speichere es auf dem Desktop
         private static void writeXingData(string[] xingDataInput)
         {
             // Set a variable to the My Documents path.
