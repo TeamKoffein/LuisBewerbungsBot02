@@ -185,6 +185,8 @@
     <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap-theme.min.css.map" />
     <Content Include="Content\bootstrap-theme.css.map" />
+    <Content Include="Xing.css" />
+    <Content Include="Xing.html" />
     <None Include=".bin\node.cmd" />
     <None Include="Scripts\jquery-3.2.1.intellisense.js" />
     <Content Include="iconWebChat.png" />
