@@ -6,11 +6,14 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.IO;
 using System.Web.Services;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+using System.Configuration;
 /*
- * KLASSE: Beinhaltet die (Web-) Methoden in C# für die Klasse Xing.aspx, um das Objekt mit den ausgelesenen Profil-
- * daten zu verarbeiten und als Textdatei zu speichern.
- * 
- * */
+* KLASSE: Beinhaltet die (Web-) Methoden in C# für die Klasse Xing.aspx, um das Objekt mit den ausgelesenen Profil-
+* daten zu verarbeiten und als Textdatei zu speichern.
+* 
+* */
 namespace ProactiveBot
 {
     public partial class Xing : System.Web.UI.Page
@@ -24,6 +27,14 @@ namespace ProactiveBot
         //Methode: Lies JSON Objekt aus und schreibe diese formatiert zur Kontrolle in einer Textdatei auf dem Desktop gespeichert
         public static void readXingData(String rawText)
         {
+            CloudStorageAccount csa = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
+            CloudBlobClient blobClient = csa.CreateCloudBlobClient();
+            var blobContainer = blobClient.GetContainerReference("xing");
+            var newBlockBlob = blobContainer.GetBlockBlobReference("profile");
+            using (var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(rawText.ToString())))
+            {
+                newBlockBlob.UploadFromStream(ms);
+            }
             try
             {
                 string[] seperatorsToSplit = { ",", "{", "}" };
