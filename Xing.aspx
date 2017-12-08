@@ -57,7 +57,7 @@
                     <!-- Javascript fuer das Plugin und zum Auslesen der Daten (erfolgt durch Xing automatisch-->
                     <script type="xing/login">
                         {
-                        "consumer_key": "24e60f9f3ef44685ec15"
+                        "consumer_key": "36f9d7320301647fd8a9"
                         }
                     </script>
 
