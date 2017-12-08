@@ -288,9 +288,10 @@ namespace Bewerbungs.Bot.Luis
         {
             string xingPath = "Xing.aspx";
             string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, xingPath);
+            string destPathUri = new Uri(destPath).AbsoluteUri.ToString();
 
 
-            await context.PostAsync(destPath);
+            await context.PostAsync(destPathUri);
             context.Wait(this.MessageReceived);
         }
 

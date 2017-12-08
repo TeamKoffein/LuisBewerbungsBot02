@@ -65,7 +65,7 @@ namespace Bewerbungs.Bot.Luis
                     //File-Erstellung aus dem byte[]
                     File.WriteAllBytes(destPath, attachmentData);
                     //Hochladen des Files
-                    newBlockBlob.UploadFromFile(destPath);
+                    await newBlockBlob.UploadFromFileAsync(destPath);
                     //Löschen des lokalen Files
                     File.Delete(destPath);
                     var responseMessage = await httpClient.GetAsync(attachment.ContentUrl);
