@@ -130,7 +130,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 if (index == 1)
                 {
-                    await context.Forward(new AskingJob(askingFormal[index]), AfterStellen, context, CancellationToken.None);
+                    context.Call(new AskingJob(askingFormal[index]), AfterStellen);
                 }
                 else
                 {
@@ -202,18 +202,27 @@ namespace Bewerbungs.Bot.Luis
                     {
                         context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
                     }
-                    await context.PostAsync(askingPersonal[index]);
+                    else
+                    {
+                        await context.PostAsync(askingPersonal[index]);
+                        context.Wait(this.MessageReceived);
+                    }
                 }
                 else
                 {
                     if (index == 1)
                     {
-                        context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);    
+                        context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
                     }
-                    await context.PostAsync(askingFormal[index]);
+                    else
+                    {
+                        await context.PostAsync(askingFormal[index]);
+                        context.Wait(this.MessageReceived);
+                    }
+                    
                 }
             }
-            context.Wait(this.MessageReceived);
+            
         }
 
         /*Wenn der Bewerber angegeben hat auf welche Stelle er sich bewerben möchte, wird dies hinterlegt und die dementsprechende Fachfrage zur der Psoition gestellt
