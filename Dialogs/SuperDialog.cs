@@ -229,7 +229,6 @@ namespace Bewerbungs.Bot.Luis
             await context.PostAsync(technicalQuestion);
 
             int index = Question.FindIndex(x => x == false);
-            AskingDialog send = new AskingDialog(context);
             if (du == 1)
             {
                 await context.PostAsync(askingPersonal[index]);
