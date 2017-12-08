@@ -25,7 +25,8 @@ namespace Bewerbungs.Bot.Luis
             await context.PostAsync("Bitte schicke uns jetzt die die Datei.");
             context.Wait(this.MessageReceivedAsync);
         }
-
+        //Diese MessageRecivedAsync Methode ist einzig zum Speichern eines Attachment da. Bei einer Texteingabe wird der Vorgang übersprungen der Speicherung 
+        //übersprunge und es wird am Ende zum SuperDialog zurück überwiesen.
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
             var message = await argument;
@@ -41,22 +42,31 @@ namespace Bewerbungs.Bot.Luis
                         var token = await new MicrosoftAppCredentials().GetTokenAsync();
                         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                     }
+                    //File Name wird für Lokale Speicherung erstellt mit dem verweis auf einen Ordner im Projekt
                     string newFileName = "tmpData/" + attachment.Name;
+                    //File Name zum spiechern in der Blob Storage
                     string azureName = attachment.Name;
+                    //Container wird in der Storage angegeben
                     string destinationContainer = "files";
+                    //URL vom dem Attachment wird gespiechert
                     string sourceUrl = attachment.ContentUrl;
+                    //Speicherung des Attachment in ein byte[]
                     var attachmentUrl = message.Attachments[0].ContentUrl;
-
                     var connector = new ConnectorClient(new Uri(message.ServiceUrl));
-
                     var attachmentData = connector.HttpClient.GetByteArrayAsync(attachmentUrl).Result;
+
+                    //Verbindung zur Azure CloudStorage
                     CloudStorageAccount csa = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
                     CloudBlobClient blobClient = csa.CreateCloudBlobClient();
                     var blobContainer = blobClient.GetContainerReference(destinationContainer);
                     var newBlockBlob = blobContainer.GetBlockBlobReference(azureName);
+                    //File Name zum Projekt erstellt, unabhängig vom Speicherungsort des Projekts
                     string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, newFileName);
+                    //File-Erstellung aus dem byte[]
                     File.WriteAllBytes(destPath, attachmentData);
+                    //Hochladen des Files
                     newBlockBlob.UploadFromFile(destPath);
+                    //Löschen des lokalen Files
                     File.Delete(destPath);
                     var responseMessage = await httpClient.GetAsync(attachment.ContentUrl);
 
@@ -67,7 +77,7 @@ namespace Bewerbungs.Bot.Luis
             }
             else
             {
-                await context.PostAsync("Hi there! I'm a bot created to show you how I can receive message attachments, but no attachment was sent to me. Please, try again sending a new message including an attachment.");
+                await context.PostAsync("Es wurde kein Datei erkannt!");
             }
 
             context.Done(true);
