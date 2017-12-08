@@ -77,6 +77,7 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("StaffTraining")]
         [LuisIntent("WorkingHours")]
         [LuisIntent("Greetings")]
+        [LuisIntent("Xing")]
         public async Task Other(IDialogContext context, LuisResult result)
         {
             await context.PostAsync("Bitte bestätigen oder verneinen");

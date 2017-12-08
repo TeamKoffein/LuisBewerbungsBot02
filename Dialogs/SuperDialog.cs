@@ -297,6 +297,13 @@ namespace Bewerbungs.Bot.Luis
             context.Wait(this.MessageReceived);
         }
 
+        [LuisIntent("Xing")]
+        public async Task Xing(IDialogContext context, LuisResult result)
+        {
+            await context.PostAsync("Xing.html");
+            context.Wait(this.MessageReceived);
+        }
+
         [LuisIntent("Negative")]
         public async Task Negative(IDialogContext context, LuisResult result)
         {
@@ -336,5 +343,6 @@ namespace Bewerbungs.Bot.Luis
 
             }
         }
+
     }
 }
