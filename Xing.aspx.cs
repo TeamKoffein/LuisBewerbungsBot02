@@ -6,7 +6,11 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.IO;
 using System.Web.Services;
-
+/*
+ * KLASSE: Beinhaltet die (Web-) Methoden in C# für die Klasse Xing.aspx, um das Objekt mit den ausgelesenen Profil-
+ * daten zu verarbeiten und als Textdatei zu speichern.
+ * 
+ * */
 namespace ProactiveBot
 {
     public partial class Xing : System.Web.UI.Page

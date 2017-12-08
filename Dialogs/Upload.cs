@@ -17,6 +17,7 @@ using System.IO;
 
 namespace Bewerbungs.Bot.Luis
 {
+    //Diese Klasse behandelt den Dateien-upload des Chatbots
     [Serializable]
     public class Upload : IDialog<object>
     {
@@ -44,11 +45,11 @@ namespace Bewerbungs.Bot.Luis
                     }
                     //File Name wird für Lokale Speicherung erstellt mit dem verweis auf einen Ordner im Projekt
                     string newFileName = "tmpData/" + attachment.Name;
-                    //File Name zum spiechern in der Blob Storage
+                    //File Name zum speichern in der Blob Storage
                     string azureName = attachment.Name;
                     //Container wird in der Storage angegeben
                     string destinationContainer = "files";
-                    //URL vom dem Attachment wird gespiechert
+                    //URL vom dem Attachment wird gespeichert
                     string sourceUrl = attachment.ContentUrl;
                     //Speicherung des Attachment in ein byte[]
                     var attachmentUrl = message.Attachments[0].ContentUrl;
