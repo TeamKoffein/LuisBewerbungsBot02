@@ -325,7 +325,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 Title = "Xing Login",
                 Type = "Action.OpenUrl",
-                Url = destPath
+                Url = "http://luisbewerbungsbot02.azurewebsites.net/Xing.aspx"
             });
 
             Attachment card_attachment = new Attachment()
