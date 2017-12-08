@@ -324,7 +324,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 Title = "Xing Login",
                 Type = "Action.OpenUrl",
-                Url = "~/Xing.html"
+                Url = "Bewerbungs.Bot.Luis/Xing.html"
             });
 
             Attachment card_attachment = new Attachment()
