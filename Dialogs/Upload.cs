@@ -41,7 +41,7 @@ namespace Bewerbungs.Bot.Luis
                         var token = await new MicrosoftAppCredentials().GetTokenAsync();
                         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                     }
-                    string newFileName = attachment.Name;
+                    string newFileName = "tmpData/" + attachment.Name;
                     string destinationContainer = "files";
                     string sourceUrl = attachment.ContentUrl;
                     var attachmentUrl = message.Attachments[0].ContentUrl;
@@ -56,6 +56,7 @@ namespace Bewerbungs.Bot.Luis
                     string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, newFileName);
                     File.WriteAllBytes(destPath, attachmentData);
                     newBlockBlob.UploadFromFile(destPath);
+                    File.Delete(destPath);
                     var responseMessage = await httpClient.GetAsync(attachment.ContentUrl);
 
                     var contentLenghtBytes = responseMessage.Content.Headers.ContentLength;
