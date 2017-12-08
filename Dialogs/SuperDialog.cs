@@ -278,7 +278,14 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Xing")]
         public async Task Xing(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("http://localhost:3984/Xing.aspx");
+            /*
+            System.Web.UI.WebControls.HyperLink linkXing = new System.Web.UI.WebControls.HyperLink();
+            linkXing.ID = "linkXing";
+            linkXing.Text = "Ja, ich moechte mich in Xing anmelden!";
+            linkXing.Visible = true;
+            linkXing.NavigateUrl = "Xing.aspx";*/
+
+            await context.PostAsync("Fickdich");
             context.Wait(this.MessageReceived);
         }
 
