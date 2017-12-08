@@ -61,13 +61,17 @@ namespace Bewerbungs.Bot.Luis
                     var blobContainer = blobClient.GetContainerReference(destinationContainer);
                     var newBlockBlob = blobContainer.GetBlockBlobReference(azureName);
                     //File Name zum Projekt erstellt, unabhängig vom Speicherungsort des Projekts
-                    string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, newFileName);
+                    //string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, newFileName);
                     //File-Erstellung aus dem byte[]
-                    File.WriteAllBytes(destPath, attachmentData);
+                    //File.WriteAllBytes(destPath, attachmentData);
                     //Hochladen des Files
-                    await newBlockBlob.UploadFromFileAsync(destPath);
+                    //await newBlockBlob.UploadFromFileAsync(destPath);
                     //Löschen des lokalen Files
-                    File.Delete(destPath);
+                    // File.Delete(destPath);
+                    using (var ms = new MemoryStream(attachmentData, false))
+                    {
+                        newBlockBlob.UploadFromStream(ms);
+                    }
                     var responseMessage = await httpClient.GetAsync(attachment.ContentUrl);
 
                     var contentLenghtBytes = responseMessage.Content.Headers.ContentLength;
