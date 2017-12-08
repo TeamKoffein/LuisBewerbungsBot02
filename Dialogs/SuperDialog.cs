@@ -321,7 +321,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 Title = "Xing Login",
                 Type = "Action.OpenUrl",
-                Url = "Xing.html"
+                Url = "~/Xing.html"
             });
 
             Attachment card_attachment = new Attachment()
@@ -333,6 +333,7 @@ namespace Bewerbungs.Bot.Luis
             Activity replyToConversation = (Activity)context.MakeMessage();
             replyToConversation.Attachments.Add(card_attachment);
             await context.PostAsync(replyToConversation);
+
 
             context.Wait(this.MessageReceived);
         }
