@@ -43,8 +43,6 @@ namespace Bewerbungs.Bot.Luis
                         var token = await new MicrosoftAppCredentials().GetTokenAsync();
                         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                     }
-                    //File Name wird für Lokale Speicherung erstellt mit dem verweis auf einen Ordner im Projekt
-                    string newFileName = "tmpData/" + attachment.Name;
                     //File Name zum speichern in der Blob Storage
                     string azureName = attachment.Name;
                     //Container wird in der Storage angegeben
@@ -61,14 +59,7 @@ namespace Bewerbungs.Bot.Luis
                     CloudBlobClient blobClient = csa.CreateCloudBlobClient();
                     var blobContainer = blobClient.GetContainerReference(destinationContainer);
                     var newBlockBlob = blobContainer.GetBlockBlobReference(azureName);
-                    //File Name zum Projekt erstellt, unabhängig vom Speicherungsort des Projekts
-                    //string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, newFileName);
-                    //File-Erstellung aus dem byte[]
-                    //File.WriteAllBytes(destPath, attachmentData);
-                    //Hochladen des Files
-                    //await newBlockBlob.UploadFromFileAsync(destPath);
-                    //Löschen des lokalen Files
-                    // File.Delete(destPath);
+                    //byte[] wird mit einem MemoryStream in die Blob Storage geschrieben.
                     using (var ms = new MemoryStream(attachmentData, false))
                     {
                         newBlockBlob.UploadFromStream(ms);
