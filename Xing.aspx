@@ -3,7 +3,7 @@
 <!--
     KLASSE: Diese Klasse ruft den Plugin Xing auf, damit der User sich in sein Account einloggen kann. 
     Das Plugin gibt nach dem Aufruf und nach dem erfolgreichen Login des Users ein Objekt mit den ausgelesenen 
-    Daten zurück. Die Methoden zur Verarbeitung sind in Xing.aspx.cs implementiert.
+    Daten zurück. Die Methoden zur Verarbeitung sind in Xing.aspx.cs implementiert..
     -->
 
 <!DOCTYPE html>
