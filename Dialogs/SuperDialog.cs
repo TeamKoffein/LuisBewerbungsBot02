@@ -244,6 +244,7 @@ namespace Bewerbungs.Bot.Luis
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int accept = Convert.ToInt32(await result);
+            //ToDo Sicherheit, falls Name noch nicht gefragt wurde, ÜBERPRÜFEN!!!
             if (accept == 1)
             {
                 var myKey = AnswerDatabase.IndexOf(LuisTopIntention);
@@ -416,7 +417,7 @@ namespace Bewerbungs.Bot.Luis
         //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung
         public async Task FindAcceptance(IDialogContext context, bool result)
         {
-            if (!safeDataConfirmation)
+            if (!safeDataConfirmation) //safeDataConfirmation == false
             {
                 if (result)
                 {
