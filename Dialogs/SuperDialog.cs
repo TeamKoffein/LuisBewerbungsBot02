@@ -50,6 +50,10 @@ namespace Bewerbungs.Bot.Luis
         int du = -1; 
         int applicantID = -1;
 
+        //knowledge dient zur Erkennung der Gesprächsfortsetzung
+        // -1= Wert nicht gesetzt; 0= neuer Bewerber; 1= gespräch wird fortgesetzt
+        int knowledge = -1;
+
         //StartAsync startet den Gesprächbeginn
         override public async Task StartAsync(IDialogContext Chat)
         {
@@ -89,7 +93,75 @@ namespace Bewerbungs.Bot.Luis
         {
             var message = await activity;
             Text = message.Text;
-            await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
+            if (knowledge == 0)
+            {
+                await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
+            }
+            else
+            {
+                DatabaseConnector databaseConnector = new DatabaseConnector();
+                int count = databaseConnector.getCountName(message.Text);
+                if (count == 0)
+                {
+                    knowledge = 0;
+                    await context.PostAsync("Name nicht gefunden. Neuer Name angelegt.");
+                    await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
+                }
+                else
+                {
+                    await context.PostAsync("Name gefunden. " + message.Text);
+                    string adress = databaseConnector.getAdress(message.Text);
+                    await context.PostAsync("Ist diese Adresse korrekt? Adresse: " + adress);
+                    applicantID = databaseConnector.getApplicantID(message.Text, adress);
+                    await context.Forward(new Acceptance("Adress", message.Text), CheckInformation, message, CancellationToken.None);
+                }
+            }
+        }
+
+        private async Task CheckInformation(IDialogContext context, IAwaitable<object> result)
+        {
+            DatabaseConnector databaseConnector = new DatabaseConnector();
+            int accept = Convert.ToInt32(await result);
+            if (accept == 1)
+            {
+                Question = databaseConnector.getMissing(applicantID);
+                int index = Question.FindIndex(x => x == false);
+
+                if (du == 1)
+                {
+                    if (index == 1)
+                    {
+                        //Frage nach beworbene Stelle mit Du
+                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                    }
+                    else
+                    {
+                        //Frage nach beworbene Stelle mit Sie
+                        await context.PostAsync(askingPersonal[index]);
+                        context.Wait(this.MessageReceived);
+                    }
+                }
+                else
+                {
+                    if (index == 1)
+                    {
+                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                    }
+                    else
+                    {
+                        await context.PostAsync(askingFormal[index]);
+                        context.Wait(this.MessageReceived);
+                    }
+                }
+
+            }
+            else
+            {
+                knowledge = 0;
+                await context.PostAsync("Neuer Bewerber. Noch einmal den Namen angeben.");
+                context.Wait(this.MessageReceived);
+            }
+
         }
 
         /* AfterName speichert den Namen des Bewerber ab und stellt die Frage nach der Stelle
@@ -349,11 +421,24 @@ namespace Bewerbungs.Bot.Luis
                 if (result)
                 {
                     safeDataConfirmation = true;
-                    await context.PostAsync("Danke für das Akzeptieren der Datenschutzerklärung. Sollen wir das 'Du' einführen?");
+                    await context.PostAsync("Danke für das Akzeptieren der Datenschutzerklärung. Kennst du mich schon?");
                 }
                 else
                 {
                     await context.PostAsync("Wenn du unsere Datenschutzerklärung nicht bestätigst kannst du nicht mit dem Bot schreiben!");
+                }
+            }
+            else if (knowledge == -1)
+            {
+                if (!result)
+                {
+                    knowledge = 0;
+                    await context.PostAsync("Darf ich Sie duzen?");
+                }
+                else
+                {
+                    knowledge = 1;
+                    await context.PostAsync("Darf ich Sie duzen?");
                 }
             }
             else if (du == -1)

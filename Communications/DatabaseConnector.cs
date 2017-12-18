@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
@@ -185,7 +186,7 @@ namespace Bewerbungs.Bot.Luis
                     //sqlCommand(Object conn, Object command, String commandText, int id, String parametersAdd1, Object parametersAdd2)
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
-                    command.CommandText = "SELECT COUNT (BeworbeneStelle) FROM BewerberdatenLuis WHERE Job = @paramStellenID";
+                    command.CommandText = "SELECT COUNT (Job) FROM BewerberdatenLuis WHERE Job = @paramStellenID";
                     command.Parameters.Add("@paramStellenID", SqlDbType.VarChar).Value = active[1];
 
                     conn.Open();
@@ -333,6 +334,119 @@ namespace Bewerbungs.Bot.Luis
                 }
                 return DBEntry;
             }
+        }
+
+        public Int32 getCountName(string checkName)
+        {
+            int count;
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT COUNT (Name) FROM BewerberdatenLuis WHERE Name = @toCheck";
+                    command.Parameters.Add("@toCheck", SqlDbType.NVarChar).Value = checkName;
+                    conn.Open();
+                    count = (Int32)command.ExecuteScalar();
+                    conn.Close();
+                }
+            }
+            return count;
+        }
+
+        public String getAdress(string checkName)
+        {
+            string adress = "";
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT Adress FROM BewerberdatenLuis WHERE Name = @checkName";
+                    command.Parameters.Add("@checkName", SqlDbType.NVarChar).Value = checkName;
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        adress = reader.GetString(0);
+                    }
+                    reader.Close();
+                    conn.Close();
+                }
+                return adress;
+            }
+        }
+
+        public Int32 getApplicantID(string checkName, string checkAdress)
+        {
+            int applicantID = 0;
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT BewerberID FROM BewerberdatenLuis WHERE Name = @checkName AND Adress = @checkAdress";
+                    command.Parameters.Add("@checkName", SqlDbType.NVarChar).Value = checkName;
+                    command.Parameters.Add("@checkAdress", SqlDbType.NVarChar).Value = checkAdress;
+                    conn.Open();
+                    applicantID = (Int32)command.ExecuteScalar();
+                    conn.Close();
+                }
+                return applicantID;
+            }
+        }
+        public List<bool> getMissing(int applicantID)
+        {
+            List<bool> Question = new List<bool>();
+            bool field;
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    //                    command.CommandText = "SELECT Job, Name, Adress, PostalCode, Place, PhoneNumber, Email, Birthday, Career, EducationalBackground, ProgrammingLanguage, SocialEngagement, Language, PrivateProjects, StartDate FROM BewerberdatenLuis WHERE BewerberID = @appID";
+                    command.CommandText = "SELECT * FROM BewerberdatenLuis WHERE BewerberID = @appID";
+                    command.Parameters.Add("@appID", SqlDbType.Int).Value = applicantID;
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        for (int i = 0; i <= 14; i++)
+                        {
+                            field = reader.IsDBNull(i);
+                            if (field) { Question.Add(false); }
+                            else { Question.Add(true); }
+                        }
+                    }
+                    reader.Close();
+                    conn.Close();
+                }
+            }
+            return Question;
         }
     }
 }
