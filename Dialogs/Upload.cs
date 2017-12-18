@@ -44,7 +44,7 @@ namespace Bewerbungs.Bot.Luis
                         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                     }
                     //File Name zum speichern in der Blob Storage
-                    string azureName = attachment.Name;
+                    string azureName = /* name+ "/"*/attachment.Name;
                     //Container wird in der Storage angegeben
                     string destinationContainer = "files";
                     //URL vom dem Attachment wird gespeichert
