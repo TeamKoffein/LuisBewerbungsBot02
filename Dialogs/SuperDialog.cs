@@ -223,7 +223,6 @@ namespace Bewerbungs.Bot.Luis
             int index = Question.FindIndex(x => x == false);
             if (index == -1)
             {
-                await context.PostAsync("Du hast schon alle Angaben gemacht!");
                 currentData = databaseConnector.getData(applicantID);
                 string data = "";
                 for (int i = 0; i < currentData.Length; i++)
@@ -577,9 +576,6 @@ namespace Bewerbungs.Bot.Luis
                     DataAssembler assemble = new DataAssembler();
                     assemble.sendData(applicantID);
                     await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
-                    
-                    //Abfrage fuer Datenschutz bzgl. Newsletter
-                    context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
                 }
                 else
                 {
@@ -596,11 +592,19 @@ namespace Bewerbungs.Bot.Luis
                     DatabaseConnector databaseConnector = new DatabaseConnector();
                     databaseConnector.transferData(applicantID);
                     await context.PostAsync("Daten dauerhaft gespeichert.");
+
+                    //Abfrage fuer Datenschutz bzgl. Newsletter
+                    context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
+
                 }
                 else
                 {
                     saveDataLongterm = 0;
                     await context.PostAsync("Daten nicht gespeichert.");
+
+                    //Abfrage fuer Datenschutz bzgl. Newsletter
+                    context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
+
                 }
             }
         }
