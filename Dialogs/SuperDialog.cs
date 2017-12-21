@@ -45,6 +45,7 @@ namespace Bewerbungs.Bot.Luis
         string[] askingFormal;
         string[] currentData;
         bool safeDataConfirmation;
+        bool safeNewsConfirmation;
         bool nameUpdateable;
         int jobID = -1;
 
@@ -66,6 +67,7 @@ namespace Bewerbungs.Bot.Luis
             DatabaseConnector databaseConnector = new DatabaseConnector();
             //Initialisierung der Grundvariablen
             safeDataConfirmation = false;
+            safeNewsConfirmation = false;
 
 
             //Speicherung der Fragen für Du und Sie
@@ -504,6 +506,20 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync("Wenn du unsere Datenschutzerklärung nicht bestätigst kannst du nicht mit dem Bot schreiben!");
                 }
             }
+            else if (!safeNewsConfirmation)
+            {
+                if (result)
+                {
+                    safeNewsConfirmation = true;
+                    await context.PostAsync("Wir freuen uns und informieren dich gerne darüber, was bei uns so alles abgeht!");
+                    DataAssembler assemble = new DataAssembler();
+                    assemble.sendData(applicantID);
+                }
+                else
+                {
+                    await context.PostAsync("Schade! Aber wir akzeptieren das mit gebrochenem Herzen. :(");
+                }
+            }
             else if (knowledge == -1)
             {
                 if (!result)
@@ -556,7 +572,7 @@ namespace Bewerbungs.Bot.Luis
                     DataAssembler assemble = new DataAssembler();
                     assemble.sendData(applicantID);
                     await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
-                    await context.PostAsync("Möchtest du deine Daten dauerhaft speichern?");
+                    await context.PostAsync("Wie versprochen speichern wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?");
                 }
                 else
                 {
