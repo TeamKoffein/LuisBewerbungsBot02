@@ -36,6 +36,7 @@ namespace Bewerbungs.Bot.Luis
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
             var message = await argument;
+            int cvUpload = 0;
 
             if (message.Attachments != null && message.Attachments.Any())
             {
@@ -76,6 +77,16 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync($"Attachment of {attachment.ContentType} type and size of {contentLenghtBytes} bytes received.");
                     context.Call(new Acceptance("War dieses Dokument ein Lebenslauf?"), AfterUpload);
                 }
+
+                if (attachment.name.contains("Lebenslauf", "lebenslauf", "CV"))
+                {
+                    cvUpload = 1;
+                }
+                else
+                {
+                    await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterAnswer, message, CancellationToken.None);
+                }
+
             }
             else
             {
