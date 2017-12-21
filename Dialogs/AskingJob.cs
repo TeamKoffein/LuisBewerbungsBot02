@@ -32,8 +32,7 @@ namespace Bewerbungs.Bot.Luis
 
             for (int i = 0; i < jobs.Length; i++)
             {
-                jobstring = jobstring + " " + @"
-                            " + Convert.ToString(i + 1) + ": " + jobs[i];
+                jobstring = jobstring + " " + "\n\n" + Convert.ToString(i + 1) + ": " + jobs[i];
             }
             await context.PostAsync(jobstring);
             await context.PostAsync("Gebe die Stellennummer an, auf die du dich bewerben möchtest. Bitte geben sie eine Zahl an");
@@ -65,8 +64,7 @@ namespace Bewerbungs.Bot.Luis
 
                 for (int i = 0; i < jobs.Length; i++)
                 {
-                    jobstring = jobstring + " " + @"
-                            " + Convert.ToString(i + 1) + ": " + jobs[i];
+                    jobstring = jobstring + " " + "\n\n" + Convert.ToString(i + 1) + ": " + jobs[i];
                 }
                 await context.PostAsync("Bitte eine Zahl angeben");
                 await context.PostAsync(jobstring);

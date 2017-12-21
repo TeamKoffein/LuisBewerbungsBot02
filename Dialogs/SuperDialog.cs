@@ -171,8 +171,7 @@ namespace Bewerbungs.Bot.Luis
                     string data = "";
                     for (int i = 0; i < currentData.Length; i++)
                     {
-                        data = data + "" + @"
-                            " + currentData[i];
+                        data = data + "" + "\n\n" + currentData[i];
                     }
                     await context.PostAsync("Diese Angaben sind hinterlegt: " + Environment.NewLine + data);
 
@@ -185,8 +184,7 @@ namespace Bewerbungs.Bot.Luis
                     string data = "";
                     for (int i = 0; i < currentData.Length; i++)
                     {
-                        data = data + "" + @"
-                            " + currentData[i];
+                        data = data + "" + "\n\n" + currentData[i];
                     }
                     await context.PostAsync("Diese Angaben sind hinterlegt: " + Environment.NewLine + data);
 
@@ -256,8 +254,7 @@ namespace Bewerbungs.Bot.Luis
                 string data = "";
                 for (int i = 0; i < currentData.Length; i++)
                 {
-                    data = data + "" + @"
-                            " + currentData[i];
+                    data = data + "" + "\n\n" + currentData[i];
                 }
                 await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
 
@@ -371,8 +368,7 @@ namespace Bewerbungs.Bot.Luis
                 string data = "";
                 for (int i = 0; i < currentData.Length; i++)
                 {
-                    data = data + "" + @"
-                        " + currentData[i];
+                    data = data + "" + "\n\n" + currentData[i];
                 }
                 await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
                 await context.PostAsync("Sind diese Angaben korrekt?");
@@ -428,8 +424,7 @@ namespace Bewerbungs.Bot.Luis
                 string data = "";
                 for (int i = 0; i < currentData.Length; i++)
                 {
-                    data = data + "" + @"
-                        " + currentData[i];
+                    data = data + "" + "\n\n" + currentData[i];
                 }
                 await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
                 await context.PostAsync("Sind diese Angaben korrekt?");
@@ -459,8 +454,8 @@ namespace Bewerbungs.Bot.Luis
             {
                 safeNewsConfirmation = true;
                 await context.PostAsync("Wir freuen uns und informieren dich gerne darüber, was bei uns so alles abgeht!");
-                DataAssembler assemble = new DataAssembler();
-                assemble.updateNewsletter(applicantID);
+                DatabaseConnector databaseConnector = new DatabaseConnector();
+                databaseConnector.updateNewsletter(applicantID);
             }
             context.Wait(this.MessageReceived);
         }
