@@ -578,7 +578,7 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
                     
                     //Abfrage fuer Datenschutz bzgl. Newsletter
-                    context.Call(new Acceptance("Wie versprochen speichern wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
+                    context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
                 }
                 else
                 {
