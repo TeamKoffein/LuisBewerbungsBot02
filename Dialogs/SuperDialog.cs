@@ -45,6 +45,7 @@ namespace Bewerbungs.Bot.Luis
         string[] askingFormal;
         string[] currentData;
         bool safeDataConfirmation;
+        bool safeNewsConfirmation;
         bool nameUpdateable;
         bool currentUpload;
         int jobID = -1;
@@ -67,6 +68,7 @@ namespace Bewerbungs.Bot.Luis
             DatabaseConnector databaseConnector = new DatabaseConnector();
             //Initialisierung der Grundvariablen
             safeDataConfirmation = false;
+            safeNewsConfirmation = false;
 
 
             //Speicherung der Fragen für Du und Sie
@@ -75,7 +77,7 @@ namespace Bewerbungs.Bot.Luis
 
             //Willkommenstext und Datenschutzerklaerung beim Starten des Bots
             await Chat.PostAsync("Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst.");
-            await Chat.PostAsync("Damit du dich erfolgreich bewerben kannst, musst du die Datenschutzerklaerung unter dem folgenden Link lesen und akzeptieren, sonst koennen wir leider mit der Bewerbung nicht fortfahren.");
+            await Chat.PostAsync("Damit du dich erfolgreich bewerben kannst, musst du die Datenschutzerklaerung lesen und akzeptieren, sonst koennen wir leider mit der Bewerbung nicht fortfahren.");
             await Chat.PostAsync("Bitte bestätige danach hier im Bot, dass du die Erklaerung unter http://luisbewerbungsbot02.azurewebsites.net/PrivacyPolicy.html gelesen hast und sie akzeptierst.");
 
             Chat.Wait(this.MessageReceived);
@@ -401,6 +403,23 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+        public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
+        {
+            int accept = Convert.ToInt32(await result);
+            if (accept == 0)
+            {
+                await context.PostAsync("Schade! Aber wir akzeptieren das mit gebrochenem Herzen. :(");
+            }
+            else
+            {
+                safeNewsConfirmation = true;
+                await context.PostAsync("Wir freuen uns und informieren dich gerne darüber, was bei uns so alles abgeht!");
+                DataAssembler assemble = new DataAssembler();
+                assemble.sendData(applicantID);
+            }
+            context.Wait(this.MessageReceived);
+        }
+
         [LuisIntent("Benefits")]
         [LuisIntent("Client")]
         [LuisIntent("Eliza")]
@@ -560,7 +579,9 @@ namespace Bewerbungs.Bot.Luis
                     DataAssembler assemble = new DataAssembler();
                     assemble.sendData(applicantID);
                     await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
-                    await context.PostAsync("Möchtest du deine Daten dauerhaft speichern?");
+                    
+                    //Abfrage fuer Datenschutz bzgl. Newsletter
+                    context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
                 }
                 else
                 {
