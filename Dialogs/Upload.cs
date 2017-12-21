@@ -49,7 +49,7 @@ namespace Bewerbungs.Bot.Luis
                         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                     }
                     //File Name zum speichern in der Blob Storage
-                    string azureName = /* name+ "/"*/attachment.Name;
+                    string azureName = applicantID + "/" + attachment.Name;
                     //Container wird in der Storage angegeben
                     string destinationContainer = "files";
                     //URL vom dem Attachment wird gespeichert
@@ -74,6 +74,7 @@ namespace Bewerbungs.Bot.Luis
                     var contentLenghtBytes = responseMessage.Content.Headers.ContentLength;
 
                     await context.PostAsync($"Attachment of {attachment.ContentType} type and size of {contentLenghtBytes} bytes received.");
+                    context.Call(new Acceptance("War dieses Dokument ein Lebenslauf?"), AfterUpload);
                 }
             }
             else
@@ -82,6 +83,11 @@ namespace Bewerbungs.Bot.Luis
             }
 
             context.Done(value: 0);
+        }
+        private async Task AfterUpload(IDialogContext context, IAwaitable<object> result)
+        {
+            int accept = Convert.ToInt32(await result);
+            context.Done(accept);
         }
     }
 }
