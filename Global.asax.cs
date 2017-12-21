@@ -14,10 +14,10 @@ namespace SimpleEchoBot
     {
         protected void Application_Start()
         {
-            Conversation.UpdateContainer(builder =>
+            /*Conversation.UpdateContainer(builder =>
             {
                 builder.RegisterType<DebugActivityLogger>().AsImplementedInterfaces().InstancePerDependency();
-            });
+            });*/
             GlobalConfiguration.Configure(WebApiConfig.Register);
         }
     }
