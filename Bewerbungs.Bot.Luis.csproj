@@ -211,6 +211,7 @@
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Communications\DataAssembler.cs" />
     <Compile Include="Communications\DatabaseConnector.cs" />
+    <Compile Include="Communications\DebugActivityLogger.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Dialogs\Acceptance.cs" />
     <Compile Include="Dialogs\AskingJob.cs" />
