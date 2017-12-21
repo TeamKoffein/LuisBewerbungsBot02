@@ -17,12 +17,13 @@ namespace Bewerbungs.Bot.Luis
         public async Task LogAsync(IActivity activity)
         {
             Debug.WriteLine($"From:{activity.From.Id} - To:{activity.Recipient.Id} - Message:{activity.AsMessageActivity()?.Text}");
-            string path = "C:\\Logging\\" + activity.Conversation.Id + ".txt";
+            string path = "Logging/" + activity.Conversation.Id + ".txt";
+            string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
 
             if (!File.Exists(path))
             {
                 // Create a file to write to.
-                using (StreamWriter sw = File.CreateText(path))
+                using (StreamWriter sw = File.CreateText(destPath))
                 {
                 }
             }
@@ -30,7 +31,7 @@ namespace Bewerbungs.Bot.Luis
             try
             {
                 //Open the File
-                StreamWriter sw = new StreamWriter(path, true, Encoding.ASCII);
+                StreamWriter sw = new StreamWriter(destPath, true, Encoding.ASCII);
                 sw.WriteLine($"From:{activity.From.Id} - To:{activity.Recipient.Id} - Message:{activity.AsMessageActivity()?.Text}");
                 //close the file
                 sw.Close();

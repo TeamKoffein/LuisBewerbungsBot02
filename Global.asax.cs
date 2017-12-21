@@ -1,3 +1,6 @@
+using Autofac;
+using Bewerbungs.Bot.Luis;
+using Microsoft.Bot.Builder.Dialogs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +14,10 @@ namespace SimpleEchoBot
     {
         protected void Application_Start()
         {
+            Conversation.UpdateContainer(builder =>
+            {
+                builder.RegisterType<DebugActivityLogger>().AsImplementedInterfaces().InstancePerDependency();
+            });
             GlobalConfiguration.Configure(WebApiConfig.Register);
         }
     }
