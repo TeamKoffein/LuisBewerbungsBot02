@@ -19,6 +19,12 @@ namespace Bewerbungs.Bot.Luis
         private int accept = 0;
         private string intent;
         private string messagecontext;
+        private string textMessage;
+
+        public Acceptance(string textMessage)
+        {
+            this.textMessage = textMessage;
+        }
 
         public Acceptance( string intent, string messagecontext)
         {
@@ -29,7 +35,13 @@ namespace Bewerbungs.Bot.Luis
         //Rückfrage
         override public async Task StartAsync(IDialogContext context)
         {
-            await context.PostAsync($"Ist die Eingabe { messagecontext } mit Bezug auf { intent } korrekt?");
+            if (textMessage == null) { 
+                await context.PostAsync($"Ist die Eingabe { messagecontext } mit Bezug auf { intent } korrekt?");
+            }
+            else
+            {
+                await context.PostAsync(textMessage);
+            }
             context.Wait(this.MessageReceived);
         }
 
