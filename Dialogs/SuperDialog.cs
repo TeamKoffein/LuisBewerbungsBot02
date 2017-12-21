@@ -308,6 +308,8 @@ namespace Bewerbungs.Bot.Luis
                 var myKey = AnswerDatabase.IndexOf(LuisTopIntention);
                 Question[index: myKey] = true;
                 databaseConnector.updateDatabase(LuisTopIntention, applicantID, Text);
+                databaseConnector.updateDatabase("ChannelID", applicantID, context.Activity.ChannelId);
+                databaseConnector.updateDatabase("ConversationID", applicantID, context.Activity.Conversation.Id);
 
             }
             int index = Question.FindIndex(x => x == false);
