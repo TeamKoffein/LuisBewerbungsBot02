@@ -22,6 +22,7 @@ namespace Bewerbungs.Bot.Luis
     public class Upload : IDialog<object>
     {
         int applicantID;
+        List<string> lebenslaufnamen= new List<string>(){"lebenslauf","cv"};
         public Upload(int applicantID)
         {
             this.applicantID = applicantID;
@@ -36,7 +37,6 @@ namespace Bewerbungs.Bot.Luis
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
             var message = await argument;
-            int cvUpload = 0;
 
             if (message.Attachments != null && message.Attachments.Any())
             {
@@ -75,30 +75,30 @@ namespace Bewerbungs.Bot.Luis
                     var contentLenghtBytes = responseMessage.Content.Headers.ContentLength;
 
                     await context.PostAsync($"Attachment of {attachment.ContentType} type and size of {contentLenghtBytes} bytes received.");
-                    context.Call(new Acceptance("War dieses Dokument ein Lebenslauf?"), AfterUpload);
+                    
                 }
-
-                if (attachment.name.contains("Lebenslauf", "lebenslauf", "CV"))
+                string lowerName = (attachment.Name).ToLower();
+                foreach (string schleifenLebenslauf in lebenslaufnamen)
                 {
-                    cvUpload = 1;
+                    if (lowerName.Contains(schleifenLebenslauf))
+                    {
+                        context.Done(value: 1);
+                    }
                 }
-                else
-                {
-                    await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterAnswer, message, CancellationToken.None);
-                }
-
+                context.Call(new Acceptance("War dieses Dokument ein Lebenslauf?"), AfterUpload);
             }
             else
             {
                 await context.PostAsync("Es wurde kein Datei erkannt!");
+                context.Done(value: 2);
             }
 
-            context.Done(value: 0);
+            
         }
         private async Task AfterUpload(IDialogContext context, IAwaitable<object> result)
         {
             int accept = Convert.ToInt32(await result);
-            context.Done(accept);
+            context.Done(value: accept);
         }
     }
 }
