@@ -304,15 +304,33 @@ namespace Bewerbungs.Bot.Luis
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int accept = Convert.ToInt32(await result);
-            if (accept == 1)
-            {
-                var myKey = AnswerDatabase.IndexOf(LuisTopIntention);
-                Question[index: myKey] = true;
-                databaseConnector.updateDatabase(LuisTopIntention, applicantID, Text);
-                databaseConnector.updateDatabase("ChannelID", applicantID, context.Activity.ChannelId);
-                databaseConnector.updateDatabase("ConversationID", applicantID, context.Activity.Conversation.Id);
 
+            if (currentUpload)
+            {
+                if (accept == 1)
+                {
+                    int counter = 2;
+                    while (AnswerDatabase[counter] != "StartDate")
+                    {
+                        Question[counter] = true;
+                        counter++;
+                    }
+                }
             }
+            else
+            {
+
+                if (accept == 1)
+                {
+                    var myKey = AnswerDatabase.IndexOf(LuisTopIntention);
+                    Question[index: myKey] = true;
+                    databaseConnector.updateDatabase(LuisTopIntention, applicantID, Text);
+                    databaseConnector.updateDatabase("ChannelID", applicantID, context.Activity.ChannelId);
+                    databaseConnector.updateDatabase("ConversationID", applicantID, context.Activity.Conversation.Id);
+
+                }
+            }
+
             int index = Question.FindIndex(x => x == false);
             if (Question[2] == false)
             {
