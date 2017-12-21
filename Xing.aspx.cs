@@ -28,7 +28,7 @@ namespace ProactiveBot
         public static Boolean readXingData(String rawText, String responseName)
         {
             Boolean success;
-            /*
+            
             CloudStorageAccount csa = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
             CloudBlobClient blobClient = csa.CreateCloudBlobClient();
             var blobContainer = blobClient.GetContainerReference("xing");
@@ -37,7 +37,7 @@ namespace ProactiveBot
             {
                 newBlockBlob.UploadFromStream(ms);
             }
-            */
+            
             try
             {
                 string[] seperatorsToSplit = { ",", "{", "}" };
