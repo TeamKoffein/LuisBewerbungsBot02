@@ -42,11 +42,20 @@ namespace Bewerbungs.Bot.Luis
 
                     conn.Open();
                     SqlDataReader reader = command.ExecuteReader();
-                    reader.Read();
-                    DBEntry = reader.GetString(key);
-
+                    int i = 0;
+                    while (reader.Read())
+                    {
+                        if (reader.IsDBNull(i) == false)
+                        {
+                            DBEntry = DBEntry + reader.GetString(i);
+                        }
+                        else
+                        {
+                            DBEntry = DBEntry + "";
+                        }
+                        i++;
+                    }
                     reader.Close();
-
                 }
             }
             return DBEntry;
@@ -113,6 +122,29 @@ namespace Bewerbungs.Bot.Luis
                     command.CommandText = "UPDATE BewerberdatenLuis SET " + column + " = @entry WHERE BewerberID = @entryPoint";
                     command.Parameters.Add("@entry", SqlDbType.NVarChar).Value = databaseEntry;
                     command.Parameters.Add("@entryPoint", SqlDbType.NVarChar).Value = entryID;
+                    conn.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
+        public void updateNewsletter(int appID)
+        {
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            string entry = "true";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "UPDATE GespeicherteBewerber SET Newsletter = @entry WHERE BewerberID = @appID";
+                    command.Parameters.Add("@entry", SqlDbType.NVarChar).Value = entry;
+                    command.Parameters.Add("@appID", SqlDbType.Int).Value = appID;
                     conn.Open();
                     command.ExecuteNonQuery();
                 }

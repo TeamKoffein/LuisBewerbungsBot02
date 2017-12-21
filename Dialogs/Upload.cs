@@ -77,6 +77,8 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync($"Attachment of {attachment.ContentType} type and size of {contentLenghtBytes} bytes received.");
                     
                 }
+
+                //Es wird zunächst anhand des Dateinamens überprüft, ob es sich um einen Lebenslauf handelt.
                 string lowerName = (attachment.Name).ToLower();
                 foreach (string schleifenLebenslauf in lebenslaufnamen)
                 {
@@ -85,11 +87,13 @@ namespace Bewerbungs.Bot.Luis
                         context.Done(value: 1);
                     }
                 }
-                context.Call(new Acceptance("War dieses Dokument ein Lebenslauf?"), AfterUpload);
+                //Konnte dies anhand des Dateinamens nicht festgestellt werden, wird der User explizit danach gefragt, ob es sich
+                //um einen Lebenslauf handelt.
+                context.Call(new Acceptance("Handelt es sich bei der hochgeladenen Datei um einen Lebenslauf?"), AfterUpload);
             }
             else
             {
-                await context.PostAsync("Es wurde kein Datei erkannt!");
+                await context.PostAsync("Es wurde keine Datei erkannt!");
                 context.Done(value: 2);
             }
 
