@@ -486,27 +486,27 @@ namespace Bewerbungs.Bot.Luis
                 int key = FAQDatabase.IndexOf(result.TopScoringIntent.Intent.ToString());
                 if (key < 16)
                 {
-                    if (du != -1)
+                    if (key == 7)
                     {
-                        if (key == 6)
+                        if (Question[4] && Question[5] && Question[6])
                         {
-                            if (Question[4] && Question[5] && Question[6])
+                            string homeAdress = databaseConnector.getBingAdress(applicantID);
+                            var bingTrigger = new JsonFileBing
                             {
-                                string homeAdress = databaseConnector.getDBEntry(applicantID, "SELECT Adress, PostalCode, Place FROM BewerberdatenLuis WHERE BewerberID =@ID");
-                                var bingTrigger = new JsonFileBing
-                                {
-                                    RelatesTo = context.Activity.ToConversationReference(),
-                                    Origin = homeAdress,
-                                    Destination = "Am Butzweilerhofallee 2, Köln"
-                                };
-                                await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
-                            }
-                            else
-                            {
-                                await context.PostAsync("Wenn du mir deine Adresse, Postleitzahl und den Ort angibst, dann sag ich Dir wie lange du zu uns brauchst.");
-                            }
-
+                                RelatesTo = context.Activity.ToConversationReference(),
+                                Origin = homeAdress,
+                                Destination = "Am Butzweilerhofallee 2, Köln"
+                            };
+                            await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
                         }
+                        else
+                        {
+                            await context.PostAsync("Wenn du mir deine Adresse, Postleitzahl und den Ort angibst, dann sag ich Dir wie lange du zu uns brauchst.");
+                        }
+
+                    }
+                    if (du != -1)
+                    {    
                         await context.PostAsync(databaseConnector.getDBEntry(key, "SELECT * FROM FAQ WHERE FAQID =@ID", du));
                     }
                     else

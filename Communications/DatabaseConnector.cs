@@ -42,7 +42,37 @@ namespace Bewerbungs.Bot.Luis
 
                     conn.Open();
                     SqlDataReader reader = command.ExecuteReader();
-                    int i = 0;
+                    reader.Read();
+                    DBEntry = reader.GetString(key);
+                    reader.Close();
+                }
+            }
+            return DBEntry;
+        }
+
+        public String getBingAdress(int ID)
+        {
+            String DBEntry = "";
+            int i = 0;
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+
+                    //sqlCommand(Object conn, Object command, String commandText, ID, "@ID", SqlDbType.Int)
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT Adress, PostalCode FROM BewerberdatenLuis WHERE BewerberID =@ID";
+                    command.Parameters.Add("@ID", SqlDbType.Int).Value = ID;
+
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
                         if (reader.IsDBNull(i) == false)
@@ -60,7 +90,6 @@ namespace Bewerbungs.Bot.Luis
             }
             return DBEntry;
         }
-
         //Datenbankanbindung
         //Die Methode insertDatabaseEntry legt bei neuen Bewerbern einen neuen Datenbankeintrag an.
         //Es werden der @card_Name und der Name als Eintrag benötigt und die automatisch generierte BewerberID wird zurückgegeben.
