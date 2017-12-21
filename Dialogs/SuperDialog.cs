@@ -432,7 +432,7 @@ namespace Bewerbungs.Bot.Luis
                 safeNewsConfirmation = true;
                 await context.PostAsync("Wir freuen uns und informieren dich gerne darüber, was bei uns so alles abgeht!");
                 DataAssembler assemble = new DataAssembler();
-                assemble.sendData(applicantID);
+                assemble.updateNewsletter(applicantID);
             }
             context.Wait(this.MessageReceived);
         }
