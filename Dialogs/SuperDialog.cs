@@ -18,6 +18,8 @@ using System.Configuration;
 using System.Net.Http.Headers;
 using System.IO;
 using AdaptiveCards;
+using Newtonsoft.Json;
+using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace Bewerbungs.Bot.Luis
 {
@@ -59,6 +61,32 @@ namespace Bewerbungs.Bot.Luis
         //1= Du , 2 = Sie
         int du = -1;
         int applicantID = -1;
+
+        public class JsonFileBing
+        {
+            public string Origin { get; set; }
+            public string Destination { get; set; }
+            public ConversationReference RelatesTo { get; set; }
+        }
+
+        public static async Task AddMessageToQueueAsync(string message, string queueName)
+        {
+            // Retrieve storage account from connection string.
+            var storageAccount = CloudStorageAccount.Parse(SettingsUtils.GetAppSettings("AzureWebJobsStorage"));
+
+            // Create the queue client.
+            var queueClient = storageAccount.CreateCloudQueueClient();
+
+            // Retrieve a reference to a queue.
+            var queue = queueClient.GetQueueReference(queueName);
+
+            // Create the queue if it doesn't already exist.
+            await queue.CreateIfNotExistsAsync();
+
+            // Create a message and add it to the queue.
+            var queuemessage = new CloudQueueMessage(message);
+            await queue.AddMessageAsync(queuemessage);
+        }
 
         //StartAsync startet den Gesprächbeginn
         override public async Task StartAsync(IDialogContext Chat)
@@ -127,7 +155,7 @@ namespace Bewerbungs.Bot.Luis
         private async Task CheckInformation(IDialogContext context, IAwaitable<object> result)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
-            int applicantID = Convert.ToInt32(await result);
+            applicantID = Convert.ToInt32(await result);
             if (applicantID > 0)
             {
                 Question = databaseConnector.getMissing(applicantID);
@@ -428,6 +456,25 @@ namespace Bewerbungs.Bot.Luis
                 {
                     if (du != -1)
                     {
+                        if (key == 6)
+                        {
+                            if (Question[4] && Question[5] && Question[6])
+                            {
+                                string homeAdress = databaseConnector.getDBEntry(applicantID, "SELECT Adress, PostalCode, Place FROM BewerberdatenLuis WHERE BewerberID =@ID");
+                                var bingTrigger = new JsonFileBing
+                                {
+                                    RelatesTo = context.Activity.ToConversationReference(),
+                                    Origin = homeAdress,
+                                    Destination = "Am Butzweilerhofallee 2, Köln"
+                                };
+                                await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
+                            }
+                            else
+                            {
+                                await context.PostAsync("Wenn du mir deine Adresse, Postleitzahl und den Ort angibst, dann sag ich Dir wie lange du zu uns brauchst.");
+                            }
+
+                        }
                         await context.PostAsync(databaseConnector.getDBEntry(key, "SELECT * FROM FAQ WHERE FAQID =@ID", du));
                     }
                     else
