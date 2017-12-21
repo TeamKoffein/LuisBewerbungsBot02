@@ -46,6 +46,7 @@ namespace Bewerbungs.Bot.Luis
         string[] currentData;
         bool safeDataConfirmation;
         bool nameUpdateable;
+        bool currentUpload;
         int jobID = -1;
 
         int sendDataConfirmation = -2;
@@ -479,6 +480,7 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Upload")]
         public async Task Upload(IDialogContext context, LuisResult result)
         {
+            currentUpload = true;
             context.Call(new Upload(applicantID), AfterAnswer);
         }
 
