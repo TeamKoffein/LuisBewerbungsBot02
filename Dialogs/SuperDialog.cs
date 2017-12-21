@@ -407,15 +407,16 @@ namespace Bewerbungs.Bot.Luis
             int accept = Convert.ToInt32(await result);
             if (accept == 0)
             {
+                await context.PostAsync("Schade! Aber wir akzeptieren das mit gebrochenem Herzen. :(");
+            }
+            else
+            {
                 safeNewsConfirmation = true;
                 await context.PostAsync("Wir freuen uns und informieren dich gerne darüber, was bei uns so alles abgeht!");
                 DataAssembler assemble = new DataAssembler();
                 assemble.sendData(applicantID);
             }
-            else
-            {
-                await context.PostAsync("Schade! Aber wir akzeptieren das mit gebrochenem Herzen. :(");
-            }
+            context.Wait(this.MessageReceived);
         }
 
         [LuisIntent("Benefits")]
