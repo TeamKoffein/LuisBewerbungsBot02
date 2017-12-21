@@ -21,6 +21,11 @@ namespace Bewerbungs.Bot.Luis
     [Serializable]
     public class Upload : IDialog<object>
     {
+        int applicantID;
+        public Upload(int applicantID)
+        {
+            this.applicantID = applicantID;
+        }
         public async Task StartAsync(IDialogContext context)
         {
             await context.PostAsync("Bitte schicke uns jetzt die die Datei.");
