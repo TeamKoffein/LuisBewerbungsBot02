@@ -68,16 +68,42 @@ namespace Bewerbungs.Bot.Luis
                     //sqlCommand(Object conn, Object command, String commandText, ID, "@ID", SqlDbType.Int)
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
-                    command.CommandText = "SELECT Adress, PostalCode FROM BewerberdatenLuis WHERE BewerberID =@ID";
+                    command.CommandText = "SELECT Adress FROM BewerberdatenLuis WHERE BewerberID =@ID";
                     command.Parameters.Add("@ID", SqlDbType.Int).Value = ID;
 
                     conn.Open();
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
-                        if (reader.IsDBNull(i) == false)
+                        if (reader.IsDBNull(0) == false)
                         {
-                            DBEntry = DBEntry + reader.GetString(i);
+                            DBEntry = DBEntry + reader.GetString(0);
+                        }
+                        else
+                        {
+                            DBEntry = DBEntry + "";
+                        }
+                        i++;
+                    }
+                    reader.Close();
+                    conn.Close();
+                }
+                using (SqlCommand command = new SqlCommand())
+                {
+
+                    //sqlCommand(Object conn, Object command, String commandText, ID, "@ID", SqlDbType.Int)
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT PostalCode FROM BewerberdatenLuis WHERE BewerberID =@ID";
+                    command.Parameters.Add("@ID", SqlDbType.Int).Value = ID;
+
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        if (reader.IsDBNull(0) == false)
+                        {
+                            DBEntry = DBEntry + reader.GetString(0);
                         }
                         else
                         {

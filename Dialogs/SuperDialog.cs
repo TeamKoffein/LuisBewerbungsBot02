@@ -486,11 +486,17 @@ namespace Bewerbungs.Bot.Luis
                 int key = FAQDatabase.IndexOf(result.TopScoringIntent.Intent.ToString());
                 if (key < 16)
                 {
-                    if (key == 7)
+                    if (key == 6)
                     {
-                        if (Question[4] && Question[5] && Question[6])
-                        {
+                       // if (Question[4] && Question[5] && Question[6])
+                        //{
                             string homeAdress = databaseConnector.getBingAdress(applicantID);
+                        if (!String.IsNullOrEmpty(homeAdress))
+                        {
+                            await context.PostAsync("Adresse empty");
+                        }
+                        else
+                        {
                             var bingTrigger = new JsonFileBing
                             {
                                 RelatesTo = context.Activity.ToConversationReference(),
@@ -499,10 +505,11 @@ namespace Bewerbungs.Bot.Luis
                             };
                             await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
                         }
-                        else
-                        {
-                            await context.PostAsync("Wenn du mir deine Adresse, Postleitzahl und den Ort angibst, dann sag ich Dir wie lange du zu uns brauchst.");
-                        }
+                      //  }
+                     //   else
+                      //  {
+                      //      await context.PostAsync("Wenn du mir deine Adresse, Postleitzahl und den Ort angibst, dann sag ich Dir wie lange du zu uns brauchst.");
+                      //  }
 
                     }
                     if (du != -1)
