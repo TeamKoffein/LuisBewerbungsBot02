@@ -249,7 +249,7 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             //Neue Methode hinzugefügt
-            await FindNextAnswer(context, accept);
+            await FindNextAnswer(context);
         }
 
         [LuisIntent("Job")]
@@ -316,7 +316,7 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             //Neue Methode hinzugefügt
-            await FindNextAnswer(context, accept);
+            await FindNextAnswer(context);
         }
 
         /*Wenn der Bewerber angegeben hat auf welche Stelle er sich bewerben möchte, wird dies hinterlegt und die dementsprechende Fachfrage zur der Position gestellt
@@ -331,7 +331,7 @@ namespace Bewerbungs.Bot.Luis
             string date = databaseConnector.getJobDate(accept);
             await context.PostAsync("Zu diesem Termin stellen wir ein: " + date);
             //Neue Methode hinzugefügt
-            await FindNextAnswer(context, 1);
+            await FindNextAnswer(context);
         }
 
         public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
@@ -440,6 +440,7 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Acceptance")]
         public async Task Acceptance(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
+            //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
             var message = await activity;
             Text = message.Text;
             await FindAcceptance(context, true);
@@ -467,14 +468,15 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Negative")]
         public async Task Negative(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
+            //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
             var message = await activity;
             Text = message.Text;
             await FindAcceptance(context, false);
             context.Wait(this.MessageReceived);
         }
 
-        //Methode zum finden der Nächsten Frage
-        public async Task FindNextAnswer(IDialogContext context, int accept)
+        //Methode zum finden der Nächsten Frage. Diese Methode wurde ausgelagert, da sie sich sonst gedoppelt hat.
+        public async Task FindNextAnswer(IDialogContext context)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int index = Question.FindIndex(x => x == false);
@@ -497,10 +499,6 @@ namespace Bewerbungs.Bot.Luis
             }
             else
             {
-                if (accept == 0)
-                {
-                    index = 2;
-                }
                 if (du == 1)
                 {
                     if (index == 1)
@@ -529,7 +527,7 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
         }
-        //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung
+        //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung, sowie Abfrage bei allen anderen Szenarien
         public async Task FindAcceptance(IDialogContext context, bool result)
         {
             int index = Question.FindIndex(x => x == false);
@@ -605,11 +603,12 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync("Deine Daten werden nicht übermittelt. Möchtest du deine Daten trotzdem dauerhaft speichern?");
                 }
             }
+            //Neu Hinzugefügte Abfrage, welche bei einer Seperaten Liste checkt, ob man diese Frage mit Ja oder nein beantworten kann.
             else if(index != -1)
             {
                 Question[index] = true;
                 QuestionsYesNo[index] = true;
-                await FindNextAnswer(context, 1);
+                await FindNextAnswer(context);
             }
             else if (saveDataLongterm == -1)
             {
@@ -633,6 +632,11 @@ namespace Bewerbungs.Bot.Luis
                     context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
 
                 }
+            }
+            //Hinzufügen eines nicht abgehandelten falls, dass eine Frage gestellt wird.
+            else
+            {
+                await FindNextAnswer(context);
             }
         }
     }
