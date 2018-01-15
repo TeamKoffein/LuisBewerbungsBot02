@@ -44,14 +44,78 @@ namespace Bewerbungs.Bot.Luis
                     SqlDataReader reader = command.ExecuteReader();
                     reader.Read();
                     DBEntry = reader.GetString(key);
-
                     reader.Close();
-
                 }
             }
             return DBEntry;
         }
 
+        public String getBingAdress(int ID)
+        {
+            String DBEntry = "";
+            int i = 0;
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+
+                    //sqlCommand(Object conn, Object command, String commandText, ID, "@ID", SqlDbType.Int)
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT Adress FROM BewerberdatenLuis WHERE BewerberID =@ID";
+                    command.Parameters.Add("@ID", SqlDbType.Int).Value = ID;
+
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        if (reader.IsDBNull(0) == false)
+                        {
+                            DBEntry = DBEntry + reader.GetString(0);
+                        }
+                        else
+                        {
+                            DBEntry = DBEntry + "";
+                        }
+                        i++;
+                    }
+                    reader.Close();
+                    conn.Close();
+                }
+                using (SqlCommand command = new SqlCommand())
+                {
+
+                    //sqlCommand(Object conn, Object command, String commandText, ID, "@ID", SqlDbType.Int)
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT PostalCode FROM BewerberdatenLuis WHERE BewerberID =@ID";
+                    command.Parameters.Add("@ID", SqlDbType.Int).Value = ID;
+
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        if (reader.IsDBNull(0) == false)
+                        {
+                            DBEntry = DBEntry + reader.GetString(0);
+                        }
+                        else
+                        {
+                            DBEntry = DBEntry + "";
+                        }
+                        i++;
+                    }
+                    reader.Close();
+                }
+            }
+            return DBEntry;
+        }
         //Datenbankanbindung
         //Die Methode insertDatabaseEntry legt bei neuen Bewerbern einen neuen Datenbankeintrag an.
         //Es werden der @card_Name und der Name als Eintrag benötigt und die automatisch generierte BewerberID wird zurückgegeben.
@@ -119,6 +183,29 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+        public void updateNewsletter(int appID)
+        {
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            string entry = "true";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "UPDATE GespeicherteBewerber SET Newsletter = @entry WHERE BewerberID = @appID";
+                    command.Parameters.Add("@entry", SqlDbType.NVarChar).Value = entry;
+                    command.Parameters.Add("@appID", SqlDbType.Int).Value = appID;
+                    conn.Open();
+                    command.ExecuteNonQuery();
+                }
+            }
+        }
+
         //Die Methode getData sammelt alle Einträge über den Bewerber mit der übergebenen @bewerberID
         //Die gesammelten Daten werden als Array an den DataAssembler weitergegeben.
         public string[] getData(int bewerberID)
@@ -140,7 +227,7 @@ namespace Bewerbungs.Bot.Luis
                     //sqlCommand(Object conn, Object command, String commandText)
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
-                    command.CommandText = "SELECT * FROM BewerberdatenLuis";
+                    command.CommandText = "SELECT BewerberID, Job, Name, Adress, PostalCode, Place, PhoneNumber, Email, Birthday, Career, EducationalBackground, ProgrammingLanguage, SocialEngagement, Language, PrivateProjects, StartDate FROM BewerberdatenLuis";
 
                     conn.Open();
                     SqlDataReader reader = command.ExecuteReader(CommandBehavior.SchemaOnly);
@@ -163,16 +250,49 @@ namespace Bewerbungs.Bot.Luis
                     //sqlCommand(Object conn, Object command, String commandText, int id, String parametersAdd1, Object parametersAdd2)
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
-                    command.CommandText = "SELECT * FROM BewerberdatenLuis WHERE BewerberID =@aktuellerBewerber";
+                    command.CommandText = "SELECT BewerberID, Job, Name, Adress, PostalCode, Place, PhoneNumber, Email, Birthday, Career, EducationalBackground, ProgrammingLanguage, SocialEngagement, Language, PrivateProjects, StartDate FROM BewerberdatenLuis WHERE BewerberID =@aktuellerBewerber";
                     command.Parameters.Add("@aktuellerBewerber", SqlDbType.Int).Value = bewerberID;
 
                     conn.Open();
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
-                        for (int i = 1; i < active.Length - 1; i++)
+                        for (int i = 2; i < active.Length - 1; i++)
                         {
-                            active[i] = active[i] + reader.GetString(i);
+                            if (reader.IsDBNull(i) == false)
+                            {
+                                active[i] = active[i] + reader.GetString(i);
+                            }
+                            else
+                            {
+                                active[i] = active[i] + "";
+                            }
+                        }
+                    }
+                    reader.Close();
+                    conn.Close();
+                }
+
+                using (SqlCommand command = new SqlCommand())
+                {
+
+                    //sqlCommand(Object conn, Object command, String commandText, int id, String parametersAdd1, Object parametersAdd2)
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT Job FROM BewerberdatenLuis WHERE BewerberID =@aktuellerBewerber";
+                    command.Parameters.Add("@aktuellerBewerber", SqlDbType.Int).Value = bewerberID;
+
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        if (reader.IsDBNull(0) == false)
+                        {
+                            active[1] = reader.GetInt32(0).ToString();
+                        }
+                        else
+                        {
+                            active[1] = "";
                         }
                     }
                     reader.Close();
@@ -190,16 +310,30 @@ namespace Bewerbungs.Bot.Luis
                     command.Parameters.Add("@paramStellenID", SqlDbType.VarChar).Value = active[1];
 
                     conn.Open();
-                    Int32 count = (Int32)command.ExecuteScalar();
-                    active[0] = "Anzahl der Bewerber auf diese Stelle: " + count.ToString();
+                    if (active[1] == "")
+                    {
+                        active[0] = "";
+                    }
+                    else
+                    {
+                        Int32 count = (Int32)command.ExecuteScalar();
+                        active[0] = "Anzahl der Bewerber auf diese Stelle: " + count.ToString();
+                    }
                     conn.Close();
                 }
 
                 //Erkennung der beworbenen Stelle, Bezeichnungsauslesung aus @Stellen.dbo
                 using (SqlCommand command = new SqlCommand())
                 {
-                    int jobID = Int32.Parse(active[1]);
-
+                    int jobID;
+                    if (active[1] == "")
+                    {
+                        jobID = 0;
+                    }
+                    else
+                    {
+                        jobID = Int32.Parse(active[1]);
+                    }
                     //sqlCommand(conn, command, "SELECT Stellenname FROM Stellen WHERE StellenID = @paramStellenID", jobID, "@paramStellenID", SqlDbType.Int);
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
@@ -210,7 +344,14 @@ namespace Bewerbungs.Bot.Luis
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
-                        active[1] = "Beworbene Stelle: " + reader.GetString(0);
+                        if (reader.IsDBNull(0) == false)
+                        {
+                            active[1] = "Beworbene Stelle: " + reader.GetString(0);
+                        }
+                        else
+                        {
+                            active[1] = "Beworbene Stelle: keine Angabe";
+                        }
                     }
                     reader.Close();
                     conn.Close();
@@ -218,7 +359,7 @@ namespace Bewerbungs.Bot.Luis
             }
             return active;
         }
-        
+
         //Rückgabe aller hinterlegten, offenen Stellen aus der DB
         public String[] getStellenDBEntry()
         {
@@ -293,7 +434,7 @@ namespace Bewerbungs.Bot.Luis
 
                     SqlDataReader reader = command.ExecuteReader();
                     int i = 1;
-                    DBEntry = new String[count+1];
+                    DBEntry = new String[count + 1];
                     while (reader.Read())
                     {
                         DBEntry[i] = reader.GetString(anrede);
@@ -309,7 +450,7 @@ namespace Bewerbungs.Bot.Luis
         public String getTechQuestion(int jobID)
         {
 
-            String DBEntry ="";
+            String DBEntry = "";
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = "chatbotlcd2017db.database.windows.net";
             builder.UserID = "TeamKoffein";
@@ -322,6 +463,36 @@ namespace Bewerbungs.Bot.Luis
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
                     command.CommandText = "SELECT Frage FROM Fachfragen WHERE FragenID = @jobID";
+                    command.Parameters.Add("@jobID", SqlDbType.Int).Value = jobID;
+                    conn.Open();
+                    SqlDataReader reader = command.ExecuteReader();
+                    while (reader.Read())
+                    {
+                        DBEntry = reader.GetString(0);
+                    }
+                    reader.Close();
+                    conn.Close();
+                }
+                return DBEntry;
+            }
+        }
+
+        public String getJobDate(int jobID)
+        {
+
+            String DBEntry = "";
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT Einstellungsdatum FROM Stellen WHERE StellenID = @jobID";
                     command.Parameters.Add("@jobID", SqlDbType.Int).Value = jobID;
                     conn.Open();
                     SqlDataReader reader = command.ExecuteReader();
@@ -380,7 +551,14 @@ namespace Bewerbungs.Bot.Luis
                     SqlDataReader reader = command.ExecuteReader();
                     while (reader.Read())
                     {
-                        adress = reader.GetString(0);
+                        if (reader.IsDBNull(0) == false)
+                        {
+                            adress = reader.GetString(0);
+                        }
+                        else
+                        {
+                            adress = "keine Adresse hinterlegt";
+                        }
                     }
                     reader.Close();
                     conn.Close();
@@ -413,10 +591,10 @@ namespace Bewerbungs.Bot.Luis
                 return applicantID;
             }
         }
-        public List<bool> getMissing(int applicantID)
+
+        public Int32 getApplicantIDMail(string checkName, string checkMail)
         {
-            List<bool> Question = new List<bool>();
-            bool field;
+            int applicantID = 0;
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = "chatbotlcd2017db.database.windows.net";
             builder.UserID = "TeamKoffein";
@@ -428,8 +606,34 @@ namespace Bewerbungs.Bot.Luis
                 {
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
-                    //                    command.CommandText = "SELECT Job, Name, Adress, PostalCode, Place, PhoneNumber, Email, Birthday, Career, EducationalBackground, ProgrammingLanguage, SocialEngagement, Language, PrivateProjects, StartDate FROM BewerberdatenLuis WHERE BewerberID = @appID";
-                    command.CommandText = "SELECT * FROM BewerberdatenLuis WHERE BewerberID = @appID";
+                    command.CommandText = "SELECT BewerberID FROM BewerberdatenLuis WHERE Name = @checkName AND Email = @checkMail";
+                    command.Parameters.Add("@checkName", SqlDbType.NVarChar).Value = checkName;
+                    command.Parameters.Add("@checkMail", SqlDbType.NVarChar).Value = checkMail;
+                    conn.Open();
+                    applicantID = (Int32)command.ExecuteScalar();
+                    conn.Close();
+                }
+                return applicantID;
+            }
+        }
+        public List<bool> getMissing(int applicantID)
+        {
+            List<bool> Question = new List<bool>();
+            bool field;
+            Question.Add(true);
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "SELECT Job, Name, Adress, PostalCode, Place, PhoneNumber, Email, Birthday, Career, EducationalBackground, ProgrammingLanguage, SocialEngagement, Language, PrivateProjects, StartDate FROM BewerberdatenLuis WHERE BewerberID = @appID";
+                    //command.CommandText = "SELECT * FROM BewerberdatenLuis WHERE BewerberID = @appID";
                     command.Parameters.Add("@appID", SqlDbType.Int).Value = applicantID;
                     conn.Open();
                     SqlDataReader reader = command.ExecuteReader();
@@ -448,5 +652,37 @@ namespace Bewerbungs.Bot.Luis
             }
             return Question;
         }
+
+        public void transferData(int appID)
+        {
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
+            builder.DataSource = "chatbotlcd2017db.database.windows.net";
+            builder.UserID = "TeamKoffein";
+            builder.Password = "LCD2017!";
+            builder.InitialCatalog = "ChatBotLCD";
+            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            {
+                using (SqlCommand command = new SqlCommand())
+                {
+                    command.Connection = conn;
+                    command.CommandType = CommandType.Text;
+                    command.CommandText = "IF @@ROWCOUNT = 0" +
+                        " INSERT INTO GespeicherteBewerber (BewerberID, Job, Name, Adress, PostalCode, Place, PhoneNumber, Email, Birthday, Career, EducationalBackground, ProgrammingLanguage, SocialEngagement, Language, PrivateProjects)" +
+                        " SELECT BewerberID, Job, Name, Adress, PostalCode, Place, PhoneNumber, Email, Birthday, Career, EducationalBackground, ProgrammingLanguage, SocialEngagement, Language, PrivateProjects" +
+                        " FROM BewerberdatenLuis" +
+                        " WHERE BewerberID = @appID" +
+                        " ELSE" +
+                        " UPDATE GespeicherteBewerber" +
+                        " SET BewerberID = t2.BewerberID, Job = t2.Job, Name = t2.Name, Adress = t2.Adress, PostalCode = t2.PostalCode, Place = t2.Place, PhoneNumber = t2.PhoneNumber, Email = t2.Email, Birthday = t2.Birthday, Career = t2.Career, EducationalBackground = t2.EducationalBackground, ProgrammingLanguage = t2.ProgrammingLanguage, SocialEngagement = t2.SocialEngagement, Language = t2.Language, PrivateProjects = t2.PrivateProjects" +
+                        " FROM BewerberdatenLuis t2" +
+                        " WHERE t2.BewerberID = @appID";
+                    command.Parameters.Add("@appID", SqlDbType.Int).Value = appID;
+                    conn.Open();
+                    command.ExecuteNonQuery();
+                    conn.Close();
+                }
+            }
+        }
     }
 }
+

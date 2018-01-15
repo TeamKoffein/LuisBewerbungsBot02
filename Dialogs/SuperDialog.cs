@@ -18,6 +18,8 @@ using System.Configuration;
 using System.Net.Http.Headers;
 using System.IO;
 using AdaptiveCards;
+using Newtonsoft.Json;
+using Microsoft.WindowsAzure.Storage.Queue;
 
 namespace Bewerbungs.Bot.Luis
 {
@@ -41,18 +43,54 @@ namespace Bewerbungs.Bot.Luis
             "StartDate"};
         List<bool> Question = new List<bool>() {true, false, false, false, false, false, false, false, false, false, false,
             false, false, false, false, false};
+        List<bool> QuestionsYesNo = new List<bool>() {true, true, true, true, true, true, true, true, true, true, true,
+            false, false, false, false, true};
         string[] askingPersonal;
         string[] askingFormal;
+        string[] currentData;
         bool safeDataConfirmation;
+        bool safeNewsConfirmation;
+        bool nameUpdateable;
+        bool currentUpload;
         int jobID = -1;
-
-        //1= Du , 2 = Sie
-        int du = -1; 
-        int applicantID = -1;
+        
+        int sendDataConfirmation = -2;
+        int saveDataLongterm = -2;
+        int correctData = -2;
 
         //knowledge dient zur Erkennung der Gesprächsfortsetzung
         // -1= Wert nicht gesetzt; 0= neuer Bewerber; 1= gespräch wird fortgesetzt
         int knowledge = -1;
+
+        //1= Du , 2 = Sie
+        int du = -1;
+        int applicantID = -1;
+
+        public class JsonFileBing
+        {
+            public string Origin { get; set; }
+            public string Destination { get; set; }
+            public ConversationReference RelatesTo { get; set; }
+        }
+
+        public static async Task AddMessageToQueueAsync(string message, string queueName)
+        {
+            // Retrieve storage account from connection string.
+            var storageAccount = CloudStorageAccount.Parse(SettingsUtils.GetAppSettings("AzureWebJobsStorage"));
+
+            // Create the queue client.
+            var queueClient = storageAccount.CreateCloudQueueClient();
+
+            // Retrieve a reference to a queue.
+            var queue = queueClient.GetQueueReference(queueName);
+
+            // Create the queue if it doesn't already exist.
+            await queue.CreateIfNotExistsAsync();
+
+            // Create a message and add it to the queue.
+            var queuemessage = new CloudQueueMessage(message);
+            await queue.AddMessageAsync(queuemessage);
+        }
 
         //StartAsync startet den Gesprächbeginn
         override public async Task StartAsync(IDialogContext Chat)
@@ -60,6 +98,7 @@ namespace Bewerbungs.Bot.Luis
             DatabaseConnector databaseConnector = new DatabaseConnector();
             //Initialisierung der Grundvariablen
             safeDataConfirmation = false;
+            safeNewsConfirmation = false;
 
 
             //Speicherung der Fragen für Du und Sie
@@ -67,7 +106,9 @@ namespace Bewerbungs.Bot.Luis
             askingFormal = databaseConnector.getFAQQuestions(2);
 
             //Willkommenstext und Datenschutzerklaerung beim Starten des Bots
-            await Chat.PostAsync("Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst. Damit du dich erfolgreich bewerben kannst, musst du folgende Datenschutzerklaerung lesen und akzeptieren, sonst koennen wir leider mit der Bewerbung nicht fortfahren: Im Rahmen dieses Gespraechs mit dem Bot werden personenbezogene Daten über dich erhoben, jedoch nur zu Zwecken der Bewerbung erhoben, gespeichert, verarbeitet und genutzt, die in Zusammenhang mit deinem Interesse an einer Stelle bei uns steht. Es erfolgt keine Weitergabe an Dritte. Du kannst deine Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen und wir löschen dann deine Daten umgehend. Bitte schreibe uns in diesem Falll unter Angabe deines vollständigen Namens eine Email. Bitte bestätige, dass du die Erklaerung gelesen hast und sie akzeptierst, indem du folgendes abschreibst: 'Ja, ich bestaetige.'");
+            await Chat.PostAsync("Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst.");
+            await Chat.PostAsync("Damit du dich erfolgreich bewerben kannst, musst du die Datenschutzerklaerung lesen und akzeptieren, sonst koennen wir leider mit der Bewerbung nicht fortfahren.");
+            await Chat.PostAsync("Bitte bestätige danach hier im Bot, dass du die Erklaerung unter http://luisbewerbungsbot02.azurewebsites.net/PrivacyPolicy.html gelesen hast und sie akzeptierst.");
 
             Chat.Wait(this.MessageReceived);
         }
@@ -110,10 +151,8 @@ namespace Bewerbungs.Bot.Luis
                 else
                 {
                     await context.PostAsync("Name gefunden. " + message.Text);
-                    string adress = databaseConnector.getAdress(message.Text);
-                    await context.PostAsync("Ist diese Adresse korrekt? Adresse: " + adress);
-                    applicantID = databaseConnector.getApplicantID(message.Text, adress);
-                    await context.Forward(new Acceptance("Adress", message.Text), CheckInformation, message, CancellationToken.None);
+
+                    context.Call(new CheckEmail(message.Text), CheckInformation);
                 }
             }
         }
@@ -121,36 +160,61 @@ namespace Bewerbungs.Bot.Luis
         private async Task CheckInformation(IDialogContext context, IAwaitable<object> result)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
-            int accept = Convert.ToInt32(await result);
-            if (accept == 1)
+            applicantID = Convert.ToInt32(await result);
+            if (applicantID > 0)
             {
                 Question = databaseConnector.getMissing(applicantID);
                 int index = Question.FindIndex(x => x == false);
 
-                if (du == 1)
+                if (index == -1)
                 {
-                    if (index == 1)
+                    await context.PostAsync("Du hast schon alle Angaben gemacht!");
+                    currentData = databaseConnector.getData(applicantID);
+                    string data = "";
+                    for (int i = 0; i < currentData.Length; i++)
                     {
-                        //Frage nach beworbene Stelle mit Du
-                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                        data = data + "" + "\n\n" + currentData[i];
                     }
-                    else
-                    {
-                        //Frage nach beworbene Stelle mit Sie
-                        await context.PostAsync(askingPersonal[index]);
-                        context.Wait(this.MessageReceived);
-                    }
+                    await context.PostAsync("Diese Angaben sind hinterlegt: " + Environment.NewLine + data);
+
+                    correctData = -1;
+                    await context.PostAsync("Sind diese Angaben korrekt?");
                 }
                 else
                 {
-                    if (index == 1)
+                    currentData = databaseConnector.getData(applicantID);
+                    string data = "";
+                    for (int i = 0; i < currentData.Length; i++)
                     {
-                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                        data = data + "" + "\n\n" + currentData[i];
+                    }
+                    await context.PostAsync("Diese Angaben sind hinterlegt: " + Environment.NewLine + data);
+
+                    if (du == 1)
+                    {
+                        if (index == 1)
+                        {
+                            //Frage nach beworbene Stelle mit Du
+                            context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                        }
+                        else
+                        {
+                            //Frage nach beworbene Stelle mit Sie
+                            await context.PostAsync(askingPersonal[index]);
+                            context.Wait(this.MessageReceived);
+                        }
                     }
                     else
                     {
-                        await context.PostAsync(askingFormal[index]);
-                        context.Wait(this.MessageReceived);
+                        if (index == 1)
+                        {
+                            context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                        }
+                        else
+                        {
+                            await context.PostAsync(askingFormal[index]);
+                            context.Wait(this.MessageReceived);
+                        }
                     }
                 }
 
@@ -158,10 +222,9 @@ namespace Bewerbungs.Bot.Luis
             else
             {
                 knowledge = 0;
-                await context.PostAsync("Neuer Bewerber. Noch einmal den Namen angeben.");
+                await context.PostAsync("Neuer Bewerber. Name noch einmal angeben.");
                 context.Wait(this.MessageReceived);
             }
-
         }
 
         /* AfterName speichert den Namen des Bewerber ab und stellt die Frage nach der Stelle
@@ -170,46 +233,23 @@ namespace Bewerbungs.Bot.Luis
         private async Task AfterName(IDialogContext context, IAwaitable<object> result)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
-            int accept =Convert.ToInt32(await result);
+            int accept = Convert.ToInt32(await result);
             if (accept == 1)
             {
+                if (nameUpdateable)
+                {
+                    databaseConnector.updateDatabase("Name", applicantID, Text);
+                }
                 //Namenspeicherung
-                var myKey = AnswerDatabase.IndexOf("Name");
-                Question[index: myKey] = true;
-                applicantID = databaseConnector.insertDatabaseEntry("Name", Text);
-            }
-            //Nächste, nicht-beantwortete Frage
-            int index = Question.FindIndex(x => x == false);
-            if (accept == 0)
-            {
-                index = 2;
-            }
-            if (du == 1)
-            {
-                if (index == 1)
-                {
-                    //Frage nach beworbene Stelle mit Du
-                     context.Call(new AskingJob(askingFormal[index]), AfterStellen);
-                }
                 else
                 {
-                    //Frage nach beworbene Stelle mit Sie
-                    await context.PostAsync(askingPersonal[index]);
-                    context.Wait(this.MessageReceived);
+                    var myKey = AnswerDatabase.IndexOf("Name");
+                    Question[index: myKey] = true;
+                    applicantID = databaseConnector.insertDatabaseEntry("Name", Text);
                 }
             }
-            else
-            {
-                if (index == 1)
-                {
-                    context.Call(new AskingJob(askingFormal[index]), AfterStellen);
-                }
-                else
-                {
-                    await context.PostAsync(askingFormal[index]);
-                    context.Wait(this.MessageReceived);
-                }
-            }
+            //Neue Methode hinzugefügt
+            await FindNextAnswer(context);
         }
 
         [LuisIntent("Job")]
@@ -244,62 +284,43 @@ namespace Bewerbungs.Bot.Luis
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int accept = Convert.ToInt32(await result);
-            //ToDo Sicherheit, falls Name noch nicht gefragt wurde, ÜBERPRÜFEN!!!
-            if (accept == 1)
-            {
-                var myKey = AnswerDatabase.IndexOf(LuisTopIntention);
-                Question[index: myKey] = true;
-                databaseConnector.updateDatabase(LuisTopIntention, applicantID, Text);
-               
-            }
-            int index = Question.FindIndex(x => x == false);
-            if (Question[2] == false)
-            {
-                index = 2;
-            }
-            //Fragendialogabschluss wird erkannt, wenn die Liste @questions den Wert -1 zurückgibt.
-            if (index == -1)
-            {
-                DataAssembler assemble = new DataAssembler();
-                assemble.sendData(applicantID);
-                await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
 
-                await Task.Delay(10000);
-                await context.PostAsync("Der Recruiter hat deine Daten eingesehen und wird dich demnächst zu einem Gespräch einladen");
+            if (currentUpload)
+            {
+                if (accept == 1)
+                {
+                    int counter = 2;
+                    while (AnswerDatabase[counter] != "StartDate")
+                    {
+                        Question[counter] = true;
+                        counter++;
+                    }
+                }
             }
             else
             {
-                if (du == 1)
+
+                if (accept == 1)
                 {
-                    if (index == 1)
+                    var myKey = AnswerDatabase.IndexOf(LuisTopIntention);
+                    int indexYesNo = QuestionsYesNo.FindIndex(x => x == false);
+                    Question[index: myKey] = true;
+                    if (myKey == indexYesNo)
                     {
-                        context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
+                        QuestionsYesNo[index: indexYesNo] = true;
                     }
-                    else
-                    {
-                        await context.PostAsync(askingPersonal[index]);
-                        context.Wait(this.MessageReceived);
-                    }
-                }
-                else
-                {
-                    if (index == 1)
-                    {
-                        context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
-                    }
-                    else
-                    {
-                        await context.PostAsync(askingFormal[index]);
-                        context.Wait(this.MessageReceived);
-                    }
+                    databaseConnector.updateDatabase(LuisTopIntention, applicantID, Text);
+                    databaseConnector.updateDatabase("ChannelID", applicantID, context.Activity.ChannelId);
+                    databaseConnector.updateDatabase("ConversationID", applicantID, context.Activity.Conversation.Id);
                     
                 }
             }
-            
+            //Neue Methode hinzugefügt
+            await FindNextAnswer(context);
         }
 
-        /*Wenn der Bewerber angegeben hat auf welche Stelle er sich bewerben möchte, wird dies hinterlegt und die dementsprechende Fachfrage zur der Psoition gestellt
-         */ 
+        /*Wenn der Bewerber angegeben hat auf welche Stelle er sich bewerben möchte, wird dies hinterlegt und die dementsprechende Fachfrage zur der Position gestellt
+         */
         public async Task AfterStellen(IDialogContext context, IAwaitable<object> result)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
@@ -307,21 +328,28 @@ namespace Bewerbungs.Bot.Luis
             Question[index: 1] = true;
             databaseConnector.updateDatabase("Job", applicantID, Convert.ToString(accept));
 
-            string technicalQuestion = databaseConnector.getTechQuestion(accept);
-            await context.PostAsync(technicalQuestion);
+            string date = databaseConnector.getJobDate(accept);
+            await context.PostAsync("Zu diesem Termin stellen wir ein: " + date);
+            //Neue Methode hinzugefügt
+            await FindNextAnswer(context);
+        }
 
-            int index = Question.FindIndex(x => x == false);
-            if (du == 1)
+        public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
+        {
+            int accept = Convert.ToInt32(await result);
+            if (accept == 0)
             {
-                await context.PostAsync(askingPersonal[index]);
+                await context.PostAsync("Schade! Aber wir akzeptieren das mit gebrochenem Herzen. :(");
             }
             else
             {
-                await context.PostAsync(askingFormal[index]);
+                safeNewsConfirmation = true;
+                await context.PostAsync("Wir freuen uns und informieren dich gerne darüber, was bei uns so alles abgeht!");
+                DatabaseConnector databaseConnector = new DatabaseConnector();
+                databaseConnector.updateNewsletter(applicantID);
             }
             context.Wait(this.MessageReceived);
         }
-
 
         [LuisIntent("Benefits")]
         [LuisIntent("Client")]
@@ -349,8 +377,34 @@ namespace Bewerbungs.Bot.Luis
                 int key = FAQDatabase.IndexOf(result.TopScoringIntent.Intent.ToString());
                 if (key < 16)
                 {
-                    if (du != -1)
+                    if (key == 6)
                     {
+                       // if (Question[4] && Question[5] && Question[6])
+                        //{
+                            string homeAdress = databaseConnector.getBingAdress(applicantID);
+                        if (!String.IsNullOrEmpty(homeAdress))
+                        {
+                            await context.PostAsync("Adresse empty");
+                        }
+                        else
+                        {
+                            var bingTrigger = new JsonFileBing
+                            {
+                                RelatesTo = context.Activity.ToConversationReference(),
+                                Origin = homeAdress,
+                                Destination = "Am Butzweilerhofallee 2, Köln"
+                            };
+                            await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
+                        }
+                      //  }
+                     //   else
+                      //  {
+                      //      await context.PostAsync("Wenn du mir deine Adresse, Postleitzahl und den Ort angibst, dann sag ich Dir wie lange du zu uns brauchst.");
+                      //  }
+
+                    }
+                    if (du != -1)
+                    {    
                         await context.PostAsync(databaseConnector.getDBEntry(key, "SELECT * FROM FAQ WHERE FAQID =@ID", du));
                     }
                     else
@@ -360,7 +414,7 @@ namespace Bewerbungs.Bot.Luis
                 }
                 else
                 {
-                    if (jobID < -1)
+                    if (jobID > -1)
                     {
                         await context.PostAsync(databaseConnector.getDBEntry(jobID, "SELECT Profil FROM Stellen WHERE StellenID =@ID"));
                     }
@@ -384,8 +438,11 @@ namespace Bewerbungs.Bot.Luis
 
         //Akzeptanz durch den Bewerber
         [LuisIntent("Acceptance")]
-        public async Task Acceptance(IDialogContext context, LuisResult result)
+        public async Task Acceptance(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
+            //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
+            var message = await activity;
+            Text = message.Text;
             await FindAcceptance(context, true);
             context.Wait(this.MessageReceived);
         }
@@ -402,22 +459,79 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Upload")]
         public async Task Upload(IDialogContext context, LuisResult result)
         {
-            context.Call(new Upload(), AfterAnswer);
+            currentUpload = true;
+            context.Call(new Upload(applicantID), AfterAnswer);
         }
-        
+
 
         //Verneinung durch den Bewerber
         [LuisIntent("Negative")]
-        public async Task Negative(IDialogContext context, LuisResult result)
+        public async Task Negative(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
+            //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
+            var message = await activity;
+            Text = message.Text;
             await FindAcceptance(context, false);
             context.Wait(this.MessageReceived);
         }
 
-        //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung
+        //Methode zum finden der Nächsten Frage. Diese Methode wurde ausgelagert, da sie sich sonst gedoppelt hat.
+        public async Task FindNextAnswer(IDialogContext context)
+        {
+            DatabaseConnector databaseConnector = new DatabaseConnector();
+            int index = Question.FindIndex(x => x == false);
+            if (Question[2] == false)
+            {
+                index = 2;
+            }
+            if (index == -1)
+            {
+                currentData = databaseConnector.getData(applicantID);
+                string data = "";
+                for (int i = 0; i < currentData.Length; i++)
+                {
+                    data = data + "" + "\n\n" + currentData[i];
+                }
+                await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
+
+                correctData = -1;
+                await context.PostAsync("Sind diese Angaben korrekt?");
+            }
+            else
+            {
+                if (du == 1)
+                {
+                    if (index == 1)
+                    {
+                        //Frage nach beworbene Stelle mit Du
+                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                    }
+                    else
+                    {
+                        //Frage nach beworbene Stelle mit Sie
+                        await context.PostAsync(askingPersonal[index]);
+                        context.Wait(this.MessageReceived);
+                    }
+                }
+                else
+                {
+                    if (index == 1)
+                    {
+                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                    }
+                    else
+                    {
+                        await context.PostAsync(askingFormal[index]);
+                        context.Wait(this.MessageReceived);
+                    }
+                }
+            }
+        }
+        //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung, sowie Abfrage bei allen anderen Szenarien
         public async Task FindAcceptance(IDialogContext context, bool result)
         {
-            if (!safeDataConfirmation) //safeDataConfirmation == false
+            int index = Question.FindIndex(x => x == false);
+            if (!safeDataConfirmation)
             {
                 if (result)
                 {
@@ -457,7 +571,73 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync(askingFormal[2]);
                 }
             }
-        }
+            else if (correctData == -1)
+            {
+                if (result)
+                {
+                    correctData = 1;
+                    sendDataConfirmation = -1;
+                    await context.PostAsync("Darf ich die Daten an den Recruiter übermitteln?");
+                }
+                else
+                {
+                    nameUpdateable = true;
+                    await context.PostAsync("Welche Angabe ist falsch?");
+                }
+            }
+            else if (sendDataConfirmation == -1)
+            {
+                if (result)
+                {
+                    saveDataLongterm = -1;
+                    sendDataConfirmation = 1;
+                    await context.PostAsync("Dann versende ich die Daten an den Recruiter.");
+                    DataAssembler assemble = new DataAssembler();
+                    assemble.sendData(applicantID);
+                    await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
+                }
+                else
+                {
+                    saveDataLongterm = -1;
+                    sendDataConfirmation = 0;
+                    await context.PostAsync("Deine Daten werden nicht übermittelt. Möchtest du deine Daten trotzdem dauerhaft speichern?");
+                }
+            }
+            //Neu Hinzugefügte Abfrage, welche bei einer Seperaten Liste checkt, ob man diese Frage mit Ja oder nein beantworten kann.
+            else if(index != -1)
+            {
+                Question[index] = true;
+                QuestionsYesNo[index] = true;
+                await FindNextAnswer(context);
+            }
+            else if (saveDataLongterm == -1)
+            {
+                if (result)
+                {
+                    saveDataLongterm = 1;
+                    DatabaseConnector databaseConnector = new DatabaseConnector();
+                    databaseConnector.transferData(applicantID);
+                    await context.PostAsync("Daten dauerhaft gespeichert.");
 
+                    //Abfrage fuer Datenschutz bzgl. Newsletter
+                    context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
+
+                }
+                else
+                {
+                    saveDataLongterm = 0;
+                    await context.PostAsync("Daten nicht gespeichert.");
+
+                    //Abfrage fuer Datenschutz bzgl. Newsletter
+                    context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
+
+                }
+            }
+            //Hinzufügen eines nicht abgehandelten falls, dass eine Frage gestellt wird.
+            else
+            {
+                await FindNextAnswer(context);
+            }
+        }
     }
 }

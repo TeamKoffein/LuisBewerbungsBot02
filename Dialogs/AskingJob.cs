@@ -27,11 +27,14 @@ namespace Bewerbungs.Bot.Luis
             await context.PostAsync(title);
             DatabaseConnector databaseConnector = new DatabaseConnector();
             jobs = databaseConnector.getStellenDBEntry();
+            string jobstring = "";
 
-            for (int i=0; i< jobs.Length; i++)
+
+            for (int i = 0; i < jobs.Length; i++)
             {
-                await context.PostAsync(Convert.ToString(i+1) + ": " + jobs[i]);
+                jobstring = jobstring + " " + "\n\n" + Convert.ToString(i + 1) + ": " + jobs[i];
             }
+            await context.PostAsync(jobstring);
             await context.PostAsync("Gebe die Stellennummer an, auf die du dich bewerben möchtest. Bitte geben sie eine Zahl an");
 
             context.Wait(this.MessageReceivedAsync);
@@ -57,12 +60,14 @@ namespace Bewerbungs.Bot.Luis
             //Ansonsten erneute Abfrage
             else
             {
+                string jobstring = "";
 
-                    await context.PostAsync("Bitte eine Zahl angeben");
                 for (int i = 0; i < jobs.Length; i++)
                 {
-                    await context.PostAsync(Convert.ToString(i + 1) + ": " + jobs[i]);
+                    jobstring = jobstring + " " + "\n\n" + Convert.ToString(i + 1) + ": " + jobs[i];
                 }
+                await context.PostAsync("Bitte eine Zahl angeben");
+                await context.PostAsync(jobstring);
 
                 context.Wait(this.MessageReceivedAsync);
             }

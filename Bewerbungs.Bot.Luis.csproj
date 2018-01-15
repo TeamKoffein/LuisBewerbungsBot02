@@ -193,6 +193,7 @@
     <None Include="Scripts\jquery-3.2.1.intellisense.js" />
     <Content Include="iconWebChat.png" />
     <Content Include="paulearleBackground.jpg" />
+    <Content Include="PrivacyPolicy.html" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\jquery-3.2.1.js" />
@@ -202,15 +203,19 @@
     <Content Include="Scripts\jquery.unobtrusive-ajax.js" />
     <Content Include="Scripts\jquery.unobtrusive-ajax.min.js" />
     <Content Include="Xing.aspx" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Communications\DataAssembler.cs" />
     <Compile Include="Communications\DatabaseConnector.cs" />
+    <Compile Include="Communications\DebugActivityLogger.cs" />
     <Compile Include="Controllers\MessagesController.cs" />
     <Compile Include="Dialogs\Acceptance.cs" />
     <Compile Include="Dialogs\AskingJob.cs" />
+    <Compile Include="Dialogs\CheckEmail.cs" />
     <Compile Include="Dialogs\Upload.cs" />
     <Compile Include="Dialogs\SuperDialog.cs" />
     <Compile Include="Global.asax.cs">

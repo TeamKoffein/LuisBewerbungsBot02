@@ -21,6 +21,12 @@ namespace Bewerbungs.Bot.Luis
     [Serializable]
     public class Upload : IDialog<object>
     {
+        int applicantID;
+        List<string> lebenslaufnamen= new List<string>(){"lebenslauf","cv"};
+        public Upload(int applicantID)
+        {
+            this.applicantID = applicantID;
+        }
         public async Task StartAsync(IDialogContext context)
         {
             await context.PostAsync("Bitte schicke uns jetzt die die Datei.");
@@ -44,7 +50,7 @@ namespace Bewerbungs.Bot.Luis
                         httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
                     }
                     //File Name zum speichern in der Blob Storage
-                    string azureName = /* name+ "/"*/attachment.Name;
+                    string azureName = applicantID + "/" + attachment.Name;
                     //Container wird in der Storage angegeben
                     string destinationContainer = "files";
                     //URL vom dem Attachment wird gespeichert
@@ -69,14 +75,34 @@ namespace Bewerbungs.Bot.Luis
                     var contentLenghtBytes = responseMessage.Content.Headers.ContentLength;
 
                     await context.PostAsync($"Attachment of {attachment.ContentType} type and size of {contentLenghtBytes} bytes received.");
+                    
                 }
+
+                //Es wird zunächst anhand des Dateinamens überprüft, ob es sich um einen Lebenslauf handelt.
+                string lowerName = (attachment.Name).ToLower();
+                foreach (string schleifenLebenslauf in lebenslaufnamen)
+                {
+                    if (lowerName.Contains(schleifenLebenslauf))
+                    {
+                        context.Done(value: 1);
+                    }
+                }
+                //Konnte dies anhand des Dateinamens nicht festgestellt werden, wird der User explizit danach gefragt, ob es sich
+                //um einen Lebenslauf handelt.
+                context.Call(new Acceptance("Handelt es sich bei der hochgeladenen Datei um einen Lebenslauf?"), AfterUpload);
             }
             else
             {
-                await context.PostAsync("Es wurde kein Datei erkannt!");
+                await context.PostAsync("Es wurde keine Datei erkannt!");
+                context.Done(value: 2);
             }
 
-            context.Done(value: 0);
+            
+        }
+        private async Task AfterUpload(IDialogContext context, IAwaitable<object> result)
+        {
+            int accept = Convert.ToInt32(await result);
+            context.Done(value: accept);
         }
     }
 }

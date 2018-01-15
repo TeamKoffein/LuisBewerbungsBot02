@@ -25,8 +25,10 @@ namespace ProactiveBot
 
         [WebMethod]
         //Methode: Lies JSON Objekt aus und schreibe diese formatiert zur Kontrolle in einer Textdatei auf dem Desktop gespeichert
-        public static void readXingData(String rawText)
+        public static Boolean readXingData(String rawText, String responseName)
         {
+            Boolean success;
+            
             CloudStorageAccount csa = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
             CloudBlobClient blobClient = csa.CreateCloudBlobClient();
             var blobContainer = blobClient.GetContainerReference("xing");
@@ -35,30 +37,41 @@ namespace ProactiveBot
             {
                 newBlockBlob.UploadFromStream(ms);
             }
+            
             try
             {
                 string[] seperatorsToSplit = { ",", "{", "}" };
                 string[] splittedText = rawText.Split(seperatorsToSplit, StringSplitOptions.RemoveEmptyEntries);
-                writeXingData(splittedText);
+                writeXingData(splittedText, responseName);
+                success = true;
             }
             catch (Exception e)
             {
                 Console.WriteLine("Exception: " + e.Message);
+                success = false;
             }
+
+            return success;
         }
 
         //Methode: Schreibe formatiertes Objekt (mit all den Profildaten) als Textdatei und speichere es auf dem Desktop
-        private static void writeXingData(string[] xingDataInput)
+        private static Boolean writeXingData(string[] xingDataInput, string responseName)
         {
+            Boolean success = false;
+
             // Set a variable to the My Documents path.
             string mydocpath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
 
             // Write the string array to a new file 
-            using (StreamWriter outputFile = new StreamWriter(mydocpath + @"\textXing.txt"))
+            using (StreamWriter outputFile = new StreamWriter(mydocpath + @"\XingProfile_"+responseName+".txt"))
             {
                 foreach (var line in xingDataInput)
                     outputFile.WriteLine(line);
             }
+            success = true;
+
+            return success;
+
         }
     }
 }

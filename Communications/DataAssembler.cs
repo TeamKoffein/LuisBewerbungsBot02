@@ -36,7 +36,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 Console.WriteLine("Fehler beim Senden der E-Mail\n\n{0}", ex.Message);
             }
-            Console.ReadKey();
+            //Console.ReadKey();
         }
 
         //Die convertInputToHTMLMailBody Methode verändert die Datenbankeinträge zu einem HTML Code, sodass der Mailbody einem bestimmten Format folgt
