@@ -43,6 +43,8 @@ namespace Bewerbungs.Bot.Luis
             "StartDate"};
         List<bool> Question = new List<bool>() {true, false, false, false, false, false, false, false, false, false, false,
             false, false, false, false, false};
+        List<bool> QuestionsYesNo = new List<bool>() {true, true, true, true, true, true, true, true, true, true, true,
+            false, false, false, false, true};
         string[] askingPersonal;
         string[] askingFormal;
         string[] currentData;
@@ -51,7 +53,7 @@ namespace Bewerbungs.Bot.Luis
         bool nameUpdateable;
         bool currentUpload;
         int jobID = -1;
-
+        
         int sendDataConfirmation = -2;
         int saveDataLongterm = -2;
         int correctData = -2;
@@ -431,8 +433,10 @@ namespace Bewerbungs.Bot.Luis
 
         //Akzeptanz durch den Bewerber
         [LuisIntent("Acceptance")]
-        public async Task Acceptance(IDialogContext context, LuisResult result)
+        public async Task Acceptance(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
+            var message = await activity;
+            Text = message.Text;
             await FindAcceptance(context, true);
             context.Wait(this.MessageReceived);
         }
@@ -456,8 +460,10 @@ namespace Bewerbungs.Bot.Luis
 
         //Verneinung durch den Bewerber
         [LuisIntent("Negative")]
-        public async Task Negative(IDialogContext context, LuisResult result)
+        public async Task Negative(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
+            var message = await activity;
+            Text = message.Text;
             await FindAcceptance(context, false);
             context.Wait(this.MessageReceived);
         }
@@ -521,6 +527,7 @@ namespace Bewerbungs.Bot.Luis
         //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung
         public async Task FindAcceptance(IDialogContext context, bool result)
         {
+            int index = Question.FindIndex(x => x == false);
             if (!safeDataConfirmation)
             {
                 if (result)
@@ -592,6 +599,10 @@ namespace Bewerbungs.Bot.Luis
                     sendDataConfirmation = 0;
                     await context.PostAsync("Deine Daten werden nicht übermittelt. Möchtest du deine Daten trotzdem dauerhaft speichern?");
                 }
+            }
+            else if(index != -1)
+            {
+                await FindNextAnswer(context, 1);
             }
             else if (saveDataLongterm == -1)
             {
