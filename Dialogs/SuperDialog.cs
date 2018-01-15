@@ -303,11 +303,16 @@ namespace Bewerbungs.Bot.Luis
                 if (accept == 1)
                 {
                     var myKey = AnswerDatabase.IndexOf(LuisTopIntention);
+                    int indexYesNo = QuestionsYesNo.FindIndex(x => x == false);
                     Question[index: myKey] = true;
+                    if (myKey == indexYesNo)
+                    {
+                        QuestionsYesNo[index: indexYesNo] = true;
+                    }
                     databaseConnector.updateDatabase(LuisTopIntention, applicantID, Text);
                     databaseConnector.updateDatabase("ChannelID", applicantID, context.Activity.ChannelId);
                     databaseConnector.updateDatabase("ConversationID", applicantID, context.Activity.Conversation.Id);
-
+                    
                 }
             }
             //Neue Methode hinzugefügt
@@ -602,6 +607,8 @@ namespace Bewerbungs.Bot.Luis
             }
             else if(index != -1)
             {
+                Question[index] = true;
+                QuestionsYesNo[index] = true;
                 await FindNextAnswer(context, 1);
             }
             else if (saveDataLongterm == -1)
