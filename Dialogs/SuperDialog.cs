@@ -394,7 +394,7 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Xing")]
         public async Task Xing(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("http://luisbewerbungsbot02.azurewebsites.net/Xing.aspx");
+            await context.PostAsync("http://luisbewerbungsbot.azurewebsites.net/Xing.aspx");
             context.Wait(this.MessageReceived);
         }
 
