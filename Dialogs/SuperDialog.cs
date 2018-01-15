@@ -246,54 +246,8 @@ namespace Bewerbungs.Bot.Luis
                     applicantID = databaseConnector.insertDatabaseEntry("Name", Text);
                 }
             }
-            //Nächste, nicht-beantwortete Frage
-            int index = Question.FindIndex(x => x == false);
-            if (index == -1)
-            {
-                currentData = databaseConnector.getData(applicantID);
-                string data = "";
-                for (int i = 0; i < currentData.Length; i++)
-                {
-                    data = data + "" + "\n\n" + currentData[i];
-                }
-                await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
-
-                correctData = -1;
-                await context.PostAsync("Sind diese Angaben korrekt?");
-            }
-            else
-            {
-                if (accept == 0)
-                {
-                    index = 2;
-                }
-                if (du == 1)
-                {
-                    if (index == 1)
-                    {
-                        //Frage nach beworbene Stelle mit Du
-                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
-                    }
-                    else
-                    {
-                        //Frage nach beworbene Stelle mit Sie
-                        await context.PostAsync(askingPersonal[index]);
-                        context.Wait(this.MessageReceived);
-                    }
-                }
-                else
-                {
-                    if (index == 1)
-                    {
-                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
-                    }
-                    else
-                    {
-                        await context.PostAsync(askingFormal[index]);
-                        context.Wait(this.MessageReceived);
-                    }
-                }
-            }
+            //Neue Methode hinzugefügt
+            await FindNextAnswer(context, accept);
         }
 
         [LuisIntent("Job")]
@@ -354,54 +308,8 @@ namespace Bewerbungs.Bot.Luis
 
                 }
             }
-
-            int index = Question.FindIndex(x => x == false);
-            if (Question[2] == false)
-            {
-                index = 2;
-            }
-            //Fragendialogabschluss wird erkannt, wenn die Liste @questions den Wert -1 zurückgibt.
-            if (index == -1)
-            {
-                correctData = -1;
-                currentData = databaseConnector.getData(applicantID);
-                string data = "";
-                for (int i = 0; i < currentData.Length; i++)
-                {
-                    data = data + "" + "\n\n" + currentData[i];
-                }
-                await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
-                await context.PostAsync("Sind diese Angaben korrekt?");
-            }
-            else
-            {
-                if (du == 1)
-                {
-                    if (index == 1)
-                    {
-                        context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
-                    }
-                    else
-                    {
-                        await context.PostAsync(askingPersonal[index]);
-                        context.Wait(this.MessageReceived);
-                    }
-                }
-                else
-                {
-                    if (index == 1)
-                    {
-                        context.Call(child: new AskingJob(askingFormal[index]), resume: AfterAnswer);
-                    }
-                    else
-                    {
-                        await context.PostAsync(askingFormal[index]);
-                        context.Wait(this.MessageReceived);
-                    }
-
-                }
-            }
-
+            //Neue Methode hinzugefügt
+            await FindNextAnswer(context, accept);
         }
 
         /*Wenn der Bewerber angegeben hat auf welche Stelle er sich bewerben möchte, wird dies hinterlegt und die dementsprechende Fachfrage zur der Position gestellt
@@ -415,32 +323,8 @@ namespace Bewerbungs.Bot.Luis
 
             string date = databaseConnector.getJobDate(accept);
             await context.PostAsync("Zu diesem Termin stellen wir ein: " + date);
-
-            int index = Question.FindIndex(x => x == false);
-            if (index == -1)
-            {
-                correctData = -1;
-                currentData = databaseConnector.getData(applicantID);
-                string data = "";
-                for (int i = 0; i < currentData.Length; i++)
-                {
-                    data = data + "" + "\n\n" + currentData[i];
-                }
-                await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
-                await context.PostAsync("Sind diese Angaben korrekt?");
-            }
-            else
-            {
-                if (du == 1)
-                {
-                    await context.PostAsync(askingPersonal[index]);
-                }
-                else
-                {
-                    await context.PostAsync(askingFormal[index]);
-                }
-                context.Wait(this.MessageReceived);
-            }
+            //Neue Methode hinzugefügt
+            await FindNextAnswer(context, 1);
         }
 
         public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
@@ -578,6 +462,62 @@ namespace Bewerbungs.Bot.Luis
             context.Wait(this.MessageReceived);
         }
 
+        //Methode zum finden der Nächsten Frage
+        public async Task FindNextAnswer(IDialogContext context, int accept)
+        {
+            DatabaseConnector databaseConnector = new DatabaseConnector();
+            int index = Question.FindIndex(x => x == false);
+            if (Question[2] == false)
+            {
+                index = 2;
+            }
+            if (index == -1)
+            {
+                currentData = databaseConnector.getData(applicantID);
+                string data = "";
+                for (int i = 0; i < currentData.Length; i++)
+                {
+                    data = data + "" + "\n\n" + currentData[i];
+                }
+                await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
+
+                correctData = -1;
+                await context.PostAsync("Sind diese Angaben korrekt?");
+            }
+            else
+            {
+                if (accept == 0)
+                {
+                    index = 2;
+                }
+                if (du == 1)
+                {
+                    if (index == 1)
+                    {
+                        //Frage nach beworbene Stelle mit Du
+                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                    }
+                    else
+                    {
+                        //Frage nach beworbene Stelle mit Sie
+                        await context.PostAsync(askingPersonal[index]);
+                        context.Wait(this.MessageReceived);
+                    }
+                }
+                else
+                {
+                    if (index == 1)
+                    {
+                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                    }
+                    else
+                    {
+                        await context.PostAsync(askingFormal[index]);
+                        context.Wait(this.MessageReceived);
+                    }
+                }
+            }
+        }
         //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung
         public async Task FindAcceptance(IDialogContext context, bool result)
         {
