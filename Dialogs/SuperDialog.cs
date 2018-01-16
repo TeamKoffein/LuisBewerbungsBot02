@@ -315,7 +315,7 @@ namespace Bewerbungs.Bot.Luis
                     
                 }
             }
-            //Neue Methode hinzugefügt
+            //Neue Methode hinzugefügt 
             await FindNextAnswer(context);
         }
 
