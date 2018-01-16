@@ -1,0 +1,548 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="ChatBotDataModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012.Azure" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="Angestellte">
+          <Key>
+            <PropertyRef Name="BewerberID" />
+          </Key>
+          <Property Name="BewerberID" Type="int" Nullable="false" />
+          <Property Name="Job" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Name" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Adress" Type="nvarchar" MaxLength="1000" />
+          <Property Name="PostalCode" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Place" Type="nvarchar" MaxLength="1000" />
+          <Property Name="PhoneNumber" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Email" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Birthday" Type="nvarchar" MaxLength="1000" />
+        </EntityType>
+        <EntityType Name="BewerberdatenLuis">
+          <Key>
+            <PropertyRef Name="BewerberID" />
+          </Key>
+          <Property Name="BewerberID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="Job" Type="int" />
+          <Property Name="Name" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Adress" Type="nvarchar" MaxLength="1000" />
+          <Property Name="PostalCode" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Place" Type="nvarchar" MaxLength="1000" />
+          <Property Name="PhoneNumber" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Email" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Birthday" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Career" Type="nvarchar" MaxLength="1000" />
+          <Property Name="EducationalBackground" Type="nvarchar" MaxLength="1000" />
+          <Property Name="ProgrammingLanguage" Type="nvarchar" MaxLength="1000" />
+          <Property Name="SocialEngagement" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Language" Type="nvarchar" MaxLength="1000" />
+          <Property Name="PrivateProjects" Type="nvarchar" MaxLength="1000" />
+          <Property Name="StartDate" Type="nvarchar" MaxLength="1000" />
+          <Property Name="JobInterview" Type="nvarchar" MaxLength="50" />
+          <Property Name="TimeStamp" Type="date" />
+          <Property Name="ChannelId" Type="nvarchar" MaxLength="50" />
+          <Property Name="ConversationID" Type="nvarchar" MaxLength="50" />
+          <Property Name="InterviewDate" Type="date" />
+        </EntityType>
+        <EntityType Name="BewerberTable">
+          <Key>
+            <PropertyRef Name="BewerberID" />
+          </Key>
+          <Property Name="BewerberID" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="BeworbeneStelle" Type="nvarchar" MaxLength="500" />
+          <Property Name="Name" Type="nvarchar" MaxLength="50" />
+          <Property Name="Geburtsdatum" Type="nvarchar" MaxLength="50" />
+          <Property Name="Kontaktdaten" Type="nvarchar" MaxLength="500" />
+          <Property Name="Sprachen" Type="nvarchar" MaxLength="500" />
+          <Property Name="Qualifikationen" Type="nvarchar" MaxLength="500" />
+          <Property Name="SozEngagement" Type="nvarchar" MaxLength="500" />
+          <Property Name="Laufbahn" Type="nvarchar" MaxLength="500" />
+          <Property Name="PrivProjekte" Type="nvarchar" MaxLength="500" />
+        </EntityType>
+        <EntityType Name="Events">
+          <Key>
+            <PropertyRef Name="EventID" />
+          </Key>
+          <Property Name="EventID" Type="int" Nullable="false" />
+          <Property Name="EventContent" Type="nvarchar" MaxLength="4000" />
+          <Property Name="EventDate" Type="date" />
+        </EntityType>
+        <EntityType Name="Fachfragen">
+          <Key>
+            <PropertyRef Name="FragenID" />
+          </Key>
+          <Property Name="FragenID" Type="int" Nullable="false" />
+          <Property Name="Frage" Type="nvarchar" MaxLength="500" />
+        </EntityType>
+        <EntityType Name="FAQ">
+          <Key>
+            <PropertyRef Name="FAQID" />
+          </Key>
+          <Property Name="FAQID" Type="int" Nullable="false" />
+          <Property Name="AussageDu" Type="nvarchar" MaxLength="1000" />
+          <Property Name="AussageSie" Type="nvarchar" MaxLength="1000" />
+        </EntityType>
+        <EntityType Name="FAQFragen">
+          <Key>
+            <PropertyRef Name="FAQFragenID" />
+          </Key>
+          <Property Name="FAQFragenID" Type="int" Nullable="false" />
+          <Property Name="FAQFrageDU" Type="nvarchar" MaxLength="2000" />
+          <Property Name="FAQFrageSie" Type="nvarchar" MaxLength="2000" />
+        </EntityType>
+        <EntityType Name="GespeicherteBewerber">
+          <Key>
+            <PropertyRef Name="BewerberID" />
+          </Key>
+          <Property Name="BewerberID" Type="int" Nullable="false" />
+          <Property Name="Job" Type="int" />
+          <Property Name="Name" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Adress" Type="nvarchar" MaxLength="1000" />
+          <Property Name="PostalCode" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Place" Type="nvarchar" MaxLength="1000" />
+          <Property Name="PhoneNumber" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Email" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Birthday" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Career" Type="nvarchar" MaxLength="1000" />
+          <Property Name="EducationalBackground" Type="nvarchar" MaxLength="1000" />
+          <Property Name="ProgrammingLanguage" Type="nvarchar" MaxLength="1000" />
+          <Property Name="SocialEngagement" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Language" Type="nvarchar" MaxLength="1000" />
+          <Property Name="PrivateProjects" Type="nvarchar" MaxLength="1000" />
+          <Property Name="Newsletter" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="News">
+          <Key>
+            <PropertyRef Name="NewsID" />
+          </Key>
+          <Property Name="NewsID" Type="int" Nullable="false" />
+          <Property Name="NewsContent" Type="nvarchar" MaxLength="4000" />
+          <Property Name="NewsDate" Type="date" />
+        </EntityType>
+        <EntityType Name="Stellen">
+          <Key>
+            <PropertyRef Name="StellenID" />
+          </Key>
+          <Property Name="StellenID" Type="int" Nullable="false" />
+          <Property Name="Stellenname" Type="nvarchar" MaxLength="200" />
+          <Property Name="Profil" Type="nvarchar" MaxLength="4000" />
+          <Property Name="Aufgaben" Type="nvarchar" MaxLength="4000" />
+          <Property Name="Gehalt" Type="nvarchar" MaxLength="200" />
+          <Property Name="Einstellungsdatum" Type="nvarchar" MaxLength="50" />
+        </EntityType>
+        <EntityType Name="sysdiagrams">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="nvarchar" MaxLength="128" Nullable="false" />
+          <Property Name="principal_id" Type="int" Nullable="false" />
+          <Property Name="diagram_id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="version" Type="int" />
+          <Property Name="definition" Type="varbinary(max)" />
+        </EntityType>
+        <EntityType Name="UserLogin">
+          <Key>
+            <PropertyRef Name="UserId" />
+          </Key>
+          <Property Name="UserId" Type="varchar" MaxLength="50" Nullable="false" />
+          <Property Name="Password" Type="varchar" MaxLength="100" Nullable="false" />
+          <Property Name="Verification" Type="char" MaxLength="1" />
+        </EntityType>
+        <Association Name="FK_BewerberdatenLuis_Stellen">
+          <End Role="Stellen" Type="Self.Stellen" Multiplicity="0..1" />
+          <End Role="BewerberdatenLuis" Type="Self.BewerberdatenLuis" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Stellen">
+              <PropertyRef Name="StellenID" />
+            </Principal>
+            <Dependent Role="BewerberdatenLuis">
+              <PropertyRef Name="Job" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="ChatBotDataModelStoreContainer">
+          <EntitySet Name="Angestellte" EntityType="Self.Angestellte" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="BewerberdatenLuis" EntityType="Self.BewerberdatenLuis" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="BewerberTable" EntityType="Self.BewerberTable" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Events" EntityType="Self.Events" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Fachfragen" EntityType="Self.Fachfragen" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="FAQ" EntityType="Self.FAQ" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="FAQFragen" EntityType="Self.FAQFragen" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="GespeicherteBewerber" EntityType="Self.GespeicherteBewerber" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="News" EntityType="Self.News" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="Stellen" EntityType="Self.Stellen" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagrams" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="UserLogin" EntityType="Self.UserLogin" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_BewerberdatenLuis_Stellen" Association="Self.FK_BewerberdatenLuis_Stellen">
+            <End Role="Stellen" EntitySet="Stellen" />
+            <End Role="BewerberdatenLuis" EntitySet="BewerberdatenLuis" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="ChatBotDataModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="Angestellte">
+          <Key>
+            <PropertyRef Name="BewerberID" />
+          </Key>
+          <Property Name="BewerberID" Type="Int32" Nullable="false" />
+          <Property Name="Job" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Name" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Adress" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="PostalCode" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Place" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Birthday" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="BewerberdatenLui">
+          <Key>
+            <PropertyRef Name="BewerberID" />
+          </Key>
+          <Property Name="BewerberID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="Job" Type="Int32" />
+          <Property Name="Name" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Adress" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="PostalCode" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Place" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Birthday" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Career" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="EducationalBackground" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="ProgrammingLanguage" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="SocialEngagement" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Language" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="PrivateProjects" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="StartDate" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="JobInterview" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="TimeStamp" Type="DateTime" Precision="0" />
+          <Property Name="ChannelId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="ConversationID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="InterviewDate" Type="DateTime" Precision="0" />
+          <NavigationProperty Name="Stellen" Relationship="Self.FK_BewerberdatenLuis_Stellen" FromRole="BewerberdatenLuis" ToRole="Stellen" />
+        </EntityType>
+        <EntityType Name="BewerberTable">
+          <Key>
+            <PropertyRef Name="BewerberID" />
+          </Key>
+          <Property Name="BewerberID" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="BeworbeneStelle" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Name" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Geburtsdatum" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Kontaktdaten" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Sprachen" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Qualifikationen" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="SozEngagement" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="Laufbahn" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+          <Property Name="PrivProjekte" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="Event">
+          <Key>
+            <PropertyRef Name="EventID" />
+          </Key>
+          <Property Name="EventID" Type="Int32" Nullable="false" />
+          <Property Name="EventContent" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="EventDate" Type="DateTime" Precision="0" />
+        </EntityType>
+        <EntityType Name="Fachfragen">
+          <Key>
+            <PropertyRef Name="FragenID" />
+          </Key>
+          <Property Name="FragenID" Type="Int32" Nullable="false" />
+          <Property Name="Frage" Type="String" MaxLength="500" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="FAQ">
+          <Key>
+            <PropertyRef Name="FAQID" />
+          </Key>
+          <Property Name="FAQID" Type="Int32" Nullable="false" />
+          <Property Name="AussageDu" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="AussageSie" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="FAQFragen">
+          <Key>
+            <PropertyRef Name="FAQFragenID" />
+          </Key>
+          <Property Name="FAQFragenID" Type="Int32" Nullable="false" />
+          <Property Name="FAQFrageDU" Type="String" MaxLength="2000" FixedLength="false" Unicode="true" />
+          <Property Name="FAQFrageSie" Type="String" MaxLength="2000" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="GespeicherteBewerber">
+          <Key>
+            <PropertyRef Name="BewerberID" />
+          </Key>
+          <Property Name="BewerberID" Type="Int32" Nullable="false" />
+          <Property Name="Job" Type="Int32" />
+          <Property Name="Name" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Adress" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="PostalCode" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Place" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="PhoneNumber" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Email" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Birthday" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Career" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="EducationalBackground" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="ProgrammingLanguage" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="SocialEngagement" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Language" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="PrivateProjects" Type="String" MaxLength="1000" FixedLength="false" Unicode="true" />
+          <Property Name="Newsletter" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+        </EntityType>
+        <EntityType Name="News">
+          <Key>
+            <PropertyRef Name="NewsID" />
+          </Key>
+          <Property Name="NewsID" Type="Int32" Nullable="false" />
+          <Property Name="NewsContent" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="NewsDate" Type="DateTime" Precision="0" />
+        </EntityType>
+        <EntityType Name="Stellen">
+          <Key>
+            <PropertyRef Name="StellenID" />
+          </Key>
+          <Property Name="StellenID" Type="Int32" Nullable="false" />
+          <Property Name="Stellenname" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="Profil" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="Aufgaben" Type="String" MaxLength="4000" FixedLength="false" Unicode="true" />
+          <Property Name="Gehalt" Type="String" MaxLength="200" FixedLength="false" Unicode="true" />
+          <Property Name="Einstellungsdatum" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <NavigationProperty Name="BewerberdatenLuis" Relationship="Self.FK_BewerberdatenLuis_Stellen" FromRole="Stellen" ToRole="BewerberdatenLuis" />
+        </EntityType>
+        <EntityType Name="sysdiagram">
+          <Key>
+            <PropertyRef Name="diagram_id" />
+          </Key>
+          <Property Name="name" Type="String" MaxLength="128" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="principal_id" Type="Int32" Nullable="false" />
+          <Property Name="diagram_id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="version" Type="Int32" />
+          <Property Name="definition" Type="Binary" MaxLength="Max" FixedLength="false" />
+        </EntityType>
+        <EntityType Name="UserLogin">
+          <Key>
+            <PropertyRef Name="UserId" />
+          </Key>
+          <Property Name="UserId" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Password" Type="String" MaxLength="100" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="Verification" Type="String" MaxLength="1" FixedLength="true" Unicode="false" />
+        </EntityType>
+        <Association Name="FK_BewerberdatenLuis_Stellen">
+          <End Role="Stellen" Type="Self.Stellen" Multiplicity="0..1" />
+          <End Role="BewerberdatenLuis" Type="Self.BewerberdatenLui" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="Stellen">
+              <PropertyRef Name="StellenID" />
+            </Principal>
+            <Dependent Role="BewerberdatenLuis">
+              <PropertyRef Name="Job" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="DataConnection" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="Angestelltes" EntityType="Self.Angestellte" />
+          <EntitySet Name="BewerberdatenLuis" EntityType="Self.BewerberdatenLui" />
+          <EntitySet Name="BewerberTables" EntityType="Self.BewerberTable" />
+          <EntitySet Name="Events" EntityType="Self.Event" />
+          <EntitySet Name="Fachfragens" EntityType="Self.Fachfragen" />
+          <EntitySet Name="FAQs" EntityType="Self.FAQ" />
+          <EntitySet Name="FAQFragens" EntityType="Self.FAQFragen" />
+          <EntitySet Name="GespeicherteBewerbers" EntityType="Self.GespeicherteBewerber" />
+          <EntitySet Name="News" EntityType="Self.News" />
+          <EntitySet Name="Stellens" EntityType="Self.Stellen" />
+          <EntitySet Name="sysdiagrams" EntityType="Self.sysdiagram" />
+          <EntitySet Name="UserLogins" EntityType="Self.UserLogin" />
+          <AssociationSet Name="FK_BewerberdatenLuis_Stellen" Association="Self.FK_BewerberdatenLuis_Stellen">
+            <End Role="Stellen" EntitySet="Stellens" />
+            <End Role="BewerberdatenLuis" EntitySet="BewerberdatenLuis" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="ChatBotDataModelStoreContainer" CdmEntityContainer="DataConnection">
+          <EntitySetMapping Name="Angestelltes">
+            <EntityTypeMapping TypeName="ChatBotDataModel.Angestellte">
+              <MappingFragment StoreEntitySet="Angestellte">
+                <ScalarProperty Name="BewerberID" ColumnName="BewerberID" />
+                <ScalarProperty Name="Job" ColumnName="Job" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Adress" ColumnName="Adress" />
+                <ScalarProperty Name="PostalCode" ColumnName="PostalCode" />
+                <ScalarProperty Name="Place" ColumnName="Place" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="Birthday" ColumnName="Birthday" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="BewerberdatenLuis">
+            <EntityTypeMapping TypeName="ChatBotDataModel.BewerberdatenLui">
+              <MappingFragment StoreEntitySet="BewerberdatenLuis">
+                <ScalarProperty Name="BewerberID" ColumnName="BewerberID" />
+                <ScalarProperty Name="Job" ColumnName="Job" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Adress" ColumnName="Adress" />
+                <ScalarProperty Name="PostalCode" ColumnName="PostalCode" />
+                <ScalarProperty Name="Place" ColumnName="Place" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="Birthday" ColumnName="Birthday" />
+                <ScalarProperty Name="Career" ColumnName="Career" />
+                <ScalarProperty Name="EducationalBackground" ColumnName="EducationalBackground" />
+                <ScalarProperty Name="ProgrammingLanguage" ColumnName="ProgrammingLanguage" />
+                <ScalarProperty Name="SocialEngagement" ColumnName="SocialEngagement" />
+                <ScalarProperty Name="Language" ColumnName="Language" />
+                <ScalarProperty Name="PrivateProjects" ColumnName="PrivateProjects" />
+                <ScalarProperty Name="StartDate" ColumnName="StartDate" />
+                <ScalarProperty Name="JobInterview" ColumnName="JobInterview" />
+                <ScalarProperty Name="TimeStamp" ColumnName="TimeStamp" />
+                <ScalarProperty Name="ChannelId" ColumnName="ChannelId" />
+                <ScalarProperty Name="ConversationID" ColumnName="ConversationID" />
+                <ScalarProperty Name="InterviewDate" ColumnName="InterviewDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="BewerberTables">
+            <EntityTypeMapping TypeName="ChatBotDataModel.BewerberTable">
+              <MappingFragment StoreEntitySet="BewerberTable">
+                <ScalarProperty Name="BewerberID" ColumnName="BewerberID" />
+                <ScalarProperty Name="BeworbeneStelle" ColumnName="BeworbeneStelle" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Geburtsdatum" ColumnName="Geburtsdatum" />
+                <ScalarProperty Name="Kontaktdaten" ColumnName="Kontaktdaten" />
+                <ScalarProperty Name="Sprachen" ColumnName="Sprachen" />
+                <ScalarProperty Name="Qualifikationen" ColumnName="Qualifikationen" />
+                <ScalarProperty Name="SozEngagement" ColumnName="SozEngagement" />
+                <ScalarProperty Name="Laufbahn" ColumnName="Laufbahn" />
+                <ScalarProperty Name="PrivProjekte" ColumnName="PrivProjekte" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Events">
+            <EntityTypeMapping TypeName="ChatBotDataModel.Event">
+              <MappingFragment StoreEntitySet="Events">
+                <ScalarProperty Name="EventID" ColumnName="EventID" />
+                <ScalarProperty Name="EventContent" ColumnName="EventContent" />
+                <ScalarProperty Name="EventDate" ColumnName="EventDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Fachfragens">
+            <EntityTypeMapping TypeName="ChatBotDataModel.Fachfragen">
+              <MappingFragment StoreEntitySet="Fachfragen">
+                <ScalarProperty Name="FragenID" ColumnName="FragenID" />
+                <ScalarProperty Name="Frage" ColumnName="Frage" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="FAQs">
+            <EntityTypeMapping TypeName="ChatBotDataModel.FAQ">
+              <MappingFragment StoreEntitySet="FAQ">
+                <ScalarProperty Name="FAQID" ColumnName="FAQID" />
+                <ScalarProperty Name="AussageDu" ColumnName="AussageDu" />
+                <ScalarProperty Name="AussageSie" ColumnName="AussageSie" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="FAQFragens">
+            <EntityTypeMapping TypeName="ChatBotDataModel.FAQFragen">
+              <MappingFragment StoreEntitySet="FAQFragen">
+                <ScalarProperty Name="FAQFragenID" ColumnName="FAQFragenID" />
+                <ScalarProperty Name="FAQFrageDU" ColumnName="FAQFrageDU" />
+                <ScalarProperty Name="FAQFrageSie" ColumnName="FAQFrageSie" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="GespeicherteBewerbers">
+            <EntityTypeMapping TypeName="ChatBotDataModel.GespeicherteBewerber">
+              <MappingFragment StoreEntitySet="GespeicherteBewerber">
+                <ScalarProperty Name="BewerberID" ColumnName="BewerberID" />
+                <ScalarProperty Name="Job" ColumnName="Job" />
+                <ScalarProperty Name="Name" ColumnName="Name" />
+                <ScalarProperty Name="Adress" ColumnName="Adress" />
+                <ScalarProperty Name="PostalCode" ColumnName="PostalCode" />
+                <ScalarProperty Name="Place" ColumnName="Place" />
+                <ScalarProperty Name="PhoneNumber" ColumnName="PhoneNumber" />
+                <ScalarProperty Name="Email" ColumnName="Email" />
+                <ScalarProperty Name="Birthday" ColumnName="Birthday" />
+                <ScalarProperty Name="Career" ColumnName="Career" />
+                <ScalarProperty Name="EducationalBackground" ColumnName="EducationalBackground" />
+                <ScalarProperty Name="ProgrammingLanguage" ColumnName="ProgrammingLanguage" />
+                <ScalarProperty Name="SocialEngagement" ColumnName="SocialEngagement" />
+                <ScalarProperty Name="Language" ColumnName="Language" />
+                <ScalarProperty Name="PrivateProjects" ColumnName="PrivateProjects" />
+                <ScalarProperty Name="Newsletter" ColumnName="Newsletter" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="News">
+            <EntityTypeMapping TypeName="ChatBotDataModel.News">
+              <MappingFragment StoreEntitySet="News">
+                <ScalarProperty Name="NewsID" ColumnName="NewsID" />
+                <ScalarProperty Name="NewsContent" ColumnName="NewsContent" />
+                <ScalarProperty Name="NewsDate" ColumnName="NewsDate" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="Stellens">
+            <EntityTypeMapping TypeName="ChatBotDataModel.Stellen">
+              <MappingFragment StoreEntitySet="Stellen">
+                <ScalarProperty Name="StellenID" ColumnName="StellenID" />
+                <ScalarProperty Name="Stellenname" ColumnName="Stellenname" />
+                <ScalarProperty Name="Profil" ColumnName="Profil" />
+                <ScalarProperty Name="Aufgaben" ColumnName="Aufgaben" />
+                <ScalarProperty Name="Gehalt" ColumnName="Gehalt" />
+                <ScalarProperty Name="Einstellungsdatum" ColumnName="Einstellungsdatum" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="sysdiagrams">
+            <EntityTypeMapping TypeName="ChatBotDataModel.sysdiagram">
+              <MappingFragment StoreEntitySet="sysdiagrams">
+                <ScalarProperty Name="name" ColumnName="name" />
+                <ScalarProperty Name="principal_id" ColumnName="principal_id" />
+                <ScalarProperty Name="diagram_id" ColumnName="diagram_id" />
+                <ScalarProperty Name="version" ColumnName="version" />
+                <ScalarProperty Name="definition" ColumnName="definition" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="UserLogins">
+            <EntityTypeMapping TypeName="ChatBotDataModel.UserLogin">
+              <MappingFragment StoreEntitySet="UserLogin">
+                <ScalarProperty Name="UserId" ColumnName="UserId" />
+                <ScalarProperty Name="Password" ColumnName="Password" />
+                <ScalarProperty Name="Verification" ColumnName="Verification" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="Kein" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

@@ -14,6 +14,20 @@ namespace Bewerbungs.Bot.Luis
             return getDBEntry(ID, commandText, 0);
         }
 
+        public int insertNewApp(string conversationID)
+        {
+            int appID = 0;
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { ConversationID = conversationID };
+                context.BewerberdatenLuis.Add(applicant);
+                context.SaveChanges();
+                appID = applicant.BewerberID;
+            };
+
+            return appID;
+        }
+
 
         //Diese Methode übergibt einen einzelnen Eintrag aus der DB
         //benötigt werden die @ID der gesuchten Zeile, der @key als Spaltenangabe (0) für den reader und der @commandText als SQL-Befehl 

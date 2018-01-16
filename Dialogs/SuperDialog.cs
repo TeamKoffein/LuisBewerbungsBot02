@@ -245,7 +245,7 @@ namespace Bewerbungs.Bot.Luis
                 {
                     var myKey = AnswerDatabase.IndexOf("Name");
                     Question[index: myKey] = true;
-                    applicantID = databaseConnector.insertDatabaseEntry("Name", Text);
+                    databaseConnector.updateDatabase("Name", applicantID, Text);
                 }
             }
             //Neue Methode hinzugefügt
@@ -530,12 +530,15 @@ namespace Bewerbungs.Bot.Luis
         //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung, sowie Abfrage bei allen anderen Szenarien
         public async Task FindAcceptance(IDialogContext context, bool result)
         {
+            DatabaseConnector databaseConnector = new DatabaseConnector();
             int index = Question.FindIndex(x => x == false);
             if (!safeDataConfirmation)
             {
                 if (result)
                 {
                     safeDataConfirmation = true;
+                    string conversationID = context.Activity.Conversation.Id;
+                    applicantID = databaseConnector.insertNewApp(conversationID);
                     await context.PostAsync("Danke für das Akzeptieren der Datenschutzerklärung. Kennst du mich schon?");
                 }
                 else
@@ -615,7 +618,6 @@ namespace Bewerbungs.Bot.Luis
                 if (result)
                 {
                     saveDataLongterm = 1;
-                    DatabaseConnector databaseConnector = new DatabaseConnector();
                     databaseConnector.transferData(applicantID);
                     await context.PostAsync("Daten dauerhaft gespeichert.");
 
