@@ -37,7 +37,7 @@ namespace Bewerbungs.Bot.Luis
         string LuisTopIntention;
         List<string> FAQDatabase = new List<string>() { "","Holiday", "WorkingHours", "Salary", "FlexTime", "HolidayDistribution",
             "Location", "HomeOffice", "PublicTransport", "Parking", "Benefits", "Client", "Ethics", "StaffTraining", "Promotion", "Eliza",
-            "Requirements"};
+            "Technology", "overtime", "Office", "average Age", "Requirements"};
         List<string> AnswerDatabase = new List<string>() {"", "Job", "Name", "Adress", "PostalCode", "Place", "PhoneNumber", "Email", "Birthday",
              "Career", "EducationalBackground", "ProgrammingLanguage", "SocialEngagement", "Language", "PrivateProjects",
             "StartDate"};
@@ -107,23 +107,36 @@ namespace Bewerbungs.Bot.Luis
 
             //Willkommenstext und Datenschutzerklaerung beim Starten des Bots
             await Chat.PostAsync("Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst.");
-            await Chat.PostAsync("Damit du dich erfolgreich bewerben kannst, musst du die Datenschutzerklaerung lesen und akzeptieren, sonst koennen wir leider mit der Bewerbung nicht fortfahren.");
-            await Chat.PostAsync("Bitte bestätige danach hier im Bot, dass du die Erklaerung unter http://luisbewerbungsbot.azurewebsites.net/PrivacyPolicy.html gelesen hast und sie akzeptierst.");
+            await Chat.PostAsync("Wir würden gerne die erhaltenen Daten speichern. Bitte bestätige uns die Datenschutzerklärung, die über folgenden Link aufgerufen werden kann:");
+            await Chat.PostAsync("http://luisbewerbungsbot.azurewebsites.net/PrivacyPolicy.html");
+            await Chat.PostAsync("Eine kurze Bestätigung reicht uns voll und ganz!");
 
             Chat.Wait(this.MessageReceived);
         }
 
-        [LuisIntent("Farewell")]
         [LuisIntent("")]
         [LuisIntent("None")]
         //Abfang von Luis nicht einordbaren Bewerberaussagen
         public async Task None(IDialogContext context, LuisResult result)
         {
-            string message = $"Sorry, I did not understand '{result.Query}'. Type 'help' if you need assistance.";
-
+            string message = $"Ich habe '{result.Query}' leider nicht verstanden. Versuch doch bitte es für mich noch einmal anders zu formulieren. Falls diese Nachricht mehr als einmal erscheint, dann schreib bitte eine Mail an teamkoffein@outlook.de mit deiner Anfrage. Wir werden zeitnah antworten!";
             await context.PostAsync(message);
-
             context.Wait(this.MessageReceived);
+        }
+
+        [LuisIntent("Farewell")]
+        public async Task Farewell(IDialogContext context, LuisResult result)
+        {
+            if (result.TopScoringIntent.Score.Value >= 0.5)
+            {
+                String message = "Bis zum nächsten Mal!";
+                await context.PostAsync(message);
+                context.Wait(this.MessageReceived);
+            }
+            else
+            {
+                await None(context, result);
+            }
         }
 
         [LuisIntent("Name")]
@@ -132,28 +145,34 @@ namespace Bewerbungs.Bot.Luis
         //Weitergabe an AfterName
         public async Task Name(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
-            var message = await activity;
-            Text = message.Text;
-            if (knowledge == 0)
+            if (result.TopScoringIntent.Score.Value >= 0.5)
             {
-                await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
-            }
-            else
-            {
-                DatabaseConnector databaseConnector = new DatabaseConnector();
-                int count = databaseConnector.getCountName(message.Text);
-                if (count == 0)
+                var message = await activity;
+                Text = message.Text;
+                if (knowledge == 0)
                 {
-                    knowledge = 0;
-                    await context.PostAsync("Name nicht gefunden. Neuer Name angelegt.");
                     await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
                 }
                 else
                 {
-                    await context.PostAsync("Name gefunden. " + message.Text);
+                    DatabaseConnector databaseConnector = new DatabaseConnector();
+                    int count = databaseConnector.getCountName(message.Text);
+                    if (count == 0)
+                    {
+                        knowledge = 0;
+                        await context.PostAsync("Name nicht gefunden. Neuer Name angelegt.");
+                        await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
+                    }
+                    else
+                    {
+                        await context.PostAsync("Name gefunden. " + message.Text);
 
-                    context.Call(new CheckEmail(message.Text), CheckInformation);
+                        context.Call(new CheckEmail(message.Text), CheckInformation);
+                    }
                 }
+            }else
+            {
+                await None(context, result);
             }
         }
 
@@ -270,10 +289,16 @@ namespace Bewerbungs.Bot.Luis
         //Filtern nach dem erwarteten Intent, Weitergabe an AfterAnswer
         public async Task Answer(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
-            var message = await activity;
-            Text = message.Text;
-            LuisTopIntention = result.TopScoringIntent.Intent.ToString();
-            await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterAnswer, message, CancellationToken.None);
+            if (result.TopScoringIntent.Score.Value >= 0.5)
+            {
+                var message = await activity;
+                Text = message.Text;
+                LuisTopIntention = result.TopScoringIntent.Intent.ToString();
+                await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterAnswer, message, CancellationToken.None);
+            }else
+            {
+                await None(context, result);
+            }
         }
 
         /*Speicherung der letzten Antwort des Bewerbers, nachdem diese bestätigt wurde
@@ -371,96 +396,127 @@ namespace Bewerbungs.Bot.Luis
         //Wenn der Intent nach einer FAQ an Lise erkannt wird, wird der entsprechende Antworteintrag abhängig von der gewählten Anrede ausgelesen.
         public async Task FAQ(IDialogContext context, LuisResult result)
         {
-            if (safeDataConfirmation)
+            if (result.TopScoringIntent.Score.Value >= 0.5)
             {
-                DatabaseConnector databaseConnector = new DatabaseConnector();
-                int key = FAQDatabase.IndexOf(result.TopScoringIntent.Intent.ToString());
-                if (key < 16)
+                if (safeDataConfirmation)
                 {
-                    if (key == 6)
+                    DatabaseConnector databaseConnector = new DatabaseConnector();
+                    int key = FAQDatabase.IndexOf(result.TopScoringIntent.Intent.ToString());
+                    if (key < 16)
                     {
-                       // if (Question[4] && Question[5] && Question[6])
-                        //{
-                            string homeAdress = databaseConnector.getBingAdress(applicantID);
-                        if (!String.IsNullOrEmpty(homeAdress))
+                        if (key == 6)
                         {
-                            await context.PostAsync("Adresse empty");
+                            // if (Question[4] && Question[5] && Question[6])
+                            //{
+                            string homeAdress = databaseConnector.getBingAdress(applicantID);
+                            if (!String.IsNullOrEmpty(homeAdress))
+                            {
+                                await context.PostAsync("Adresse empty");
+                            }
+                            else
+                            {
+                                var bingTrigger = new JsonFileBing
+                                {
+                                    RelatesTo = context.Activity.ToConversationReference(),
+                                    Origin = homeAdress,
+                                    Destination = "Am Butzweilerhofallee 2, Köln"
+                                };
+                                await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
+                            }
+                            //  }
+                            //   else
+                            //  {
+                            //      await context.PostAsync("Wenn du mir deine Adresse, Postleitzahl und den Ort angibst, dann sag ich Dir wie lange du zu uns brauchst.");
+                            //  }
+
+                        }
+                        if (du != -1)
+                        {
+                            await context.PostAsync(databaseConnector.getDBEntry(key, "SELECT * FROM FAQ WHERE FAQID =@ID", du));
                         }
                         else
                         {
-                            var bingTrigger = new JsonFileBing
-                            {
-                                RelatesTo = context.Activity.ToConversationReference(),
-                                Origin = homeAdress,
-                                Destination = "Am Butzweilerhofallee 2, Köln"
-                            };
-                            await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
+                            await context.PostAsync("Bitte verrate mir vorher, ob wir beim 'Du' bleiben sollen");
                         }
-                      //  }
-                     //   else
-                      //  {
-                      //      await context.PostAsync("Wenn du mir deine Adresse, Postleitzahl und den Ort angibst, dann sag ich Dir wie lange du zu uns brauchst.");
-                      //  }
-
-                    }
-                    if (du != -1)
-                    {    
-                        await context.PostAsync(databaseConnector.getDBEntry(key, "SELECT * FROM FAQ WHERE FAQID =@ID", du));
                     }
                     else
                     {
-                        await context.PostAsync("Bitte verrate mir vorher, ob wir beim 'Du' bleiben sollen");
+                        if (jobID > -1)
+                        {
+                            await context.PostAsync(databaseConnector.getDBEntry(jobID, "SELECT Profil FROM Stellen WHERE StellenID =@ID"));
+                        }
                     }
                 }
                 else
                 {
-                    if (jobID > -1)
-                    {
-                        await context.PostAsync(databaseConnector.getDBEntry(jobID, "SELECT Profil FROM Stellen WHERE StellenID =@ID"));
-                    }
+                    await context.PostAsync("Zuerst musst du die Datenschutzerklärung bestätigen.");
                 }
-            }
-            else
+                await context.PostAsync(result.TopScoringIntent.Intent.ToString());
+                context.Wait(this.MessageReceived);
+            }else
             {
-                await context.PostAsync("Zuerst musst du die Datenschutzerklärung bestätigen.");
+                await None(context, result);
             }
-            await context.PostAsync(result.TopScoringIntent.Intent.ToString());
-            context.Wait(this.MessageReceived);
         }
 
         //Begrüßen des Bewerbers
         [LuisIntent("Greetings")]
         public async Task Greetings(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("Hallo User!");
-            context.Wait(this.MessageReceived);
+            if (result.TopScoringIntent.Score.Value >= 0.5)
+            {
+                await context.PostAsync("Hallo User!");
+                context.Wait(this.MessageReceived);
+            }else
+            {
+                await None(context, result);
+            }
         }
 
         //Akzeptanz durch den Bewerber
         [LuisIntent("Acceptance")]
         public async Task Acceptance(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
-            //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
-            var message = await activity;
-            Text = message.Text;
-            await FindAcceptance(context, true);
-            context.Wait(this.MessageReceived);
+            if (result.TopScoringIntent.Score.Value >= 0.5)
+            {
+                //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
+                var message = await activity;
+                Text = message.Text;
+                await FindAcceptance(context, true);
+                context.Wait(this.MessageReceived);
+            }else
+            {
+                await None(context, result);
+            }
         }
 
         //Xing-Anbindung 
         [LuisIntent("Xing")]
         public async Task Xing(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("http://luisbewerbungsbot.azurewebsites.net/Xing.aspx");
-            context.Wait(this.MessageReceived);
+            if (result.TopScoringIntent.Score.Value >= 0.5)
+            {
+                await context.PostAsync("http://luisbewerbungsbot.azurewebsites.net/Xing.aspx");
+                context.Wait(this.MessageReceived);
+            }
+            else
+            {
+                await None(context, result);
+            }
         }
 
         //Aufruf der Upload-Funktion
         [LuisIntent("Upload")]
         public async Task Upload(IDialogContext context, LuisResult result)
         {
-            currentUpload = true;
-            context.Call(new Upload(applicantID), AfterAnswer);
+            if (result.TopScoringIntent.Score.Value >= 0.5)
+            {
+                currentUpload = true;
+                context.Call(new Upload(applicantID), AfterAnswer);
+            }else
+            {
+                await None(context, result);
+            }
         }
 
 
@@ -468,11 +524,17 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Negative")]
         public async Task Negative(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
-            //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
-            var message = await activity;
-            Text = message.Text;
-            await FindAcceptance(context, false);
-            context.Wait(this.MessageReceived);
+            if (result.TopScoringIntent.Score.Value >= 0.5)
+            {
+                //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
+                var message = await activity;
+                Text = message.Text;
+                await FindAcceptance(context, false);
+                context.Wait(this.MessageReceived);
+            }else
+            {
+                await None(context, result);
+            }
         }
 
         //Methode zum finden der Nächsten Frage. Diese Methode wurde ausgelagert, da sie sich sonst gedoppelt hat.
@@ -640,6 +702,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 await FindNextAnswer(context);
             }
+            
         }
     }
 }
