@@ -268,7 +268,7 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             //Neue Methode hinzugefügt
-            await FindNextAnswer(context);
+            await FindNextAnswer(context,true);
         }
 
         [LuisIntent("Job")]
@@ -340,8 +340,8 @@ namespace Bewerbungs.Bot.Luis
                     
                 }
             }
-            //Neue Methode hinzugefügt 
-            await FindNextAnswer(context);
+            //Neue Methode hinzugefügt
+            await FindNextAnswer(context,true);
         }
 
         /*Wenn der Bewerber angegeben hat auf welche Stelle er sich bewerben möchte, wird dies hinterlegt und die dementsprechende Fachfrage zur der Position gestellt
@@ -356,7 +356,7 @@ namespace Bewerbungs.Bot.Luis
             string date = databaseConnector.getJobDate(accept);
             await context.PostAsync("Zu diesem Termin stellen wir ein: " + date);
             //Neue Methode hinzugefügt
-            await FindNextAnswer(context);
+            await FindNextAnswer(context,true);
         }
 
         public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
@@ -538,7 +538,7 @@ namespace Bewerbungs.Bot.Luis
         }
 
         //Methode zum finden der Nächsten Frage. Diese Methode wurde ausgelagert, da sie sich sonst gedoppelt hat.
-        public async Task FindNextAnswer(IDialogContext context)
+        public async Task FindNextAnswer(IDialogContext context, bool needWait)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int index = Question.FindIndex(x => x == false);
@@ -572,7 +572,11 @@ namespace Bewerbungs.Bot.Luis
                     {
                         //Frage nach beworbene Stelle mit Sie
                         await context.PostAsync(askingPersonal[index]);
-                        context.Wait(this.MessageReceived);
+                        if (needWait == true)
+                        {
+                            context.Wait(this.MessageReceived);
+                        }
+                        
                     }
                 }
                 else
@@ -584,7 +588,10 @@ namespace Bewerbungs.Bot.Luis
                     else
                     {
                         await context.PostAsync(askingFormal[index]);
-                        context.Wait(this.MessageReceived);
+                        if (needWait == true)
+                        {
+                            context.Wait(this.MessageReceived);
+                        }
                     }
                 }
             }
@@ -673,7 +680,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 Question[index] = true;
                 QuestionsYesNo[index] = true;
-                await FindNextAnswer(context);
+                await FindNextAnswer(context,false);
             }
             else if (saveDataLongterm == -1)
             {
@@ -700,7 +707,7 @@ namespace Bewerbungs.Bot.Luis
             //Hinzufügen eines nicht abgehandelten falls, dass eine Frage gestellt wird.
             else
             {
-                await FindNextAnswer(context);
+                await FindNextAnswer(context,false);
             }
             
         }
