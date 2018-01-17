@@ -20,7 +20,7 @@ using System.IO;
 using AdaptiveCards;
 using Newtonsoft.Json;
 using Microsoft.WindowsAzure.Storage.Queue;
-
+//TEST FÜR GIT!!!!
 namespace Bewerbungs.Bot.Luis
 {
 
@@ -108,7 +108,7 @@ namespace Bewerbungs.Bot.Luis
             //Willkommenstext und Datenschutzerklaerung beim Starten des Bots
             await Chat.PostAsync("Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst.");
             await Chat.PostAsync("Damit du dich erfolgreich bewerben kannst, musst du die Datenschutzerklaerung lesen und akzeptieren, sonst koennen wir leider mit der Bewerbung nicht fortfahren.");
-            await Chat.PostAsync("Bitte bestätige danach hier im Bot, dass du die Erklaerung unter http://luisbewerbungsbot02.azurewebsites.net/PrivacyPolicy.html gelesen hast und sie akzeptierst.");
+            await Chat.PostAsync("Bitte bestätige danach hier im Bot, dass du die Erklaerung unter http://luisbewerbungsbot.azurewebsites.net/PrivacyPolicy.html gelesen hast und sie akzeptierst.");
 
             Chat.Wait(this.MessageReceived);
         }
@@ -451,7 +451,7 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Xing")]
         public async Task Xing(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("http://luisbewerbungsbot02.azurewebsites.net/Xing.aspx");
+            await context.PostAsync("http://luisbewerbungsbot.azurewebsites.net/Xing.aspx");
             context.Wait(this.MessageReceived);
         }
 
