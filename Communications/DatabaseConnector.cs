@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Linq;
 
 namespace Bewerbungs.Bot.Luis
 {
@@ -26,6 +27,20 @@ namespace Bewerbungs.Bot.Luis
             };
 
             return appID;
+        }
+        public bool checkNull(string column, int appID)
+        {
+            bool isNull = true;
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                
+                
+
+            };
+
+            return isNull;
         }
 
 

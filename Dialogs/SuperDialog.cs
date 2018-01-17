@@ -542,10 +542,6 @@ namespace Bewerbungs.Bot.Luis
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int index = Question.FindIndex(x => x == false);
-            if (Question[2] == false)
-            {
-                index = 2;
-            }
             if (index == -1)
             {
                 currentData = databaseConnector.getData(applicantID);
@@ -678,6 +674,7 @@ namespace Bewerbungs.Bot.Luis
             //Neu Hinzugefügte Abfrage, welche bei einer Seperaten Liste checkt, ob man diese Frage mit Ja oder nein beantworten kann.
             else if(index != -1)
             {
+                //DB-Abfrage ob zelle beschrieben
                 Question[index] = true;
                 QuestionsYesNo[index] = true;
                 await FindNextAnswer(context,false);
