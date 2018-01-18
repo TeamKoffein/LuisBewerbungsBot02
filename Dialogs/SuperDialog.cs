@@ -20,7 +20,6 @@ using System.IO;
 using AdaptiveCards;
 using Newtonsoft.Json;
 using Microsoft.WindowsAzure.Storage.Queue;
-//TEST FÜR GIT!!!!
 namespace Bewerbungs.Bot.Luis
 {
 
@@ -482,13 +481,12 @@ namespace Bewerbungs.Bot.Luis
 
         //Akzeptanz durch den Bewerber
         [LuisIntent("Acceptance")]
-        public async Task Acceptance(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
+        public async Task Acceptance(IDialogContext context, LuisResult result)
         {
             if (result.TopScoringIntent.Score.Value >= 0.5)
             {
                 //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
-                var message = await activity;
-                Text = message.Text;
+                Text = "Ja";
                 await FindAcceptance(context, true);
                 context.Wait(this.MessageReceived);
             }else
@@ -529,13 +527,13 @@ namespace Bewerbungs.Bot.Luis
 
         //Verneinung durch den Bewerber
         [LuisIntent("Negative")]
-        public async Task Negative(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
+        public async Task Negative(IDialogContext context,  LuisResult result)
         {
             if (result.TopScoringIntent.Score.Value >= 0.5)
             {
                 //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
-                var message = await activity;
-                Text = message.Text;
+                
+                Text = "Nein";
                 await FindAcceptance(context, false);
                 context.Wait(this.MessageReceived);
             }else
@@ -604,6 +602,7 @@ namespace Bewerbungs.Bot.Luis
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int index = Question.FindIndex(x => x == false);
+            int indexYesNo = QuestionsYesNo.FindIndex(x => x == false);
             if (!safeDataConfirmation)
             {
                 if (result)
@@ -679,7 +678,7 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             //Neu Hinzugefügte Abfrage, welche bei einer Seperaten Liste checkt, ob man diese Frage mit Ja oder nein beantworten kann.
-            else if(index != -1)
+            else if(index != -1 && index == indexYesNo)
             {
                 //DB-Abfrage ob zelle beschrieben
                 Question[index] = true;
