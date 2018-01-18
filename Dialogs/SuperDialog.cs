@@ -20,7 +20,6 @@ using System.IO;
 using AdaptiveCards;
 using Newtonsoft.Json;
 using Microsoft.WindowsAzure.Storage.Queue;
-//TEST FÜR GIT!!!!
 namespace Bewerbungs.Bot.Luis
 {
 
