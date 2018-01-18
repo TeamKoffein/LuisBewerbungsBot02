@@ -52,7 +52,6 @@ namespace Bewerbungs.Bot.Luis
         bool nameUpdateable;
         bool currentUpload;
         int jobID = -1;
-        
         int sendDataConfirmation = -2;
         int saveDataLongterm = -2;
         int correctData = -2;
@@ -94,6 +93,7 @@ namespace Bewerbungs.Bot.Luis
         //StartAsync startet den Gesprächbeginn
         override public async Task StartAsync(IDialogContext Chat)
         {
+            ConfirmationCard confirm = new ConfirmationCard();
             DatabaseConnector databaseConnector = new DatabaseConnector();
             //Initialisierung der Grundvariablen
             safeDataConfirmation = false;
@@ -108,7 +108,8 @@ namespace Bewerbungs.Bot.Luis
             await Chat.PostAsync("Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst.");
             await Chat.PostAsync("Wir würden gerne die erhaltenen Daten speichern. Bitte bestätige uns die Datenschutzerklärung, die über folgenden Link aufgerufen werden kann:");
             await Chat.PostAsync("http://luisbewerbungsbot.azurewebsites.net/PrivacyPolicy.html");
-            await Chat.PostAsync("Eine kurze Bestätigung reicht uns voll und ganz!");
+            string text = ("Eine kurze Bestätigung reicht uns voll und ganz!");
+            await Chat.PostAsync(confirm.AttachedData(Chat, text));
 
             Chat.Wait(this.MessageReceived);
         }
@@ -177,6 +178,7 @@ namespace Bewerbungs.Bot.Luis
 
         private async Task CheckInformation(IDialogContext context, IAwaitable<object> result)
         {
+            ConfirmationCard confirm = new ConfirmationCard();
             DatabaseConnector databaseConnector = new DatabaseConnector();
             applicantID = Convert.ToInt32(await result);
             if (applicantID > 0)
@@ -196,7 +198,8 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync("Diese Angaben sind hinterlegt: " + Environment.NewLine + data);
 
                     correctData = -1;
-                    await context.PostAsync("Sind diese Angaben korrekt?");
+                    string text = ("Sind diese Angaben korrekt?");
+                    await context.PostAsync(confirm.AttachedData(context, text));
                 }
                 else
                 {
@@ -398,6 +401,10 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Salary")]
         [LuisIntent("StaffTraining")]
         [LuisIntent("WorkingHours")]
+        [LuisIntent("average Age")]
+        [LuisIntent("Technology")]
+        [LuisIntent("Office")]
+        [LuisIntent("overtime")]
 
         //Wenn der Intent nach einer FAQ an Lise erkannt wird, wird der entsprechende Antworteintrag abhängig von der gewählten Anrede ausgelesen.
         public async Task FAQ(IDialogContext context, LuisResult result)
@@ -408,7 +415,7 @@ namespace Bewerbungs.Bot.Luis
                 {
                     DatabaseConnector databaseConnector = new DatabaseConnector();
                     int key = FAQDatabase.IndexOf(result.TopScoringIntent.Intent.ToString());
-                    if (key < 16)
+                    if (key < 20)
                     {
                         if (key == 6)
                         {
@@ -457,7 +464,6 @@ namespace Bewerbungs.Bot.Luis
                 {
                     await context.PostAsync("Zuerst musst du die Datenschutzerklärung bestätigen.");
                 }
-                await context.PostAsync(result.TopScoringIntent.Intent.ToString());
                 context.Wait(this.MessageReceived);
             }else
             {
@@ -545,6 +551,7 @@ namespace Bewerbungs.Bot.Luis
         //Methode zum finden der Nächsten Frage. Diese Methode wurde ausgelagert, da sie sich sonst gedoppelt hat.
         public async Task FindNextAnswer(IDialogContext context, bool needWait)
         {
+            ConfirmationCard confirm = new ConfirmationCard();
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int index = Question.FindIndex(x => x == false);
             if (index == -1)
@@ -558,7 +565,8 @@ namespace Bewerbungs.Bot.Luis
                 await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
 
                 correctData = -1;
-                await context.PostAsync("Sind diese Angaben korrekt?");
+                string text = ("Sind diese Angaben korrekt?");
+                await context.PostAsync(confirm.AttachedData(context, text));
             }
             else
             {
@@ -600,6 +608,7 @@ namespace Bewerbungs.Bot.Luis
         //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung, sowie Abfrage bei allen anderen Szenarien
         public async Task FindAcceptance(IDialogContext context, bool result)
         {
+            ConfirmationCard confirm = new ConfirmationCard();
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int index = Question.FindIndex(x => x == false);
             int indexYesNo = QuestionsYesNo.FindIndex(x => x == false);
@@ -610,7 +619,8 @@ namespace Bewerbungs.Bot.Luis
                     safeDataConfirmation = true;
                     string conversationID = context.Activity.Conversation.Id;
                     applicantID = databaseConnector.insertNewApp(conversationID);
-                    await context.PostAsync("Danke für das Akzeptieren der Datenschutzerklärung. Kennst du mich schon?");
+                    string text ="Danke für das Akzeptieren der Datenschutzerklärung. Kennst du mich schon?";
+                    await context.PostAsync(confirm.AttachedData(context, text));
                 }
                 else
                 {
@@ -622,12 +632,14 @@ namespace Bewerbungs.Bot.Luis
                 if (!result)
                 {
                     knowledge = 0;
-                    await context.PostAsync("Darf ich Sie duzen?");
+                    string text = ("Darf ich Sie duzen?");
+                    await context.PostAsync(confirm.AttachedData(context, text));
                 }
                 else
                 {
                     knowledge = 1;
-                    await context.PostAsync("Darf ich Sie duzen?");
+                    string text = ("Darf ich Sie duzen?");
+                    await context.PostAsync(confirm.AttachedData(context, text));
                 }
             }
             else if (du == -1)
@@ -651,7 +663,8 @@ namespace Bewerbungs.Bot.Luis
                 {
                     correctData = 1;
                     sendDataConfirmation = -1;
-                    await context.PostAsync("Darf ich die Daten an den Recruiter übermitteln?");
+                    string text = ("Darf ich die Daten an den Recruiter übermitteln?");
+                    await context.PostAsync(confirm.AttachedData(context, text));
                 }
                 else
                 {
@@ -674,13 +687,13 @@ namespace Bewerbungs.Bot.Luis
                 {
                     saveDataLongterm = -1;
                     sendDataConfirmation = 0;
-                    await context.PostAsync("Deine Daten werden nicht übermittelt. Möchtest du deine Daten trotzdem dauerhaft speichern?");
+                    string text = ("Deine Daten werden nicht übermittelt. Möchtest du deine Daten trotzdem dauerhaft speichern?");
+                    await context.PostAsync(confirm.AttachedData(context, text));
                 }
             }
             //Neu Hinzugefügte Abfrage, welche bei einer Seperaten Liste checkt, ob man diese Frage mit Ja oder nein beantworten kann.
             else if(index != -1 && index == indexYesNo)
             {
-                //DB-Abfrage ob zelle beschrieben
                 Question[index] = true;
                 QuestionsYesNo[index] = true;
                 await FindNextAnswer(context,false);
@@ -691,7 +704,8 @@ namespace Bewerbungs.Bot.Luis
                 {
                     saveDataLongterm = 1;
                     databaseConnector.transferData(applicantID);
-                    await context.PostAsync("Daten dauerhaft gespeichert.");
+                    string text = ("Daten dauerhaft gespeichert.");
+                    await context.PostAsync(confirm.AttachedData(context, text));
 
                     //Abfrage fuer Datenschutz bzgl. Newsletter
                     context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);

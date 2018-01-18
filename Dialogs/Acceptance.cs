@@ -31,12 +31,42 @@ namespace Bewerbungs.Bot.Luis
             this.intent = intent;
             this.messagecontext = messagecontext;
         }
+        public IMessageActivity AttachedData(IDialogContext context)
+        {
+            var reply = context.MakeMessage();
+            IMessageActivity message = (IMessageActivity)reply;
+            message.Attachments = new List<Attachment>();
+            var button = new List<CardAction>
+                {
+                    new CardAction(
+                        ActionTypes.ImBack,
+                        "Ja",
+                        "Ja",
+                        "Ja")
+                };
+            button.Add(
+                new CardAction(
+                        ActionTypes.ImBack,
+                        "Nein",
+                        "Nein",
+                        "Nein"));
+
+            var card = new ThumbnailCard
+            {
+                Text = $"Ist die Eingabe { messagecontext } mit Bezug auf { intent } korrekt?",
+                Buttons = button
+            };
+
+            message.Attachments.Add(card.ToAttachment());
+            return message;
+        }
 
         //Rückfrage
         override public async Task StartAsync(IDialogContext context)
         {
             if (textMessage == null) { 
-                await context.PostAsync($"Ist die Eingabe { messagecontext } mit Bezug auf { intent } korrekt?");
+                //await context.PostAsync($"Ist die Eingabe { messagecontext } mit Bezug auf { intent } korrekt?");
+                await context.PostAsync(AttachedData(context));
             }
             else
             {

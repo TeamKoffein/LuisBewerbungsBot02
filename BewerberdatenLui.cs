@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Bewerbungs.Bot.Luis
+namespace ProactiveBot
 {
     using System;
     using System.Collections.Generic;
@@ -35,6 +35,7 @@ namespace Bewerbungs.Bot.Luis
         public string ChannelId { get; set; }
         public string ConversationID { get; set; }
         public Nullable<System.DateTime> InterviewDate { get; set; }
+        public Nullable<int> ApplicationReviewed { get; set; }
     
         public virtual Stellen Stellen { get; set; }
     }

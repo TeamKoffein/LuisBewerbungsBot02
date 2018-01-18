@@ -7,7 +7,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace Bewerbungs.Bot.Luis
+namespace ProactiveBot
 {
     using System;
     using System.Collections.Generic;

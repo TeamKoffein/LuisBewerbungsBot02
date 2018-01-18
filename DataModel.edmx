@@ -4,7 +4,7 @@
   <edmx:Runtime>
     <!-- SSDL content -->
     <edmx:StorageModels>
-      <Schema Namespace="ChatBotDataModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012.Azure" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+    <Schema Namespace="ChatBotDataModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012.Azure" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
         <EntityType Name="Angestellte">
           <Key>
             <PropertyRef Name="BewerberID" />
@@ -44,6 +44,7 @@
           <Property Name="ChannelId" Type="nvarchar" MaxLength="50" />
           <Property Name="ConversationID" Type="nvarchar" MaxLength="50" />
           <Property Name="InterviewDate" Type="date" />
+          <Property Name="ApplicationReviewed" Type="int" />
         </EntityType>
         <EntityType Name="BewerberTable">
           <Key>
@@ -179,8 +180,7 @@
             <End Role="BewerberdatenLuis" EntitySet="BewerberdatenLuis" />
           </AssociationSet>
         </EntityContainer>
-      </Schema>
-    </edmx:StorageModels>
+      </Schema></edmx:StorageModels>
     <!-- CSDL content -->
     <edmx:ConceptualModels>
       <Schema Namespace="ChatBotDataModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
@@ -224,6 +224,7 @@
           <Property Name="ConversationID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="InterviewDate" Type="DateTime" Precision="0" />
           <NavigationProperty Name="Stellen" Relationship="Self.FK_BewerberdatenLuis_Stellen" FromRole="BewerberdatenLuis" ToRole="Stellen" />
+          <Property Name="ApplicationReviewed" Type="Int32" />
         </EntityType>
         <EntityType Name="BewerberTable">
           <Key>
@@ -384,6 +385,7 @@
           <EntitySetMapping Name="BewerberdatenLuis">
             <EntityTypeMapping TypeName="ChatBotDataModel.BewerberdatenLui">
               <MappingFragment StoreEntitySet="BewerberdatenLuis">
+                <ScalarProperty Name="ApplicationReviewed" ColumnName="ApplicationReviewed" />
                 <ScalarProperty Name="BewerberID" ColumnName="BewerberID" />
                 <ScalarProperty Name="Job" ColumnName="Job" />
                 <ScalarProperty Name="Name" ColumnName="Name" />

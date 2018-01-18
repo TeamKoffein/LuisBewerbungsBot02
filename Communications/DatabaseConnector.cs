@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ProactiveBot;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -45,10 +46,21 @@ namespace Bewerbungs.Bot.Luis
                     isNull = false;
                 }
             };
-
             return isNull;
         }
 
+        public bool checkReview(int appID)
+        {
+            bool review = false;
+            using (DataConnection context = new DataConnection()) {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                int rev = applicant.ApplicationReviewed ?? 0;
+                if (rev != 0)
+                    review = true;      
+            };
+            return review;
+        }
 
         //Diese Methode übergibt einen einzelnen Eintrag aus der DB
         //benötigt werden die @ID der gesuchten Zeile, der @key als Spaltenangabe (0) für den reader und der @commandText als SQL-Befehl 
