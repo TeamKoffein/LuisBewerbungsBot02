@@ -272,6 +272,12 @@ namespace Bewerbungs.Bot.Luis
         }
 
         [LuisIntent("Job")]
+        public async Task JobIntent(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
+        {
+            Question[1] = false;
+            context.Call(new AskingJob(askingFormal[1]), AfterStellen);
+        }
+
         [LuisIntent("Adress")]
         [LuisIntent("Birthday")]
         [LuisIntent("Career")]
@@ -289,6 +295,7 @@ namespace Bewerbungs.Bot.Luis
         //Filtern nach dem erwarteten Intent, Weitergabe an AfterAnswer
         public async Task Answer(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
+            
             if (result.TopScoringIntent.Score.Value >= 0.5)
             {
                 var message = await activity;

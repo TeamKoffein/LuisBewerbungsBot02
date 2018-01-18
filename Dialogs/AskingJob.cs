@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Microsoft.Bot.Builder.Dialogs;
-using System;
 using System.Threading.Tasks;
 using Microsoft.Bot.Connector;
 using Bewerbungs.Bot.Luis;
@@ -27,64 +26,31 @@ namespace Bewerbungs.Bot.Luis
             await context.PostAsync(title);
             DatabaseConnector databaseConnector = new DatabaseConnector();
             jobs = databaseConnector.getStellenDBEntry();
-            /*
-            string jobstring = "";
-
-            for (int i = 0; i < jobs.Length; i++)
-            {
-                jobstring = jobstring + " " + "\n\n" + Convert.ToString(i + 1) + ": " + jobs[i];
-            }
-            await context.PostAsync(jobstring);
-            await context.PostAsync("Gebe die Stellennummer an, auf die du dich bewerben möchtest. Bitte geben sie eine Zahl an");
-            */
-            
             var reply = context.MakeMessage();
             IMessageActivity message = (IMessageActivity)reply;
             message.AttachmentLayout = AttachmentLayoutTypes.List;
             message.Text = "";
-            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-
-            
-          /*  List<CardAction> Buttons = new List<CardAction>();
-            for (int i = 1; i <= jobs.Length; i++)
-            {
-                Buttons.Add(new CardAction(
-                            text: jobs[i],
-                            value: i.ToString(),
-                            type: ActionTypes.ImBack,
-                            displayText: jobs[i],
-                            title: jobs[i]));
-            }*/
-
-            //message.Attachments.Add(GetThumbnailCard("title", "text", Buttons)); 
+            reply.AttachmentLayout = AttachmentLayoutTypes.Carousel; 
             message.Attachments = CardsAttachment();
             await context.PostAsync(message);
             context.Wait(this.MessageReceivedAsync);
         }
 
-       /* public IMessageActivity AttachedData(IDialogContext context)
-        {
-            var reply = context.MakeMessage();
-            IMessageActivity message = (IMessageActivity)reply;
-            message.AttachmentLayout = AttachmentLayoutTypes.Carousel;
-            message.Attachments = CardsAttachment();          
-            return message;
-        }*/
-
         public IList<Attachment> CardsAttachment()
         {
             List<Attachment> attach = new List<Attachment>();
             int lenght = jobs.Length;
-            int i = 1;
-            while(i<=lenght)
+            int i = 0;
+            while(i<lenght)
             {              
                 int counter = 0;
                 List<CardAction> Buttons = new List<CardAction>();
-                while (i <=lenght && counter < 3)
+                while (i <lenght && counter < 3)
                 {
+                    int j = i + 1;
                     Buttons.Add(new CardAction(
                          text: jobs[i],
-                            value: i.ToString(),
+                            value: j.ToString(),
                             type: ActionTypes.ImBack,
                             displayText: jobs[i],
                             title: jobs[i]
@@ -95,22 +61,18 @@ namespace Bewerbungs.Bot.Luis
                 attach.Add(GetThumbnailCard("Stellenausschreibungen", "Bitte wähle eine Stelle aus", Buttons));
             }
             return attach;
-
-
         }
 
         private Attachment GetThumbnailCard(string title, string text, List<CardAction> cardAction)
         {
             var heroCard = new ThumbnailCard
-            {
-                
+            {   
                 Title = title,
                 Subtitle = "Stellenauswahl",
                 Text = text,
                 Images = new List<CardImage>() { new CardImage(url: "https://t2.ftcdn.net/jpg/00/60/83/19/500_F_60831978_c24ahi9gJDOsefFT6lvt3VOVjwgeXxZz.jpg") },
                 Buttons = cardAction
             };
-
             return heroCard.ToAttachment();
         }
 
@@ -120,31 +82,23 @@ namespace Bewerbungs.Bot.Luis
         {
             var message = await result;
             int jobID;
+            int i = jobs.Length + 1;
             bool isNumeric = int.TryParse(message.Text, out jobID);
             if (isNumeric)
             {
                 jobID = Convert.ToInt32(message.Text);
-
                 if ((jobID > 0) && (jobID < jobs.Length + 1))
                 {
                     //Beendet den Dialog
                     context.Done(jobID);
                 }
+                else
+                    await context.PostAsync("Bitte eine Zahl zwischen " + 1 + " und " + i + " angeben.");
             }
             //Ansonsten erneute Abfrage
             else
             {
-                /*
-                string jobstring = "";
-
-                for (int i = 0; i < jobs.Length; i++)
-                {
-                    jobstring = jobstring + " " + "\n\n" + Convert.ToString(i + 1) + ": " + jobs[i];
-                }
-                await context.PostAsync("Bitte eine Zahl angeben");
-                await context.PostAsync(jobstring);
-                */
-                //await context.PostAsync(AttachedData(context));
+                await context.PostAsync("Bitte eine Zahl zwischen " + 1 + " und " + i + " angeben.");
                 context.Wait(this.MessageReceivedAsync);
             }
         }

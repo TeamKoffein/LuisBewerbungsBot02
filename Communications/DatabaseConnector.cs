@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Linq.Dynamic;
 
 namespace Bewerbungs.Bot.Luis
 {
@@ -35,9 +36,14 @@ namespace Bewerbungs.Bot.Luis
             {
                 BewerberdatenLui applicant = new BewerberdatenLui { };
                 applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
-                
-                
+                int i = applicant.BewerberID;
 
+                var result = context.BewerberdatenLuis.Where(r => r.BewerberID == appID).Select(column);
+                string test = result == null ? null : result.ToString();
+                if (!String.IsNullOrEmpty(test))
+                {
+                    isNull = false;
+                }
             };
 
             return isNull;
