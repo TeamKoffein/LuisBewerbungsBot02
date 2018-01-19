@@ -44,6 +44,15 @@ namespace Bewerbungs.Bot.Luis
             false, false, false, false, false};
         List<bool> QuestionsYesNo = new List<bool>() {true, true, true, true, true, true, true, true, true, true, true,
             false, false, false, false, true};
+        Dictionary<string, List<string>> EntityTranslation = new Dictionary<string, System.Collections.Generic.List<string>>()
+        {
+            { "Name" , new List<string>(){""} },
+            { "Name" , new List<string>(){""} },
+            { "Name" , new List<string>(){""} },
+            { "Name" , new List<string>(){""} },
+            { "Name" , new List<string>(){""} },
+            { "Name" , new List<string>(){""} },
+        };
         string[] askingPersonal;
         string[] askingFormal;
         string[] currentData;
@@ -103,6 +112,7 @@ namespace Bewerbungs.Bot.Luis
             //Speicherung der Fragen für Du und Sie
             askingPersonal = databaseConnector.getFAQQuestions(1);
             askingFormal = databaseConnector.getFAQQuestions(2);
+
 
             //Willkommenstext und Datenschutzerklaerung beim Starten des Bots
             await Chat.PostAsync("Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst.");
@@ -170,7 +180,8 @@ namespace Bewerbungs.Bot.Luis
                         context.Call(new CheckEmail(message.Text), CheckInformation);
                     }
                 }
-            }else
+            }
+            else
             {
                 await None(context, result);
             }
@@ -270,7 +281,7 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             //Neue Methode hinzugefügt
-            await FindNextAnswer(context,true);
+            await FindNextAnswer(context, true);
         }
 
         [LuisIntent("Job")]
@@ -297,14 +308,15 @@ namespace Bewerbungs.Bot.Luis
         //Filtern nach dem erwarteten Intent, Weitergabe an AfterAnswer
         public async Task Answer(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
-            
+
             if (result.TopScoringIntent.Score.Value >= 0.5)
             {
                 var message = await activity;
                 Text = message.Text;
                 LuisTopIntention = result.TopScoringIntent.Intent.ToString();
                 await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterAnswer, message, CancellationToken.None);
-            }else
+            }
+            else
             {
                 await None(context, result);
             }
@@ -346,11 +358,11 @@ namespace Bewerbungs.Bot.Luis
                     databaseConnector.updateDatabase(LuisTopIntention, applicantID, Text);
                     databaseConnector.updateDatabase("ChannelID", applicantID, context.Activity.ChannelId);
                     databaseConnector.updateDatabase("ConversationID", applicantID, context.Activity.Conversation.Id);
-                    
+
                 }
             }
             //Neue Methode hinzugefügt
-            await FindNextAnswer(context,true);
+            await FindNextAnswer(context, true);
         }
 
         /*Wenn der Bewerber angegeben hat auf welche Stelle er sich bewerben möchte, wird dies hinterlegt und die dementsprechende Fachfrage zur der Position gestellt
@@ -365,7 +377,7 @@ namespace Bewerbungs.Bot.Luis
             string date = databaseConnector.getJobDate(accept);
             await context.PostAsync("Zu diesem Termin stellen wir ein: " + date);
             //Neue Methode hinzugefügt
-            await FindNextAnswer(context,true);
+            await FindNextAnswer(context, true);
         }
 
         public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
@@ -465,7 +477,8 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync("Zuerst musst du die Datenschutzerklärung bestätigen.");
                 }
                 context.Wait(this.MessageReceived);
-            }else
+            }
+            else
             {
                 await None(context, result);
             }
@@ -479,7 +492,8 @@ namespace Bewerbungs.Bot.Luis
             {
                 await context.PostAsync("Hallo User!");
                 context.Wait(this.MessageReceived);
-            }else
+            }
+            else
             {
                 await None(context, result);
             }
@@ -495,7 +509,8 @@ namespace Bewerbungs.Bot.Luis
                 Text = "Ja";
                 await FindAcceptance(context, true);
                 context.Wait(this.MessageReceived);
-            }else
+            }
+            else
             {
                 await None(context, result);
             }
@@ -524,7 +539,8 @@ namespace Bewerbungs.Bot.Luis
             {
                 currentUpload = true;
                 context.Call(new Upload(applicantID), AfterAnswer);
-            }else
+            }
+            else
             {
                 await None(context, result);
             }
@@ -533,16 +549,17 @@ namespace Bewerbungs.Bot.Luis
 
         //Verneinung durch den Bewerber
         [LuisIntent("Negative")]
-        public async Task Negative(IDialogContext context,  LuisResult result)
+        public async Task Negative(IDialogContext context, LuisResult result)
         {
             if (result.TopScoringIntent.Score.Value >= 0.5)
             {
                 //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
-                
+
                 Text = "Nein";
                 await FindAcceptance(context, false);
                 context.Wait(this.MessageReceived);
-            }else
+            }
+            else
             {
                 await None(context, result);
             }
@@ -585,7 +602,7 @@ namespace Bewerbungs.Bot.Luis
                         {
                             context.Wait(this.MessageReceived);
                         }
-                        
+
                     }
                 }
                 else
@@ -611,7 +628,7 @@ namespace Bewerbungs.Bot.Luis
             ConfirmationCard confirm = new ConfirmationCard();
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int index = Question.FindIndex(x => x == false);
-            int indexYesNo = QuestionsYesNo.FindIndex(x => x == false);   
+            int indexYesNo = QuestionsYesNo.FindIndex(x => x == false);
             if (!safeDataConfirmation)
             {
                 if (result)
@@ -619,7 +636,7 @@ namespace Bewerbungs.Bot.Luis
                     safeDataConfirmation = true;
                     string conversationID = context.Activity.Conversation.Id;
                     applicantID = databaseConnector.insertNewApp(conversationID);
-                    string text ="Danke für das Akzeptieren der Datenschutzerklärung. Kennst du mich schon?";
+                    string text = "Danke für das Akzeptieren der Datenschutzerklärung. Kennst du mich schon?";
                     await context.PostAsync(confirm.AttachedData(context, text));
                 }
                 else
@@ -692,11 +709,11 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             //Neu Hinzugefügte Abfrage, welche bei einer Seperaten Liste checkt, ob man diese Frage mit Ja oder nein beantworten kann.
-            else if(index != -1 && index == indexYesNo)
+            else if (index != -1 && index == indexYesNo)
             {
                 Question[index] = true;
                 QuestionsYesNo[index] = true;
-                await FindNextAnswer(context,false);
+                await FindNextAnswer(context, false);
             }
             else if (saveDataLongterm == -1)
             {
@@ -724,9 +741,9 @@ namespace Bewerbungs.Bot.Luis
             //Hinzufügen eines nicht abgehandelten falls, dass eine Frage gestellt wird.
             else
             {
-                await FindNextAnswer(context,false);
+                await FindNextAnswer(context, false);
             }
-            
+
         }
     }
 }
