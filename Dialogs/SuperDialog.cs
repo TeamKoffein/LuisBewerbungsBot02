@@ -46,12 +46,12 @@ namespace Bewerbungs.Bot.Luis
             false, false, false, false, true};
         Dictionary<string, List<string>> EntityTranslation = new Dictionary<string, System.Collections.Generic.List<string>>()
         {
+            /*{ "Name" , new List<string>(){""} },
             { "Name" , new List<string>(){""} },
             { "Name" , new List<string>(){""} },
             { "Name" , new List<string>(){""} },
             { "Name" , new List<string>(){""} },
-            { "Name" , new List<string>(){""} },
-            { "Name" , new List<string>(){""} },
+            { "Name" , new List<string>(){""} },*/
         };
         string[] askingPersonal;
         string[] askingFormal;
@@ -744,6 +744,32 @@ namespace Bewerbungs.Bot.Luis
                 await FindNextAnswer(context, false);
             }
 
+        }
+        public string GiveEntities(LuisResult result)
+        {
+            string returnResult = null;
+            string topIntent = result.TopScoringIntent.Intent.ToString();
+            var topEntities = EntityTranslation[topIntent];
+            var listEntities = result.Entities;
+            foreach(var te in topEntities)
+            {
+                foreach(var le in listEntities)
+                {
+                    if (te.Equals(le.Type))
+                    {
+                        if(string.IsNullOrEmpty(value: returnResult))
+                        {
+                            returnResult = le.Entity;
+                        }
+                        else
+                        {
+                            returnResult = returnResult + " " + le.Entity;
+                        }
+                        
+                    }
+                }
+            }
+            return returnResult;
         }
     }
 }
