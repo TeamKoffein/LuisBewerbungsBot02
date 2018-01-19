@@ -74,7 +74,7 @@ namespace Bewerbungs.Bot.Luis
         public static async Task AddMessageToQueueAsync(string message, string queueName)
         {
             // Retrieve storage account from connection string.
-            var storageAccount = CloudStorageAccount.Parse(SettingsUtils.GetAppSettings("AzureWebJobsStorage"));
+            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
 
             // Create the queue client.
             var queueClient = storageAccount.CreateCloudQueueClient();
@@ -611,7 +611,7 @@ namespace Bewerbungs.Bot.Luis
             ConfirmationCard confirm = new ConfirmationCard();
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int index = Question.FindIndex(x => x == false);
-            int indexYesNo = QuestionsYesNo.FindIndex(x => x == false);
+            int indexYesNo = QuestionsYesNo.FindIndex(x => x == false);   
             if (!safeDataConfirmation)
             {
                 if (result)
