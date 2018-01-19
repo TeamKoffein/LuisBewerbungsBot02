@@ -44,6 +44,7 @@ namespace Bewerbungs.Bot.Luis
             false, false, false, false, false};
         List<bool> QuestionsYesNo = new List<bool>() {true, true, true, true, true, true, true, true, true, true, true,
             false, false, false, false, true};
+        //Abspeicherung der Entities zu ihren Intens
         Dictionary<string, List<string>> EntityTranslation = new Dictionary<string, System.Collections.Generic.List<string>>()
         {
             /*{ "Name" , new List<string>(){""} },
@@ -158,7 +159,7 @@ namespace Bewerbungs.Bot.Luis
             if (result.TopScoringIntent.Score.Value >= 0.5)
             {
                 var message = await activity;
-                Text = message.Text;
+                Text = message.Text; //hier einstetzen von GiveEntities(result);
                 if (knowledge == 0)
                 {
                     await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
@@ -312,7 +313,7 @@ namespace Bewerbungs.Bot.Luis
             if (result.TopScoringIntent.Score.Value >= 0.5)
             {
                 var message = await activity;
-                Text = message.Text;
+                Text = message.Text; //hier einstetzen von GiveEntities(result);
                 LuisTopIntention = result.TopScoringIntent.Intent.ToString();
                 await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterAnswer, message, CancellationToken.None);
             }
@@ -745,19 +746,20 @@ namespace Bewerbungs.Bot.Luis
             }
 
         }
+        //Methode zum Suchen und wiedergabe des/der Value/s des/der Entity/ies des angegeben Top Scoring Intent
         public string GiveEntities(LuisResult result)
         {
             string returnResult = null;
             string topIntent = result.TopScoringIntent.Intent.ToString();
             var topEntities = EntityTranslation[topIntent];
             var listEntities = result.Entities;
-            foreach(var te in topEntities)
+            foreach (var te in topEntities)
             {
-                foreach(var le in listEntities)
+                foreach (var le in listEntities)
                 {
                     if (te.Equals(le.Type))
                     {
-                        if(string.IsNullOrEmpty(value: returnResult))
+                        if (string.IsNullOrEmpty(value: returnResult))
                         {
                             returnResult = le.Entity;
                         }
@@ -765,7 +767,7 @@ namespace Bewerbungs.Bot.Luis
                         {
                             returnResult = returnResult + " " + le.Entity;
                         }
-                        
+
                     }
                 }
             }
