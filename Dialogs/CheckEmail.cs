@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Microsoft.Bot.Builder.Dialogs;
-using System;
+//using System;
 using System.Threading.Tasks;
 using Microsoft.Bot.Connector;
 using Bewerbungs.Bot.Luis;
