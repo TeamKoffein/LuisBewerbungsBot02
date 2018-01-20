@@ -132,7 +132,8 @@ namespace Bewerbungs.Bot.Luis
         public async Task Other(IDialogContext context, LuisResult result)
         {
             await context.PostAsync("Bitte bestätigen oder verneinen");
-            
+            await context.PostAsync(AttachedData(context));
+
         }
 
 
