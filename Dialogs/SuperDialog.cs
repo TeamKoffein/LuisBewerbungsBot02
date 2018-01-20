@@ -138,6 +138,10 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
+            else if (!safeDataConfirmation)
+            {
+                await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
+            }
             else
             {
                 string message = $"Ich habe '{result.Query}' leider nicht verstanden. Versuch doch bitte es für mich noch einmal anders zu formulieren. Falls diese Nachricht mehr als einmal erscheint, dann schreib bitte eine Mail an teamkoffein@outlook.de mit deiner Anfrage. Wir werden zeitnah antworten!";
@@ -152,6 +156,10 @@ namespace Bewerbungs.Bot.Luis
             if (!firstMessage)
             {
                 firstMessage = true;
+            }
+            else if (!safeDataConfirmation)
+            {
+                await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
             else
             {
@@ -177,6 +185,10 @@ namespace Bewerbungs.Bot.Luis
             if (!firstMessage)
             {
                 firstMessage = true;
+            }
+            else if (!safeDataConfirmation)
+            {
+                await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
             else
             {
@@ -317,6 +329,10 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
+            else if (!safeDataConfirmation)
+            {
+                await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
+            }
             else
             {
                 Question[1] = false;
@@ -344,6 +360,10 @@ namespace Bewerbungs.Bot.Luis
             if (!firstMessage)
             {
                 firstMessage = true;
+            }
+            else if (!safeDataConfirmation)
+            {
+                await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
             else
             {
@@ -464,6 +484,10 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
+            else if (!safeDataConfirmation)
+            {
+                await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
+            }
             else
             {
                 if (result.TopScoringIntent.Score.Value >= 0.5)
@@ -538,6 +562,10 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
+            else if (!safeDataConfirmation)
+            {
+                await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
+            }
             else
             {
                 if (result.TopScoringIntent.Score.Value >= 0.5)
@@ -584,6 +612,10 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
+            else if (!safeDataConfirmation)
+            {
+                await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
+            }
             else
             {
                 if (result.TopScoringIntent.Score.Value >= 0.5)
@@ -605,6 +637,10 @@ namespace Bewerbungs.Bot.Luis
             if (!firstMessage)
             {
                 firstMessage = true;
+            }
+            else if (!safeDataConfirmation)
+            {
+                await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
             else
             {
