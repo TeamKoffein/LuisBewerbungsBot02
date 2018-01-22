@@ -319,7 +319,6 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             //Neue Methode hinzugefügt
-            databaseConnector.setTime(applicantID);
             await FindNextAnswer(context, true);
         }
 
@@ -688,6 +687,7 @@ namespace Bewerbungs.Bot.Luis
         {
             ConfirmationCard confirm = new ConfirmationCard();
             DatabaseConnector databaseConnector = new DatabaseConnector();
+            databaseConnector.setTime(applicantID);
             int index = Question.FindIndex(x => x == false);
             if (index == -1)
             {

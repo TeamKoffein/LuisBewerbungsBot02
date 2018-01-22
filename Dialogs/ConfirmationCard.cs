@@ -13,21 +13,22 @@ namespace Bewerbungs.Bot.Luis
         {
             var reply = context.MakeMessage();
             IMessageActivity message = (IMessageActivity)reply;
+            message.Text = "";
             message.Attachments = new List<Attachment>();
             var button = new List<CardAction>
                 {
                     new CardAction(
-                        ActionTypes.ImBack,
-                        "Ja",
-                        "Ja",
-                        "Ja")
+                        type: ActionTypes.ImBack,
+                        value: "Ja",
+                        title: "Ja",
+                        displayText: "Ja")
                 };
             button.Add(
                 new CardAction(
-                        ActionTypes.ImBack,
-                        "Nein",
-                        "Nein",
-                        "Nein"));
+                        type: ActionTypes.ImBack,
+                        value: "Nein",
+                        title: "Nein",
+                        displayText: "Nein"));
 
             var card = new ThumbnailCard
             {
