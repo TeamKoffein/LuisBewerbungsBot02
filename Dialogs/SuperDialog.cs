@@ -160,6 +160,7 @@ namespace Bewerbungs.Bot.Luis
         //Abfang von Luis nicht einordbaren Bewerberaussagen
         public async Task None(IDialogContext context, LuisResult result)
         {
+            string text = result.Query;
             if (!firstMessage)
             {
                 firstMessage = true;
@@ -168,12 +169,18 @@ namespace Bewerbungs.Bot.Luis
             {
                 await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
+            else if (result.Query == "help" || result.Query == "Help")
+            {
+                string message = "Tippen Sie 'upload' um Daten an den Bot zu senden, 'xing' um ihr Xing-Profil anzugeben oder stellen Sie mir eine Frage";
+                await context.PostAsync(message);
+            }
             else
             {
                 string message = $"Ich habe '{result.Query}' leider nicht verstanden. Versuch doch bitte es für mich noch einmal anders zu formulieren. Falls diese Nachricht mehr als einmal erscheint, dann schreib bitte eine Mail an teamkoffein@outlook.de mit deiner Anfrage. Wir werden zeitnah antworten!";
                 await context.PostAsync(message);
                 context.Wait(this.MessageReceived);
             }
+            
         }
 
         [LuisIntent("Farewell")]
@@ -707,6 +714,7 @@ namespace Bewerbungs.Bot.Luis
                     Text = "Nein";
                     await FindAcceptance(context, false);
                     context.Wait(this.MessageReceived);
+                    
                 }
                 else
                 {
@@ -786,7 +794,9 @@ namespace Bewerbungs.Bot.Luis
                 {
                     safeDataConfirmation = true;
                     string conversationID = context.Activity.Conversation.Id;
-                    applicantID = databaseConnector.insertNewApp(conversationID);
+                    string userID = context.Activity.From.Id;
+                    string id = context.Activity.Recipient.Id;
+                    applicantID = databaseConnector.insertNewApp(conversationID, userID);
                     string text = "Danke für das Akzeptieren der Datenschutzerklärung. Kennst du mich schon?";
                     await context.PostAsync(confirm.AttachedData(context, text));
                 }
