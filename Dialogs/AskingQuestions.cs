@@ -18,7 +18,7 @@ namespace Bewerbungs.Bot.Luis
         private string[][] quiz;
         int bewerberScore;
 
-        //Array mit den Zuordnungen der Antworten (Wert im Array) auf die Fragen (Index des Arrays = Fragennummer)
+        //Array mit der festen Zuordnungen der Antworten (Wert im Array) auf die Fragen (Index des Arrays = Fragennummer)
         //Zeilen = Erste Antwortoption, zweite Antwortoption, dritte Antwortoptionen
         //Spalten = Erste Frage, Zweite Frage, usw.
         string[][] solutionArray = new string[][]
