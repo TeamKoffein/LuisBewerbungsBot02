@@ -32,7 +32,9 @@ namespace Bewerbungs.Bot.Luis
             var card = new ThumbnailCard
             {
                 Text = text,
-                Buttons = button
+                Buttons = button,
+                Images = new List<CardImage>() { new CardImage(url: "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png") }
+                
             };
 
             message.Attachments.Add(card.ToAttachment());

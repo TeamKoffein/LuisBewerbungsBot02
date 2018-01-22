@@ -319,6 +319,7 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             //Neue Methode hinzugefügt
+            databaseConnector.setTime(applicantID);
             await FindNextAnswer(context, true);
         }
 

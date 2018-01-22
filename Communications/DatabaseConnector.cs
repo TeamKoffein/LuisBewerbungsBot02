@@ -17,6 +17,81 @@ namespace Bewerbungs.Bot.Luis
             return getDBEntry(ID, commandText, 0);
         }
 
+        public void setLevel(int appID, string level)
+        {
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                applicant.Level = level;
+                context.SaveChanges();
+            };
+        }
+
+        public string getLevel(int appID)
+        {
+            string level = "";
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                level = applicant.Level;
+            };
+            return level;
+        }
+
+        public void setActive(int appID, int active)
+        {
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                applicant.Active = active;
+                context.SaveChanges();
+            };
+        }
+
+        public int getActive(int appID)
+        {
+            int active = 0;
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                active = applicant.Active ?? 0;
+            };
+            return active;
+        }
+
+        public void setTime(int appID)
+        {
+            DateTime time = new DateTime();
+            time = DateTime.Now;
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                applicant.Time = time;
+                context.SaveChanges();
+            };
+        }
+
+        public DateTime getTime(int appID)
+        {
+            DateTime time = new DateTime();
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                DateTime? dateOrNull = applicant.Time;
+                if(dateOrNull != null)
+                {
+                    time = dateOrNull.Value;
+                }
+            };
+            return time;
+        }
+
         public int insertNewApp(string conversationID)
         {
             int appID = 0;
@@ -95,6 +170,19 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             return DBEntry;
+        }
+
+        public String getBingAdress2(int appID)
+        {
+            string dbEntry = "";
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                dbEntry = applicant.Adress ?? "";
+                dbEntry = dbEntry + applicant.PostalCode ?? "";
+            };
+            return dbEntry;
         }
 
         public String getBingAdress(int ID)
@@ -205,6 +293,17 @@ namespace Bewerbungs.Bot.Luis
             return currentEntry;
         }
 
+        public void updateDB(string column, int appID, string dbEntry)
+        {
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                context.BewerberdatenLuis.Where(r => r.BewerberID == appID).Select(column);
+                context.BewerberdatenLuis.SqlQuery("UPDATE BewerberdatenLuis SET " + column + " = " + dbEntry + " WHERE BewerberID = " + appID);  
+            };
+        }
+
         //Datenbankanbindung
         //Speichert die vom Bewerber übergegebenen Daten in der Datenbank. Es wird die BewerberID, die zu aktualisierende Spalte und der entsprechende
         // Eintrag benötigt.
@@ -230,6 +329,16 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+
+        public void updateNews(int appID)
+        {
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+               // applicant.Newletter = "true";
+            };
+        }
         public void updateNewsletter(int appID)
         {
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
@@ -407,6 +516,16 @@ namespace Bewerbungs.Bot.Luis
             return active;
         }
 
+
+      /*  public String[] getStellen()
+        {
+            using (DataConnection context = new DataConnection())
+            {
+                Stellen stellen = new Stellen { };
+                context.Stellens.Where(o => true).Count();
+                
+            };
+        }*/
         //Rückgabe aller hinterlegten, offenen Stellen aus der DB
         public String[] getStellenDBEntry()
         {

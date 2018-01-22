@@ -36,6 +36,11 @@ namespace ProactiveBot
         public string ConversationID { get; set; }
         public Nullable<System.DateTime> InterviewDate { get; set; }
         public Nullable<int> ApplicationReviewed { get; set; }
+        public string Level { get; set; }
+        public Nullable<System.DateTime> Time { get; set; }
+        public string Newsletter { get; set; }
+        public Nullable<int> Salutation { get; set; }
+        public Nullable<int> Active { get; set; }
     
         public virtual Stellen Stellen { get; set; }
     }

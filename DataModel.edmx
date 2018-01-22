@@ -45,6 +45,11 @@
           <Property Name="ConversationID" Type="nvarchar" MaxLength="50" />
           <Property Name="InterviewDate" Type="date" />
           <Property Name="ApplicationReviewed" Type="int" />
+          <Property Name="Level" Type="nvarchar" MaxLength="1" />
+          <Property Name="Time" Type="datetime" />
+          <Property Name="Newsletter" Type="nvarchar" MaxLength="50" />
+          <Property Name="Salutation" Type="int" />
+          <Property Name="Active" Type="int" />
         </EntityType>
         <EntityType Name="BewerberTable">
           <Key>
@@ -225,6 +230,11 @@
           <Property Name="InterviewDate" Type="DateTime" Precision="0" />
           <NavigationProperty Name="Stellen" Relationship="Self.FK_BewerberdatenLuis_Stellen" FromRole="BewerberdatenLuis" ToRole="Stellen" />
           <Property Name="ApplicationReviewed" Type="Int32" />
+          <Property Name="Level" Type="String" MaxLength="1" FixedLength="false" Unicode="true" />
+          <Property Name="Time" Type="DateTime" Precision="3" />
+          <Property Name="Newsletter" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="Salutation" Type="Int32" />
+          <Property Name="Active" Type="Int32" />
         </EntityType>
         <EntityType Name="BewerberTable">
           <Key>
@@ -385,6 +395,11 @@
           <EntitySetMapping Name="BewerberdatenLuis">
             <EntityTypeMapping TypeName="ChatBotDataModel.BewerberdatenLui">
               <MappingFragment StoreEntitySet="BewerberdatenLuis">
+                <ScalarProperty Name="Active" ColumnName="Active" />
+                <ScalarProperty Name="Salutation" ColumnName="Salutation" />
+                <ScalarProperty Name="Newsletter" ColumnName="Newsletter" />
+                <ScalarProperty Name="Time" ColumnName="Time" />
+                <ScalarProperty Name="Level" ColumnName="Level" />
                 <ScalarProperty Name="ApplicationReviewed" ColumnName="ApplicationReviewed" />
                 <ScalarProperty Name="BewerberID" ColumnName="BewerberID" />
                 <ScalarProperty Name="Job" ColumnName="Job" />
