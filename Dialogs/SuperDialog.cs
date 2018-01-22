@@ -83,6 +83,12 @@ namespace Bewerbungs.Bot.Luis
             public ConversationReference RelatesTo { get; set; }
         }
 
+        public class JsonFileRelatesTo
+        {
+            public string ConversationID { get; set; }
+            public ConversationReference RelatesTo { get; set; }
+        }
+
         public static async Task AddMessageToQueueAsync(string message, string queueName)
         {
             // Retrieve storage account from connection string.
@@ -102,6 +108,20 @@ namespace Bewerbungs.Bot.Luis
             await queue.AddMessageAsync(queuemessage);
         }
 
+        public static async Task AddFileToBlobbAsynch(string containerName, string path, string jsonFile)
+        {
+            //string path = activity.Conversation.Id + ".txt";
+            string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+            CloudStorageAccount csa = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
+            CloudBlobClient blobClient = csa.CreateCloudBlobClient();
+            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+            CloudBlockBlob blob = container.GetBlockBlobReference(path);
+            using (StreamWriter writer = new StreamWriter(blob.OpenWrite()))
+            {
+                writer.Write(value: jsonFile);
+            }
+        }
+
         //StartAsync startet den Gesprächbeginn
         override public async Task StartAsync(IDialogContext Chat)
         {
@@ -116,6 +136,12 @@ namespace Bewerbungs.Bot.Luis
             askingPersonal = databaseConnector.getFAQQuestions(1);
             askingFormal = databaseConnector.getFAQQuestions(2);
 
+            var relatesTo = new JsonFileRelatesTo
+            {
+                RelatesTo = Chat.Activity.ToConversationReference(),
+                ConversationID = Chat.Activity.Conversation.Id
+            };
+            await AddFileToBlobbAsynch("relatesto", Chat.Activity.Conversation.Id + ".json", JsonConvert.SerializeObject(relatesTo));
 
             //Willkommenstext und Datenschutzerklaerung beim Starten des Bots
             string willkommensText = "Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst.";
@@ -492,9 +518,10 @@ namespace Bewerbungs.Bot.Luis
             {
                 if (result.TopScoringIntent.Score.Value >= 0.5)
                 {
+                    //Extra Abbruch bei dem Auslösen vom Inten "Holiday"
                     if (result.TopScoringIntent.Intent.ToString().Equals("Holiday"))
                     {
-                        string[] s  = new string[2];
+                        string[] s = new string[2];
                         await context.PostAsync(s[3]);
                         context.Wait(this.MessageReceived);
                     }
