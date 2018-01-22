@@ -7,6 +7,7 @@ using Microsoft.Bot.Connector;
 using Microsoft.Bot.Builder.Dialogs;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace Bewerbungs.Bot.Luis
 {
@@ -56,6 +57,30 @@ namespace Bewerbungs.Bot.Luis
                 // Handle conversation state changes, like members being added and removed
                 // Use Activity.MembersAdded and Activity.MembersRemoved and Activity.Action for info
                 // Not available in all channels
+                IConversationUpdateActivity iConversationUpdated = message as IConversationUpdateActivity;
+                if (iConversationUpdated != null)
+                {
+                    ConnectorClient connector = new ConnectorClient(new System.Uri(message.ServiceUrl));
+
+                    foreach (var member in iConversationUpdated.MembersAdded ?? System.Array.Empty<ChannelAccount>())
+                    {
+                        // if the bot is added, then 
+                        if (member.Id == iConversationUpdated.Recipient.Id)
+                        {
+                            var reply = ((Activity)iConversationUpdated).CreateReply();
+
+                            reply.SuggestedActions = new SuggestedActions() {
+                                Actions = new List<CardAction>() {
+                                    new CardAction()
+                                    {
+                                        Title = "Hallo Bot", Type = ActionTypes.ImBack, Value = "Hallo"
+                                    }
+                                }
+                            };
+                            connector.Conversations.ReplyToActivity(reply);
+                        }
+                    }
+                }
             }
             else if (message.Type == ActivityTypes.ContactRelationUpdate)
             {

@@ -34,7 +34,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 Text = text,
                 Buttons = button,
-                Images = new List<CardImage>() { new CardImage(url: "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png") }
+                //Images = new List<CardImage>() { new CardImage(url: "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png") }
                 
             };
 
