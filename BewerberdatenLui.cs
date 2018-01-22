@@ -41,6 +41,7 @@ namespace ProactiveBot
         public string Newsletter { get; set; }
         public Nullable<int> Salutation { get; set; }
         public Nullable<int> Active { get; set; }
+        public string UserID { get; set; }
     
         public virtual Stellen Stellen { get; set; }
     }

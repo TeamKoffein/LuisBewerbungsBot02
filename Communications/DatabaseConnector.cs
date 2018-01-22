@@ -92,17 +92,17 @@ namespace Bewerbungs.Bot.Luis
             return time;
         }
 
-        public int insertNewApp(string conversationID)
+        public int insertNewApp(string conversationID, string userID)
         {
             int appID = 0;
             using (DataConnection context = new DataConnection())
             {
                 BewerberdatenLui applicant = new BewerberdatenLui { ConversationID = conversationID };
                 context.BewerberdatenLuis.Add(applicant);
+                applicant.UserID = userID;
                 context.SaveChanges();
                 appID = applicant.BewerberID;
             };
-
             return appID;
         }
         public bool checkNull(string column, int appID)
