@@ -114,33 +114,11 @@ namespace Bewerbungs.Bot.Luis
             return heroCard.ToAttachment();
         }
 
-        //Methode: Finde die zu der Nummer der Antwort zugehoerige Frage
-        private int FindQuestionToAnswer(String number)
+        //Methode: Finde die zu der Nummer der Antwort zugehoerige Nummer der Antwortoption (0, 1 oder 2) oder Fragennummer (0-11)
+        private int FindSolutionToAnswer(String number, int typ)
         {
-            //Nummer der Antwort, die der Nutzer ausgewaehlt hat
-            string answerNumber = Convert.ToString(number);
+            //typ=0: Gib Fragennummer zurueck, typ=1: Gib Anwortoption zurueck
 
-            //Return Wert = Ausgewaehlte Frage (Wert von 0-11)
-            int questionNumber = -1;
-
-            //j gibt Fragennummer (Index des Arrays) zurueck
-            //i gibt Antwortoptionen 0, 1 oder 2 zurueck (mit DB Wert zu vergleichen)
-            for (int i = 0; i < solutionArray.Length; i++)
-            {
-                for (int j = 0; j < solutionArray.Length; j++)
-                {
-                    if (answerNumber == solutionArray[i][j])
-                    {
-                        return questionNumber = j;
-                    }
-                }
-            }
-            return questionNumber;
-        }
-
-        //Methode: Finde die zu der Nummer der Antwort zugehoerige Nummer der Antwortoption (0, 1 oder 2)
-        private int FindSolutionToAnswer(String number)
-        {
             //Nummer der Antwort, die der Nutzer ausgewaehlt hat
             string answerNumber = Convert.ToString(number);
 
@@ -153,7 +131,13 @@ namespace Bewerbungs.Bot.Luis
             {
                 for (int j = 0; j < solutionArray.Length; j++)
                 {
-                    if (answerNumber == solutionArray[i][j])
+                    //Wenn zugehoerige Fragennummer erfragt wird 
+                    if ((answerNumber == solutionArray[i][j]) && (typ==0))
+                    {
+                        return solutionNumber = j;
+                    }
+                    //Wenn Antwortoption erfragt wird
+                    else
                     {
                         return solutionNumber = i;
                     }
@@ -167,9 +151,9 @@ namespace Bewerbungs.Bot.Luis
             Boolean endLoop = false;
             String answerNumber =result.ToString();
             //questionNumber enthaelt Nummer der Frage
-            int questionNumber = FindQuestionToAnswer(answerNumber);
+            int questionNumber = FindSolutionToAnswer(answerNumber, 0);
             //solutionNumber enthaelt vom Nutzer gewaehlte Antwortoption 
-            String solutionNumber = Convert.ToString(FindSolutionToAnswer(answerNumber));
+            String solutionNumber = Convert.ToString(FindSolutionToAnswer(answerNumber, 1));
             //Score des Bewerbers
             
 
@@ -195,9 +179,6 @@ namespace Bewerbungs.Bot.Luis
                     context.Done(true);
                 }
             }
-
-
-
         }
 
 
