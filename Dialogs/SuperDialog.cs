@@ -492,6 +492,12 @@ namespace Bewerbungs.Bot.Luis
             {
                 if (result.TopScoringIntent.Score.Value >= 0.5)
                 {
+                    if (result.TopScoringIntent.Intent.ToString().Equals("Holiday"))
+                    {
+                        string[] s  = new string[2];
+                        await context.PostAsync(s[3]);
+                        context.Wait(this.MessageReceived);
+                    }
                     if (safeDataConfirmation)
                     {
                         DatabaseConnector databaseConnector = new DatabaseConnector();
