@@ -116,7 +116,6 @@ namespace Bewerbungs.Bot.Luis
             askingPersonal = databaseConnector.getFAQQuestions(1);
             askingFormal = databaseConnector.getFAQQuestions(2);
 
-
             //Willkommenstext und Datenschutzerklaerung beim Starten des Bots
             string willkommensText = "Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst.";
             string datenschutzText = "Wir würden gerne die erhaltenen Daten speichern. Bitte bestätige uns die Datenschutzerklärung, die über folgenden Link aufgerufen werden kann:";
@@ -336,7 +335,7 @@ namespace Bewerbungs.Bot.Luis
             else
             {
                 Question[1] = false;
-                context.Call(new AskingJob(askingFormal[1]), AfterStellen);
+                context.Call(new AskingJob(askingFormal[1]), AfterStellen);               
             }
         }
 
@@ -436,8 +435,16 @@ namespace Bewerbungs.Bot.Luis
             string date = databaseConnector.getJobDate(accept);
             await context.PostAsync("Zu diesem Termin stellen wir ein: " + date);
             //Neue Methode hinzugefügt
+            context.Call(new AskingQuestions(null), AfterQuestions);
+        }
+        
+        //Nachdem der Bewerber das Quiz beantwortet hat
+         public async Task AfterQuestions(IDialogContext context, IAwaitable<object> result)
+        {
+            await context.PostAsync("Danke, dass du die Quiz-Fragen beantwortet hast!");
             await FindNextAnswer(context, true);
         }
+            
 
         public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
         {
