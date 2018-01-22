@@ -20,6 +20,7 @@ namespace Bewerbungs.Bot.Luis
         private string intent;
         private string messagecontext;
         private string textMessage;
+        private bool firstMessage = true;
 
         public Acceptance(string textMessage)
         {
@@ -131,8 +132,16 @@ namespace Bewerbungs.Bot.Luis
         //Abfangen nicht erkannter Aussagen
         public async Task Other(IDialogContext context, LuisResult result)
         {
-            await context.PostAsync("Bitte bestätigen oder verneinen");
-            await context.PostAsync(AttachedData(context));
+            if (!firstMessage)
+            {
+                await context.PostAsync("Bitte bestätigen oder verneinen");
+                await context.PostAsync(AttachedData(context));
+                
+            }
+            else
+            {
+                firstMessage = false;
+            }
 
         }
 
