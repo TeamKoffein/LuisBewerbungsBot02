@@ -39,7 +39,19 @@ namespace Bewerbungs.Bot.Luis
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
             //Hole Fragen und Antworten aus DB
-            quiz = databaseConnector.getQuizDBEntry(); //###
+
+
+
+
+
+            //quiz = databaseConnector.getQuizDBEntry(); //###
+
+
+
+
+
+
+
 
             //Setzte alles im Boolean Array auf false (alle Fragen unbeantwortet)
             for (int i = 0; i < answeredQuestions.Length; i++) { answeredQuestions[i] = false; }
