@@ -265,6 +265,7 @@
       <DependentUpon>DataModel.edmx</DependentUpon>
     </Compile>
     <Compile Include="Dialogs\Acceptance.cs" />
+    <Compile Include="Dialogs\AskingQuestions.cs" />
     <Compile Include="Dialogs\AskingJob.cs" />
     <Compile Include="Dialogs\CheckEmail.cs" />
     <Compile Include="Dialogs\ConfirmationCard.cs" />

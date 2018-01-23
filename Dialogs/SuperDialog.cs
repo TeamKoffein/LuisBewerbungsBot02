@@ -369,7 +369,7 @@ namespace Bewerbungs.Bot.Luis
             else
             {
                 Question[1] = false;
-                context.Call(new AskingJob(askingFormal[1]), AfterStellen);
+                context.Call(new AskingJob(askingFormal[1]), AfterStellen);               
             }
         }
 
@@ -469,8 +469,16 @@ namespace Bewerbungs.Bot.Luis
             string date = databaseConnector.getJobDate(accept);
             await context.PostAsync("Zu diesem Termin stellen wir ein: " + date);
             //Neue Methode hinzugefügt
+            context.Call(new AskingQuestions(null), AfterQuestions);
+        }
+        
+        //Nachdem der Bewerber das Quiz beantwortet hat
+         public async Task AfterQuestions(IDialogContext context, IAwaitable<object> result)
+        {
+            await context.PostAsync("Danke, dass du die Quiz-Fragen beantwortet hast!");
             await FindNextAnswer(context, true);
         }
+            
 
         public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
         {
