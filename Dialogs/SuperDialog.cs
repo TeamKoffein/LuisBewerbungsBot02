@@ -89,6 +89,35 @@ namespace Bewerbungs.Bot.Luis
             public ConversationReference relatesTo { get; set; }
         }
 
+        //Geo Koordinaten vom Facebook Messenger erhalten und an Bing weiter versendet
+        public async Task ReceivedLocation(IDialogContext context, IAwaitable<IMessageActivity> argument)
+        {
+            var message = await argument;
+
+            var place = message.Entities?.Where(t => t.Type == "Place").Select(t => t.GetAs<Place>()).FirstOrDefault();
+
+            if (place != null && place.Geo != null && place.Geo.latitude != null && place.Geo.longitude != null)
+            {
+                double latitude = (double)place.Geo.latitude;
+                double longitude = (double)place.Geo.longitude;
+                string geocode = latitude.ToString() + " " + longitude.ToString();
+                await context.PostAsync(geocode);
+                var bingTrigger = new JsonFileBing
+                {
+                    RelatesTo = context.Activity.ToConversationReference(),
+                    Origin = geocode,
+                    Destination = "Am Butzweilerhofallee 2, Köln"
+                };
+                await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
+                context.Wait(this.MessageReceived);
+            }
+            else
+            {
+                await context.PostAsync("ungültige Ortsangabe");
+                await this.MessageReceived(context, argument);
+            }
+        }
+
         public static async Task AddMessageToQueueAsync(string message, string queueName)
         {
             // Retrieve storage account from connection string.
@@ -532,13 +561,6 @@ namespace Bewerbungs.Bot.Luis
             {
                 if (result.TopScoringIntent.Score.Value >= 0.5)
                 {
-                    //Extra Abbruch bei dem Auslösen vom Inten "Holiday"
-                    if (result.TopScoringIntent.Intent.ToString().Equals("Holiday"))
-                    {
-                        string[] s = new string[2];
-                        await context.PostAsync(s[3]);
-                        context.Wait(this.MessageReceived);
-                    }
                     if (safeDataConfirmation)
                     {
                         DatabaseConnector databaseConnector = new DatabaseConnector();
@@ -552,17 +574,20 @@ namespace Bewerbungs.Bot.Luis
                                 string homeAdress = databaseConnector.getBingAdress(applicantID);
                                 if (!String.IsNullOrEmpty(homeAdress))
                                 {
-                                    await context.PostAsync("Adresse empty");
+                                    await context.PostAsync("Keine Adresse hinterlegt");
                                 }
                                 else
                                 {
-                                    var bingTrigger = new JsonFileBing
+                                    if (!(context.Activity.ChannelId.Equals("facebook")))
                                     {
-                                        RelatesTo = context.Activity.ToConversationReference(),
-                                        Origin = homeAdress,
-                                        Destination = "Am Butzweilerhofallee 2, Köln"
-                                    };
-                                    await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
+                                        var bingTrigger = new JsonFileBing
+                                        {
+                                            RelatesTo = context.Activity.ToConversationReference(),
+                                            Origin = homeAdress,
+                                            Destination = "Am Butzweilerhofallee 2, Köln"
+                                        };
+                                        await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
+                                    }
                                 }
                                 //  }
                                 //   else
@@ -574,10 +599,27 @@ namespace Bewerbungs.Bot.Luis
                             if (du != -1)
                             {
                                 await context.PostAsync(databaseConnector.getDBEntry(key, "SELECT * FROM FAQ WHERE FAQID =@ID", du));
+
+                                var reply = context.MakeMessage();
+                                reply.ChannelData = new FacebookMessage
+                                (
+                                    text: "Wo bist du?",
+                                    quickReplies: new List<FacebookQuickReply>
+                                    {
+                                        new FacebookQuickReply(
+                                            contentType: FacebookQuickReply.ContentTypes.Location,
+                                            title: default(string),
+                                            payload: default(string)
+                                    )
+                                    }
+                                );
+                                await context.PostAsync(reply);
+                                context.Wait(this.ReceivedLocation);
                             }
                             else
                             {
                                 await context.PostAsync("Bitte verrate mir vorher, ob wir beim 'Du' bleiben sollen");
+                                context.Wait(this.MessageReceived);
                             }
                         }
                         else
@@ -586,13 +628,14 @@ namespace Bewerbungs.Bot.Luis
                             {
                                 await context.PostAsync(databaseConnector.getDBEntry(jobID, "SELECT Profil FROM Stellen WHERE StellenID =@ID"));
                             }
+                            context.Wait(this.MessageReceived);
                         }
                     }
                     else
                     {
                         await context.PostAsync("Zuerst musst du die Datenschutzerklärung bestätigen.");
+                        context.Wait(this.MessageReceived);
                     }
-                    context.Wait(this.MessageReceived);
                 }
                 else
                 {
