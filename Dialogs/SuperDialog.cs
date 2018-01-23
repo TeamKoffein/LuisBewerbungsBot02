@@ -86,7 +86,7 @@ namespace Bewerbungs.Bot.Luis
         public class JsonFileRelatesTo
         {
             public string ConversationID { get; set; }
-            public ConversationReference RelatesTo { get; set; }
+            public ConversationReference relatesTo { get; set; }
         }
 
         public static async Task AddMessageToQueueAsync(string message, string queueName)
@@ -138,7 +138,7 @@ namespace Bewerbungs.Bot.Luis
 
             var relatesTo = new JsonFileRelatesTo
             {
-                RelatesTo = Chat.Activity.ToConversationReference(),
+                relatesTo = Chat.Activity.ToConversationReference(),
                 ConversationID = Chat.Activity.Conversation.Id
             };
             await AddFileToBlobbAsynch("relatesto", Chat.Activity.Conversation.Id + ".json", JsonConvert.SerializeObject(relatesTo));
