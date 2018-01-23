@@ -6,7 +6,6 @@
     <edmx:Diagrams>
       <Diagram DiagramId="ac545252a6f94dee8f19f28b2b99a263" Name="Diagram1">
         <EntityTypeShape EntityType="ChatBotDataModel.Angestellte" Width="1.5" PointX="5.75" PointY="0.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="ChatBotDataModel.BewerberdatenLui" Width="1.5" PointX="3" PointY="1.125" IsExpanded="true" />
         <EntityTypeShape EntityType="ChatBotDataModel.BewerberTable" Width="1.5" PointX="5.75" PointY="4.75" IsExpanded="true" />
         <EntityTypeShape EntityType="ChatBotDataModel.Event" Width="1.5" PointX="7.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="ChatBotDataModel.Fachfragen" Width="1.5" PointX="0.75" PointY="7.75" IsExpanded="true" />
@@ -14,10 +13,11 @@
         <EntityTypeShape EntityType="ChatBotDataModel.FAQFragen" Width="1.5" PointX="7.75" PointY="3.75" IsExpanded="true" />
         <EntityTypeShape EntityType="ChatBotDataModel.GespeicherteBewerber" Width="1.5" PointX="7.75" PointY="6.75" IsExpanded="true" />
         <EntityTypeShape EntityType="ChatBotDataModel.News" Width="1.5" PointX="4.75" PointY="8.75" IsExpanded="true" />
-        <EntityTypeShape EntityType="ChatBotDataModel.Stellen" Width="1.5" PointX="0.75" PointY="2.5" IsExpanded="true" />
         <EntityTypeShape EntityType="ChatBotDataModel.sysdiagram" Width="1.5" PointX="9.75" PointY="0.75" IsExpanded="true" />
         <EntityTypeShape EntityType="ChatBotDataModel.UserLogin" Width="1.5" PointX="9.75" PointY="3.75" IsExpanded="true" />
-        <AssociationConnector Association="ChatBotDataModel.FK_BewerberdatenLuis_Stellen" ManuallyRouted="false" />
+        <EntityTypeShape EntityType="ChatBotDataModel.Stellen" Width="1.5" PointX="10.375" PointY="9.25" />
+        <EntityTypeShape EntityType="ChatBotDataModel.BewerberdatenLui" Width="1.5" PointX="12.625" PointY="7.125" />
+        <AssociationConnector Association="ChatBotDataModel.FK_BewerberdatenLuis_Stellen" />
       </Diagram>
     </edmx:Diagrams>
   </edmx:Designer>

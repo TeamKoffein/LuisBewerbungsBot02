@@ -26,7 +26,6 @@ namespace ProactiveBot
         }
     
         public virtual DbSet<Angestellte> Angestelltes { get; set; }
-        public virtual DbSet<BewerberdatenLui> BewerberdatenLuis { get; set; }
         public virtual DbSet<BewerberTable> BewerberTables { get; set; }
         public virtual DbSet<Event> Events { get; set; }
         public virtual DbSet<Fachfragen> Fachfragens { get; set; }
@@ -34,8 +33,9 @@ namespace ProactiveBot
         public virtual DbSet<FAQFragen> FAQFragens { get; set; }
         public virtual DbSet<GespeicherteBewerber> GespeicherteBewerbers { get; set; }
         public virtual DbSet<News> News { get; set; }
-        public virtual DbSet<Stellen> Stellens { get; set; }
         public virtual DbSet<sysdiagram> sysdiagrams { get; set; }
         public virtual DbSet<UserLogin> UserLogins { get; set; }
+        public virtual DbSet<Stellen> Stellens { get; set; }
+        public virtual DbSet<BewerberdatenLui> BewerberdatenLuis { get; set; }
     }
 }

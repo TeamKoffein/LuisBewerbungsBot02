@@ -125,7 +125,6 @@ namespace Bewerbungs.Bot.Luis
             await Chat.PostAsync(messageText);
             string text = ("Eine kurze Bestätigung reicht uns voll und ganz!");
             await Chat.PostAsync(confirm.AttachedData(Chat, text));
-
             Chat.Wait(this.MessageReceived);
         }
 

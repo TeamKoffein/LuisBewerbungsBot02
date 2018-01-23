@@ -16,5 +16,10 @@ namespace ProactiveBot
     {
         public int FragenID { get; set; }
         public string Frage { get; set; }
+        public string AntwortEins { get; set; }
+        public string AntwortZwei { get; set; }
+        public string AntwortDrei { get; set; }
+        public string RichtigeAntwort { get; set; }
+        public string Punkte { get; set; }
     }
 }
