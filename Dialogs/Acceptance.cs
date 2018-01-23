@@ -40,17 +40,17 @@ namespace Bewerbungs.Bot.Luis
             var button = new List<CardAction>
                 {
                     new CardAction(
-                        ActionTypes.ImBack,
-                        "Ja",
-                        "Ja",
-                        "Ja")
+                        type: ActionTypes.ImBack,
+                        value: "Ja",
+                        title: "Ja",
+                        displayText: "Ja")
                 };
             button.Add(
                 new CardAction(
-                        ActionTypes.ImBack,
-                        "Nein",
-                        "Nein",
-                        "Nein"));
+                        type: ActionTypes.ImBack,
+                        value: "Nein",
+                        title: "Nein",
+                        displayText: "Nein"));
 
             var card = new ThumbnailCard
             {
