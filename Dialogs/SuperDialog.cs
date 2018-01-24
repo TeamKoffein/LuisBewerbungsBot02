@@ -786,17 +786,19 @@ namespace Bewerbungs.Bot.Luis
                                 Question[3] = true;
                                 Question[4] = true;
                                 Question[5] = true;
+                                int indexa = Question.FindIndex(x => x == false);
+                                if (Question[2] == false)
+                                {
+                                    indexa = 2;
+                                }
+                                await contextIn.PostAsync(askingPersonal[indexa]);
                             }
                             else
                             {
                                 await contextIn.PostAsync("Ok, abgebrochen.");
                             }
                         });
-                        await context.PostAsync(askingPersonal[index]);
-                        if (needWait == true)
-                        {
-                            context.Wait(this.MessageReceived);
-                        }
+                       
                     }
                     else
                     {
@@ -840,17 +842,18 @@ namespace Bewerbungs.Bot.Luis
                                 Question[3] = true;
                                 Question[4] = true;
                                 Question[5] = true;
+                                int indexa = Question.FindIndex(x => x == false);
+                                if (Question[2] == false)
+                                {
+                                    indexa = 2;
+                                }
+                                await contextIn.PostAsync(askingPersonal[indexa]);
                             }
                             else
                             {
                                 await contextIn.PostAsync("Ok, abgebrochen.");
                             }
                         });
-                        await context.PostAsync(askingFormal[index]);
-                        if (needWait == true)
-                        {
-                            context.Wait(this.MessageReceived);
-                        }
                     }
                     else
                     {
