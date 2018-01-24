@@ -16,18 +16,20 @@ namespace Bewerbungs.Bot.Luis
     {
         /// <summary>
         /// POST: api/Messages
-        /// receive a message from a user and send replies
+        /// Die Post Methode fängt sämtliche ankommenden Nachrichten ab und verteilt diese an die jeweiligen passenden Stellen.
+        /// Es ist dabei egal, ob die eingehende Nachricht von einem Messenger Dienst oder von einer externen API kommt.
         /// </summary>
         /// <param name="activity"></param>
         [ResponseType(typeof(void))]
         public virtual async Task<HttpResponseMessage> Post([FromBody] Activity activity)
         {
-            // check if activity is of type message
+            // es wird geprüft, ob die ankommende Nachricht eine "Message" ist. Messages sind die Nachrichten, die von Chat-Diensten, wie z.B. Skype kommen.
+            //Anschließend wird diese Nachricht an den Bot gegeben, um diese zu verarbeiten.
             if (activity.GetActivityType() == ActivityTypes.Message)
             {
                 activity.Locale = "de-DE";
                 await Conversation.SendAsync(activity, () => new SuperDialog());
-            }
+            }//Ankommende "Event" Nachrichten, die von den externen Azure Functions an den Bot gesendet werden. 
             else if (activity.Type == ActivityTypes.Event)
             {
                 IEventActivity triggerEvent = activity;
@@ -36,16 +38,17 @@ namespace Bewerbungs.Bot.Luis
 
                 var client = new ConnectorClient(new Uri(messageactivity.ServiceUrl));
                 var triggerReply = messageactivity.CreateReply();
-                triggerReply.Text = $"This is coming back from the trigger! {message.Text}";
+                triggerReply.Text = $"{message.Text}";
                 await client.Conversations.ReplyToActivityAsync(triggerReply);
             }
             else
-            {
+            {//Verarbeitung von "Systemnachrichten"
                 HandleSystemMessage(activity);
             }
             return new HttpResponseMessage(System.Net.HttpStatusCode.Accepted);
         }
 
+        //Systemnachrichten sind Eingaben, die nicht explizit vom User verschickt wurden, auf die der Bot aber reagieren kann.
         private Activity HandleSystemMessage(Activity message)
         {
             if (message.Type == ActivityTypes.DeleteUserData)
@@ -65,7 +68,7 @@ namespace Bewerbungs.Bot.Luis
 
                     foreach (var member in iConversationUpdated.MembersAdded ?? System.Array.Empty<ChannelAccount>())
                     {
-                        // if the bot is added, then 
+                        // Der User bekommt bei der Verbindung die Möglichkeit angezeigt dem Bot zu schreiben.
                         if (member.Id == iConversationUpdated.Recipient.Id)
                         {
                             var reply = ((Activity)iConversationUpdated).CreateReply();
@@ -100,6 +103,7 @@ namespace Bewerbungs.Bot.Luis
         }
     }
 
+    //Festlegung der Message Klasse, über die die gesamte Kommunikation des Bots läuft. Es wird dafür eine grundlegende Struktur festgelegt an die sich die Kommunikation halten muss
     public class Message
     {
         public ConversationReference RelatesTo { get; set; }

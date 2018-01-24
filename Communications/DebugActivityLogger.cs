@@ -14,9 +14,10 @@ using System.Configuration;
 
 namespace Bewerbungs.Bot.Luis
 {
-    //ProactiveBot.Communications
+    //In dieser Klasse werden die Eingaben von Nutzer und Bot eingespeichert und im Blob-Storage gepseichert
     public class DebugActivityLogger : IActivityLogger
     {
+        //Gespeichert werden Sender, Empfänger und Nachricht und unter der ConversationID hinterlegt
         public async Task LogAsync(IActivity activity)
         {
             Debug.WriteLine($"From:{activity.From.Id} - To:{activity.Recipient.Id} - Message:{activity.AsMessageActivity()?.Text}");
@@ -46,31 +47,6 @@ namespace Bewerbungs.Bot.Luis
                 writer.Write(oldContent + Environment.NewLine);
                 writer.Write(contents + Environment.NewLine);
             }
-        /*
-            if (!File.Exists(path))
-            {
-                // Create a file to write to.
-                using (StreamWriter sw = File.CreateText(destPath))
-                {
-                }
-            }
-
-            try
-            {
-                //Open the File
-                StreamWriter sw = new StreamWriter(destPath, true, Encoding.ASCII);
-                sw.WriteLine($"From:{activity.From.Id} - To:{activity.Recipient.Id} - Message:{activity.AsMessageActivity()?.Text}");
-                //close the file
-                sw.Close();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Exception: " + e.Message);
-            }
-            finally
-            {
-                Console.WriteLine("Executing finally block.");
-            }*/
         }
     }
 }

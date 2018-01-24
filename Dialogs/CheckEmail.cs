@@ -10,22 +10,26 @@ using Bewerbungs.Bot.Luis;
 
 namespace Bewerbungs.Bot.Luis
 {
+    //Die E-Mail Adresse für die Validierung der bekannten Nutzer
     [Serializable]
     public class CheckEmail : IDialog<object>
     {
         string appName;
 
+        //Konstruktor
         public CheckEmail(string appName)
         {
             this.appName = appName;
         }
 
+        //Einforderung der Eingabe für die E-Mail Adressen Validierung
         public async Task StartAsync(IDialogContext context)
         {
             await context.PostAsync("Gebe deine hinterlegte Emailadresse an.");
             context.Wait(this.MessageReceivedAsync);
         }
 
+        //Check, ob die vom Nutzer angegebene Mail Adresse hinterlegt wurde
         public async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
             var message = await result;

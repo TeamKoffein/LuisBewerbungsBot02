@@ -99,6 +99,8 @@ namespace Bewerbungs.Bot.Luis
 
             
         }
+
+        //Wenn der Upload abgeschlossen wurde wird dem BasisDialog ein Boolean zurückgegeben, damit der eigentliche Prozess weiter läuft
         private async Task AfterUpload(IDialogContext context, IAwaitable<object> result)
         {
             int accept = Convert.ToInt32(await result);

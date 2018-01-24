@@ -7,8 +7,10 @@ using System.Web;
 
 namespace Bewerbungs.Bot.Luis
 {
+    //Erstellung der Acceptance Card, die es dem nutzer ermöglicht auf die Fragen einfach mit Hilfe von Buttons "Ja" und "Nein" zu antworten
     public class ConfirmationCard
     {
+        //Erstellung der Nachricht, die die Karte verschickt
         public IMessageActivity AttachedData(IDialogContext context, string text)
         {
             var reply = context.MakeMessage();
@@ -34,8 +36,6 @@ namespace Bewerbungs.Bot.Luis
             {
                 Text = text,
                 Buttons = button,
-                //Images = new List<CardImage>() { new CardImage(url: "https://upload.wikimedia.org/wikipedia/commons/c/ca/1x1.png") }
-                
             };
 
             message.Attachments.Add(card.ToAttachment());

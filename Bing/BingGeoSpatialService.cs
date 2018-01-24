@@ -8,6 +8,7 @@
     using Microsoft.Bot.Builder.Internals.Fibers;
     using Newtonsoft.Json;
 
+    //Der BingGeoSpatialService stellt den Bing Ortungsdienst zur Verfügung
     [Serializable]
     internal sealed class BingGeoSpatialService : IGeoSpatialService
     {
@@ -19,11 +20,13 @@
 
         private readonly string apiKey;
 
+        //Mit Hilfe des API Keys wird die Verbindungsinformationen zu Bing gespeichert
         internal BingGeoSpatialService(string apiKey)
         {
             SetField.NotNull(out this.apiKey, nameof(apiKey), apiKey);
         }
 
+        //Die Informationen werden  vom Bing Server abgerufen
         public async Task<LocationSet> GetLocationsByQueryAsync(string address)
         {
             if (string.IsNullOrEmpty(address))
@@ -34,12 +37,14 @@
             return await this.GetLocationsAsync(FindByQueryApiUrl + Uri.EscapeDataString(address) + "&key=" + this.apiKey);
         }
 
+        //Die Informationen werden auf das Geokoordinatenformat festgelegt
         public async Task<LocationSet> GetLocationsByPointAsync(double latitude, double longitude)
         {
             return await this.GetLocationsAsync(
                 string.Format(CultureInfo.InvariantCulture, FindByPointUrl, latitude, longitude) + "&key=" + this.apiKey);
         }
 
+        //Für den Ort wird die Karte als Bild gespeichert
         public string GetLocationMapImageUrl(Location location, int? index = null)
         {
             if (location == null)
@@ -77,6 +82,7 @@
             }
         }
 
+        //Der Ort wird bei Bing abgefragt
         private async Task<LocationSet> GetLocationsAsync(string url)
         {
             using (var client = new HttpClient())
