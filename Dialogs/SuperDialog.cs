@@ -792,6 +792,11 @@ namespace Bewerbungs.Bot.Luis
                                 await contextIn.PostAsync("Ok, abgebrochen.");
                             }
                         });
+                        await context.PostAsync(askingPersonal[index]);
+                        if (needWait == true)
+                        {
+                            context.Wait(this.MessageReceived);
+                        }
                     }
                     else
                     {
@@ -813,6 +818,39 @@ namespace Bewerbungs.Bot.Luis
                     if (index == 1)
                     {
                         context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                    }
+                    else if (2 < index && index < 6)
+                    {
+                        var apiKey = WebConfigurationManager.AppSettings["BingMapsApiKey"];
+                        var prompt = "Wie lautet deine Adresse? Bitte gebe hierzu die Straße, Postleitzahl und Stadt an.";
+                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt, LocationOptions.SkipFinalConfirmation | LocationOptions.SkipFavorites | LocationOptions.UseNativeControl, LocationRequiredFields.StreetAddress | LocationRequiredFields.PostalCode);
+                        context.Call(locationDialog, async (contextIn, result) =>
+                        {
+                            Place place = await result;
+                            if (place != null)
+                            {
+                                var address = place.GetPostalAddress();
+                                string strasse = address.StreetAddress;
+                                string postalcode = address.PostalCode;
+                                string city = address.Locality;
+                                string name = address != null ?
+                                    $"{address.StreetAddress}, {address.Locality}, {address.Region}, {address.Country} ({address.PostalCode})" :
+                                    "the pinned location";
+                                await contextIn.PostAsync($"Die  Adresse {name} ist abgespeichert.");
+                                Question[3] = true;
+                                Question[4] = true;
+                                Question[5] = true;
+                            }
+                            else
+                            {
+                                await contextIn.PostAsync("Ok, abgebrochen.");
+                            }
+                        });
+                        await context.PostAsync(askingFormal[index]);
+                        if (needWait == true)
+                        {
+                            context.Wait(this.MessageReceived);
+                        }
                     }
                     else
                     {
