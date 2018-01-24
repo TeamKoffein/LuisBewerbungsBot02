@@ -139,6 +139,7 @@ namespace Bewerbungs.Bot.Luis
             string datenschutzLink = "http://luisbewerbungsbot.azurewebsites.net/PrivacyPolicy.html";
             string messageText = willkommensText + "\n\n" + datenschutzText + "\n\n" + datenschutzLink;
             await Chat.PostAsync(messageText);
+            string[,] quiz = databaseConnector.getQuizDBEntry();
             string text = ("Eine kurze Bestätigung reicht uns voll und ganz!");
             await Chat.PostAsync(confirm.AttachedData(Chat, text));
             Chat.Wait(this.MessageReceived);
@@ -390,10 +391,8 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("Adress")]
         [LuisIntent("Birthday")]
         [LuisIntent("Career")]
-        [LuisIntent("EducationalBackground")]
-        [LuisIntent("Email")]
+        [LuisIntent("EducationalBackground")]      
         [LuisIntent("Language")]
-        [LuisIntent("PhoneNumber")]
         [LuisIntent("Place")]
         [LuisIntent("PostalCode")]
         [LuisIntent("PrivateProjects")]
@@ -417,8 +416,11 @@ namespace Bewerbungs.Bot.Luis
                 if (result.TopScoringIntent.Score.Value >= 0.5)
                 {
                     var message = await activity;
-                    Text = message.Text; //hier einstetzen von GiveEntities(result);
                     LuisTopIntention = result.TopScoringIntent.Intent.ToString();
+                    if (!LuisTopIntention.Equals("PhoneNumber") && !LuisTopIntention.Equals("Email"))
+                    {
+                        Text = message.Text; //hier einstetzen von GiveEntities(result);
+                    }
                     await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterAnswer, message, CancellationToken.None);
                 }
                 else
@@ -427,12 +429,99 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
         }
+        [LuisIntent("PhoneNumber")]
+        public async Task Phone(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
+        {
+            string phone = phoneNumber(result.Query);
+            if (!String.IsNullOrEmpty(phone))
+            {
+                Text = phone;
+                await Answer(context, activity, result);
+            }
+            else
+            {
+                await context.PostAsync("Das ist keine gültige Telefonnummer");
+                context.Wait(MessageReceived);
+            }
+        }
+        private static string phoneNumber(string message)
+        {
+            char[] phone = message.ToCharArray();
+            message = "";
+            for (int i = 0; i < phone.Length; i++)
+            {
+                if (phone[i].Equals('0') || phone[i].Equals('1') || phone[i].Equals('2') || phone[i].Equals('3') || phone[i].Equals('4') || phone[i].Equals('5') || phone[i].Equals('6') || phone[i].Equals('7') || phone[i].Equals('8') || phone[i].Equals('9'))
+                {
+                    message = message + phone[i];
+                }
+            }
+            if (message.StartsWith("0049"))
+            {
+                message = message.TrimStart('0', '4');
+                message = message.TrimStart('9');
+            }
+            else if (message.StartsWith("+49"))
+            {
+                message = message.TrimStart('+', '4');
+                message = message.TrimStart('9');
+            }
+            else if (message.StartsWith("0"))
+            {
+                message = message.TrimStart('0');
+            }
+            else
+            {
+                return "";
+            }
+            return isValidPhoneNumber(message);
+        }
 
-        /*Speicherung der letzten Antwort des Bewerbers, nachdem diese bestätigt wurde
-         * Sofern noch Fragen unbeantwortet sind, werden diese dem Bewerber gestellt.
-         * Wenn keine Fragen offen sind, wird dies dem Bewerber mitgeteilt und die Daten werden an den Recruiter übermittelt.
-         */
-        public async Task AfterAnswer(IDialogContext context, IAwaitable<object> result)
+        private static String isValidPhoneNumber(string phoneNumber)
+        {
+            if (phoneNumber.Length > 5 && phoneNumber.Length < 12)
+            {
+                return "0049" + phoneNumber;
+            }
+            else
+            {
+                return "";
+            }
+        }
+
+        [LuisIntent("Email")]
+        public async Task Mail(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
+        {
+            string mail = isValidMail(result.Query);
+            if (!String.IsNullOrEmpty(mail))
+            {
+                Text = mail;
+                await Answer(context, activity, result);
+            }
+            else
+            {
+                await context.PostAsync("Das ist keine gültige E-Mail Adresse");
+                context.Wait(MessageReceived);
+            }
+        }
+
+        private String isValidMail(string message)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(message);
+                return addr.Address;
+            }
+            catch
+            {
+                return "";
+            }
+        }
+
+            /*Speicherung der letzten Antwort des Bewerbers, nachdem diese bestätigt wurde
+             * Sofern noch Fragen unbeantwortet sind, werden diese dem Bewerber gestellt.
+             * Wenn keine Fragen offen sind, wird dies dem Bewerber mitgeteilt und die Daten werden an den Recruiter übermittelt.
+             */
+            public async Task AfterAnswer(IDialogContext context, IAwaitable<object> result)
         {
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int accept = Convert.ToInt32(await result);
@@ -483,7 +572,7 @@ namespace Bewerbungs.Bot.Luis
             string date = databaseConnector.getJobDate(accept);
             await context.PostAsync("Zu diesem Termin stellen wir ein: " + date);
             //Neue Methode hinzugefügt
-            context.Call(new AskingQuestions(null), AfterQuestions);
+            context.Call(new AskingQuestions(), AfterQuestions);
         }
         
         //Nachdem der Bewerber das Quiz beantwortet hat

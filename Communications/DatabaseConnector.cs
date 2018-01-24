@@ -17,9 +17,9 @@ namespace Bewerbungs.Bot.Luis
             return getDBEntry(ID, commandText, 0);
         }
 
-        public String[][] getQuizDBEntry()
+        public String[,] getQuizDBEntry()
         {
-            String[][] quiz = new String[12][];
+            String[,] quiz = new String[12,6];
             using (DataConnection context = new DataConnection())
             {
                 int i = 0;
@@ -27,12 +27,12 @@ namespace Bewerbungs.Bot.Luis
                 var list = context.Fachfragens.ToList();
                 foreach (var bl in list)
                 {
-                    quiz[i][0] = bl.Frage;
-                    quiz[i][1] = bl.AntwortEins;
-                    quiz[i][2] = bl.AntwortZwei;
-                    quiz[i][3] = bl.AntwortDrei;
-                    quiz[i][4] = bl.RichtigeAntwort;
-                    quiz[i][5] = bl.Punkte;
+                    quiz[i,0] = bl.Frage;
+                    quiz[i,1] = bl.AntwortEins;
+                    quiz[i,2] = bl.AntwortZwei;
+                    quiz[i,3] = bl.AntwortDrei;
+                    quiz[i,4] = bl.RichtigeAntwort;
+                    quiz[i,5] = bl.Punkte;
                     i++;
                 }
             }

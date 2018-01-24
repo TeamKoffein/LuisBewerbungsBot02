@@ -15,7 +15,7 @@ namespace Bewerbungs.Bot.Luis
     {
         string title;
         private Boolean[] answeredQuestions;
-        private string[][] quiz;
+        private string[,] quiz;
         int bewerberScore;
 
         //Array mit der festen Zuordnungen der Antworten (Wert im Array) auf die Fragen (Index des Arrays = Fragennummer)
@@ -28,11 +28,7 @@ namespace Bewerbungs.Bot.Luis
                 new string[] {"2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"}
         };
 
-
-        public AskingQuestions(string title)
-        {
-            this.title = title;
-        }
+        
 
         //Ausgabe aller Jobs
         public async Task StartAsync(IDialogContext context)
@@ -78,7 +74,7 @@ namespace Bewerbungs.Bot.Luis
         {
             List<Attachment> attach = new List<Attachment>();
             //Array mit den Fragen und moeglichen Antworten
-            int cardLength = quiz[0].Length;
+            int cardLength = quiz.Length;
             //Anzahl der Karten
             int cardCounter = 0; 
             //Anzahl der Antworten
@@ -96,11 +92,11 @@ namespace Bewerbungs.Bot.Luis
                 while (optionCounter<4) 
                 {
                     Buttons.Add(new CardAction(
-                         text: quiz[cardCounter][optionCounter],
+                         text: quiz[cardCounter,optionCounter],
                             value: answerCounter,
                             type: ActionTypes.ImBack,
-                            displayText: quiz[cardCounter][optionCounter],
-                            title: quiz[cardCounter][optionCounter]
+                            displayText: quiz[cardCounter, optionCounter],
+                            title: quiz[cardCounter, optionCounter]
                     ));
                     answeredQuestions[answerCounter] = true;
                     answerCounter++;
@@ -108,7 +104,7 @@ namespace Bewerbungs.Bot.Luis
                 }
                 //Zaehle Anzahl der Karte hoch, da Karte neu erstellt 
                 cardCounter++;
-                attach.Add(GetThumbnailCard("Fachfragen", quiz[cardCounter][0], Buttons));
+                attach.Add(GetThumbnailCard("Fachfragen", quiz[cardCounter, 0], Buttons));
             }
             return attach;
         }
@@ -170,10 +166,10 @@ namespace Bewerbungs.Bot.Luis
             
 
             //Vergleiche vom Nutzer gewaehlte Antwortoption mit der in der Datenbank hinterlegten, richtigen Antwortoption
-            if (solutionNumber == quiz[questionNumber][4])
+            if (solutionNumber == quiz[questionNumber, 4])
             {
                 //Addiere aktuellen Punktewert des Bewerbers mit der in der DB hinterlegten Anzahl der Punkte
-                bewerberScore = bewerberScore + Convert.ToInt32(quiz[questionNumber][5]);
+                bewerberScore = bewerberScore + Convert.ToInt32(quiz[questionNumber, 5]);
 
                 //#AN DB ZU SENDEN
             }
