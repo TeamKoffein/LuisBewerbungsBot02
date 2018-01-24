@@ -798,6 +798,10 @@ namespace Bewerbungs.Bot.Luis
             {
                 if (du == 1)
                 {
+                    if(Question[2] == false)
+                    {
+                        index = 2;
+                    }
                     if (index == 1)
                     {
                         //Frage nach beworbene Stelle mit Du
@@ -816,6 +820,10 @@ namespace Bewerbungs.Bot.Luis
                 }
                 else
                 {
+                    if (Question[2] == false)
+                    {
+                        index = 2;
+                    }
                     if (index == 1)
                     {
                         context.Call(new AskingJob(askingFormal[index]), AfterStellen);
