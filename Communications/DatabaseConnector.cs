@@ -40,7 +40,6 @@ namespace Bewerbungs.Bot.Luis
             return quiz;
         }
 
-        //Setzen des Levels des Bewerbers um ihn bei Inaktivität anzuschreiben
         public void setLevel(int appID, string level)
         {
             using (DataConnection context = new DataConnection())
