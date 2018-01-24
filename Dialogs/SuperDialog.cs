@@ -70,6 +70,9 @@ namespace Bewerbungs.Bot.Luis
         int correctData = -2;
         int saveNewsConfirmation = -2;
         string applicantName;
+        string strasse;
+        string city;
+        string postalcode;
 
         //knowledge dient zur Erkennung der Gesprächsfortsetzung
         // -1= Wert nicht gesetzt; 0= neuer Bewerber; 1= gespräch wird fortgesetzt
@@ -668,7 +671,6 @@ namespace Bewerbungs.Bot.Luis
                     //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
                     Text = "Ja";
                     await FindAcceptance(context, true);
-                  //  context.Wait(this.MessageReceived);
                 }
                 else
                 {
@@ -746,7 +748,6 @@ namespace Bewerbungs.Bot.Luis
 
                     Text = "Nein";
                     await FindAcceptance(context, false);
-                    //context.Wait(this.MessageReceived);
                     
                 }
                 else
@@ -781,6 +782,7 @@ namespace Bewerbungs.Bot.Luis
                 }
 
             }
+
             else
             {
                 if (du == 1)
@@ -798,18 +800,18 @@ namespace Bewerbungs.Bot.Luis
                     {
                         var apiKey = WebConfigurationManager.AppSettings["BingMapsApiKey"];
                         var prompt = "Wie lautet deine Adresse? Bitte gebe hierzu die Straße, Postleitzahl und Stadt an.";
-                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt, LocationOptions.SkipFinalConfirmation | LocationOptions.SkipFavorites | LocationOptions.UseNativeControl, LocationRequiredFields.StreetAddress | LocationRequiredFields.PostalCode);
+                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt,  LocationOptions.SkipFavorites | LocationOptions.UseNativeControl, LocationRequiredFields.StreetAddress);
                         context.Call(locationDialog, async (contextIn, result) =>
                         {
                             Place place = await result;
                             if (place != null)
                             {
                                 var address = place.GetPostalAddress();
-                                string strasse = address.StreetAddress;
-                                string postalcode = address.PostalCode;
-                                string city = address.Locality;
+                                strasse = address.StreetAddress;
+                                postalcode = address.PostalCode;
+                                city = address.Locality;
                                 string name = address != null ?
-                                    $"{address.StreetAddress}, {address.Locality}, {address.Region}, {address.Country} ({address.PostalCode})" :
+                                    $"{address.StreetAddress},{address.PostalCode} {address.Locality}, {address.Region}, {address.Country}" :
                                     "the pinned location";
                                 await contextIn.PostAsync($"Die  Adresse {name} ist abgespeichert.");
                                 Question[3] = true;
@@ -827,10 +829,16 @@ namespace Bewerbungs.Bot.Luis
                                 await contextIn.PostAsync("Ok, abgebrochen.");
                             }
                         });
-                       
+                  
                     }
                     else
                     {
+                        if (index == 7)
+                        {
+                            databaseConnector.updateDB("Adress", applicantID, strasse);
+                            databaseConnector.updateDB("Place", applicantID, city);
+                            databaseConnector.updateDB("PostalCode", applicantID, postalcode);
+                        }
                         //Frage nach beworbene Stelle mit Sie
                         await context.PostAsync(askingPersonal[index]);
                         if (needWait == true)
@@ -854,18 +862,18 @@ namespace Bewerbungs.Bot.Luis
                     {
                         var apiKey = WebConfigurationManager.AppSettings["BingMapsApiKey"];
                         var prompt = "Wie lautet deine Adresse? Bitte gebe hierzu die Straße, Postleitzahl und Stadt an.";
-                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt, LocationOptions.SkipFinalConfirmation | LocationOptions.SkipFavorites | LocationOptions.UseNativeControl, LocationRequiredFields.StreetAddress | LocationRequiredFields.PostalCode);
+                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt,   LocationOptions.SkipFavorites | LocationOptions.UseNativeControl, LocationRequiredFields.StreetAddress);
                         context.Call(locationDialog, async (contextIn, result) =>
                         {
                             Place place = await result;
                             if (place != null)
                             {
                                 var address = place.GetPostalAddress();
-                                string strasse = address.StreetAddress;
-                                string postalcode = address.PostalCode;
-                                string city = address.Locality;
+                                strasse = address.StreetAddress;
+                                postalcode = address.PostalCode;
+                                city = address.Locality;
                                 string name = address != null ?
-                                    $"{address.StreetAddress}, {address.Locality}, {address.Region}, {address.Country} ({address.PostalCode})" :
+                                    $"{address.StreetAddress},{address.PostalCode} {address.Locality}, {address.Region}, {address.Country}" :
                                     "the pinned location";
                                 await contextIn.PostAsync($"Die  Adresse {name} ist abgespeichert.");
                                 Question[3] = true;
@@ -883,9 +891,16 @@ namespace Bewerbungs.Bot.Luis
                                 await contextIn.PostAsync("Ok, abgebrochen.");
                             }
                         });
+                        
                     }
                     else
                     {
+                        if (index == 6)
+                        {
+                            databaseConnector.updateDB("Adress", applicantID, strasse);
+                            databaseConnector.updateDB("Place", applicantID, city);
+                            databaseConnector.updateDB("PostalCode", applicantID, postalcode);
+                        }
                         await context.PostAsync(askingFormal[index]);
                         if (needWait == true)
                         {
@@ -910,7 +925,8 @@ namespace Bewerbungs.Bot.Luis
                     string conversationID = context.Activity.Conversation.Id;
                     string userID = context.Activity.From.Id;
                     string id = context.Activity.Recipient.Id;
-                    applicantID = databaseConnector.insertNewApp(conversationID, userID);
+                    string channel = context.Activity.ChannelId;
+                    applicantID = databaseConnector.insertNewApp(conversationID, userID, channel);
                     string text = "Danke für das Akzeptieren der Datenschutzerklärung. Darf ich sie duzen?";
                     await context.PostAsync(confirm.AttachedData(context, text));
                 }
