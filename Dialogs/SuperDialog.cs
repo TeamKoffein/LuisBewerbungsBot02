@@ -558,8 +558,7 @@ namespace Bewerbungs.Bot.Luis
             string date = databaseConnector.getJobDate(accept);
             await context.PostAsync("Zu diesem Termin stellen wir ein: " + date);
             //Neue Methode hinzugefügt
-            context.Call(new AskingQuestions(), AfterQuestions);
-
+            context.Call(new AskingQuestions(applicantID), AfterQuestions);
         }
         
         //Nachdem der Bewerber das Quiz beantwortet hat
