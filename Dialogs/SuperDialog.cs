@@ -30,11 +30,13 @@ namespace Bewerbungs.Bot.Luis
      * Im Superdialog beginnt das Gespräch mit dem Bewerber und alle Dialog-Queues werden innerhalb des Gesprächs aufgerufen.
      * Die Liste @FAQDatabase beinhaltet alle Intents für die FAQ-Abfragen und @AnswerDatabase alle Intents für Antwortmöglichkeiten.
      * Liste @Questions markiert alle noch nicht beantworteten Fragen des Bewerbers
+     * Liste @QuestionsYesNo markiert Fragen, welche vom Bewerber mit Ja oder Nein beantwortet werden können
      */
     [Serializable]
     [LuisModel("9c8b155a-ab34-44f0-9da9-5d17c901cc8a", "19ec3bb52da54d3b855d0fd331c195b8", domain: "eastus2.api.cognitive.microsoft.com")]
     public class SuperDialog : LuisDialog<object>
     {
+        //Text und LuisTopIntention sind Zwischenspeicher von Aktuellen Eingaben des Bewerber.
         string Text;
         string LuisTopIntention;
         List<string> FAQDatabase = new List<string>() { "","Holiday", "WorkingHours", "Salary", "FlexTime", "HolidayDistribution",
@@ -92,7 +94,7 @@ namespace Bewerbungs.Bot.Luis
         int du = -1;
         int applicantID = -1;
 
-        //Bot bekommt die erste Nachricht als Kontaktaufnahme
+        //Auffang Bool für die erste Eingabe des Bots, da sonst Luis mit einer Ungewollten eingabe reagiert.
         bool firstMessage = false;
 
         
@@ -137,6 +139,7 @@ namespace Bewerbungs.Bot.Luis
             askingPersonal = databaseConnector.getFAQQuestions(1);
             askingFormal = databaseConnector.getFAQQuestions(2);
 
+            //relatesTo wird für externe Trigger Abgespeichert, damit der Bot Messages erhalten kann.
             var relatesTo = new JsonFileRelatesTo
             {
                 relatesTo = Chat.Activity.ToConversationReference(),
@@ -200,9 +203,8 @@ namespace Bewerbungs.Bot.Luis
         }
 
         [LuisIntent("Name")]
-        //Die erste Frage, die dem Bewerber gestellt werden soll, da durch die Eingabe die des Namens eine neue BewerberID vergeben wird, die notwendig ist um alle folgenden 
-        // Antworten zu speichern.
-        //Weitergabe an AfterName
+        //Die erste Frage die Gestellt wird.
+        //Weitergabe über Klasse Acceptance an die Methode AfterName
         public async Task Name(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
             if (!firstMessage)
@@ -219,6 +221,7 @@ namespace Bewerbungs.Bot.Luis
                 {
                     var message = await activity;
                     Text = message.Text;
+                    //Überprüfung, Ob der Name in der Datenbank existiert. Bei count = 0 existiert dieser nicht.
                     DatabaseConnector databaseConnector = new DatabaseConnector();
                     int count = databaseConnector.getCountName(message.Text);
 
@@ -299,7 +302,7 @@ namespace Bewerbungs.Bot.Luis
                         }
                         else
                         {
-                            //Frage nach beworbene Stelle mit Sie
+                            //Andere Frage mit Du
                             await context.PostAsync(askingPersonal[index]);
                             context.Wait(this.MessageReceived);
                         }
@@ -308,10 +311,12 @@ namespace Bewerbungs.Bot.Luis
                     {
                         if (index == 1)
                         {
+                            //Frage nach beworbene Stelle mit Sie
                             context.Call(new AskingJob(askingFormal[index]), AfterStellen);
                         }
                         else
                         {
+                            //Andere Frage mit Sie
                             await context.PostAsync(askingFormal[index]);
                             context.Wait(this.MessageReceived);
                         }
@@ -336,12 +341,12 @@ namespace Bewerbungs.Bot.Luis
             int accept = Convert.ToInt32(await result);
             if (accept == 1)
             {
-                //Namenspeicherung
+                //Namenspeicherung in der DB
                 var myKey = AnswerDatabase.IndexOf("Name");
                 Question[index: myKey] = true;
                 databaseConnector.updateDB("Name", applicantID, Text);
             }
-            //Neue Methode hinzugefügt
+            //Nächste Frage stellen
             await FindNextAnswer(context, true);
         }
 
@@ -503,9 +508,8 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
-            /*Speicherung der letzten Antwort des Bewerbers, nachdem diese bestätigt wurde
-             * Sofern noch Fragen unbeantwortet sind, werden diese dem Bewerber gestellt.
-             * Wenn keine Fragen offen sind, wird dies dem Bewerber mitgeteilt und die Daten werden an den Recruiter übermittelt.
+            /*Speicherung der letzten Antwort des Bewerbers, nachdem diese bestätigt wurde.
+             * Danach Aufruf von FindNextQuestion
              */
             public async Task AfterAnswer(IDialogContext context, IAwaitable<object> result)
         {
@@ -546,7 +550,8 @@ namespace Bewerbungs.Bot.Luis
             await FindNextAnswer(context, true);
         }
 
-        /*Wenn der Bewerber angegeben hat auf welche Stelle er sich bewerben möchte, wird dies hinterlegt und die dementsprechende Fachfrage zur der Position gestellt
+        /*Wenn der Bewerber angegeben hat auf welche Stelle er sich bewerben möchte, wird dies hinterlegt.
+         * Danach wird zum Tochterdialog AskingQuestions verwiesen um Fachfrage zu stellen
          */
         public async Task AfterStellen(IDialogContext context, IAwaitable<object> result)
         {
@@ -560,9 +565,9 @@ namespace Bewerbungs.Bot.Luis
             //Neue Methode hinzugefügt
             context.Call(new AskingQuestions(applicantID), AfterQuestions);
         }
-        
-        //Nachdem der Bewerber das Quiz beantwortet hat
-         public async Task AfterQuestions(IDialogContext context, IAwaitable<object> result)
+
+        //Nachdem der Bewerber das Quiz beantwortet hat, Aufruf von FindNextAnswer
+        public async Task AfterQuestions(IDialogContext context, IAwaitable<object> result)
         {
             await context.PostAsync("Danke, dass du die Quiz-Fragen beantwortet hast!");
             await FindNextAnswer(context, true);
@@ -811,7 +816,7 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
-        //Methode zum finden der Nächsten Frage. Diese Methode wurde ausgelagert, da sie sich sonst gedoppelt hat.
+        //Methode zum finden der Nächsten Frage. Wenn keine Fragen mehr zu Stellen sind, wird auf Korrektheit der Aussagen geprüft.
         public async Task FindNextAnswer(IDialogContext context, bool needWait)
         {
             ConfirmationCard confirm = new ConfirmationCard();
@@ -850,11 +855,12 @@ namespace Bewerbungs.Bot.Luis
                         //Frage nach beworbene Stelle mit Du
                         context.Call(new AskingJob(askingFormal[index]), AfterStellen);
                     }
+                    //Bei der Frage nach der Adresse wird die Funktion Location des Bot.Builders benutzt um mit Bing die Adresse des Users zu finden und in der DB zu hinterlegen.
                     else if (2 < index && index <6)
                     {
                         var apiKey = WebConfigurationManager.AppSettings["BingMapsApiKey"];
                         var prompt = "Wie lautet deine Adresse? Bitte gebe hierzu die Straße, Postleitzahl und Stadt an.";
-                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt,  LocationOptions.SkipFavorites | LocationOptions.UseNativeControl, LocationRequiredFields.StreetAddress);
+                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt,  LocationOptions.SkipFavorites | LocationOptions.SkipFinalConfirmation, LocationRequiredFields.StreetAddress);
                         context.Call(locationDialog, async (contextIn, result) =>
                         {
                             Place place = await result;
@@ -912,6 +918,7 @@ namespace Bewerbungs.Bot.Luis
                     {
                         context.Call(new AskingJob(askingFormal[index]), AfterStellen);
                     }
+                    //Bei der Frage nach der Adresse wird die Funktion Location des Bot.Builders benutzt um mit Bing die Adresse des Users zu finden und in der DB zu hinterlegen.
                     else if (2 < index && index < 6)
                     {
                         var apiKey = WebConfigurationManager.AppSettings["BingMapsApiKey"];
