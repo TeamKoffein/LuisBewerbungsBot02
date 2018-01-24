@@ -616,7 +616,8 @@ namespace Bewerbungs.Bot.Luis
                             {
                                 // if (Question[4] && Question[5] && Question[6])
                                 //{
-                                string homeAdress = databaseConnector.getBingAdress(applicantID);
+                                string homeAdress = databaseConnector.getAdress(applicantID);
+                                homeAdress = homeAdress + " " + databaseConnector.getPostalCode(applicantID);
                                 if (!String.IsNullOrEmpty(homeAdress))
                                 {
                                     await context.PostAsync("Keine Adresse hinterlegt");
