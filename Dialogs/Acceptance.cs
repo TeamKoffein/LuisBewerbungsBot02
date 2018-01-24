@@ -22,16 +22,21 @@ namespace Bewerbungs.Bot.Luis
         private string textMessage;
         private bool firstMessage = true;
 
+
+        //Konstruktor für den Acceptance Dialog
         public Acceptance(string textMessage)
         {
             this.textMessage = textMessage;
         }
 
+        //Konstruktor für den Acceptance Dialog; Es wird das Intent mit übergeben
         public Acceptance( string intent, string messagecontext)
         {
             this.intent = intent;
             this.messagecontext = messagecontext;
         }
+
+        //Erstellung der Karte, die die Akzeptanzabfrage verschickt
         public IMessageActivity AttachedData(IDialogContext context)
         {
             var reply = context.MakeMessage();
@@ -62,11 +67,10 @@ namespace Bewerbungs.Bot.Luis
             return message;
         }
 
-        //Rückfrage
+        //Rückfrage, ob die Eingabe korrekt ist
         override public async Task StartAsync(IDialogContext context)
         {
             if (textMessage == null) { 
-                //await context.PostAsync($"Ist die Eingabe { messagecontext } mit Bezug auf { intent } korrekt?");
                 await context.PostAsync(AttachedData(context));
             }
             else
@@ -91,6 +95,8 @@ namespace Bewerbungs.Bot.Luis
             accept = 0;
             context.Done(accept);
         }
+
+        //Abfangen der anderen Intents, um Falsche Zuordnungen zu vermeiden
         [LuisIntent("Farewell")]
         [LuisIntent("")]
         [LuisIntent("None")]
@@ -127,9 +133,7 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("WorkingHours")]
         [LuisIntent("Greetings")]
         [LuisIntent("Xing")]
-        [LuisIntent("Upload")]
-
-        //Abfangen nicht erkannter Aussagen
+        [LuisIntent("Upload")]        
         public async Task Other(IDialogContext context, LuisResult result)
         {
             if (!firstMessage)

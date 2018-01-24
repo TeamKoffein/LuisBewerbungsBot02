@@ -4,6 +4,7 @@
     using System.Collections.Generic;
     using Newtonsoft.Json;
 
+    //Festlegen des Formats wie wie das Nachrichtenformat von der API zurück kommt
     [Serializable]
     internal class LocationApiResponse
     {

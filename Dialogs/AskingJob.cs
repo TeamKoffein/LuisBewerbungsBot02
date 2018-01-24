@@ -36,6 +36,7 @@ namespace Bewerbungs.Bot.Luis
             context.Wait(this.MessageReceivedAsync);
         }
 
+        //Erstellung der Karte, die die offenen Stellen verschickt
         public IList<Attachment> CardsAttachment()
         {
             List<Attachment> attach = new List<Attachment>();
@@ -63,6 +64,7 @@ namespace Bewerbungs.Bot.Luis
             return attach;
         }
 
+        //Erstellung der eigentlichen Karte, die in CardsAttachment beschrieben wird
         private Attachment GetThumbnailCard(string title, string text, List<CardAction> cardAction)
         {
             var heroCard = new ThumbnailCard

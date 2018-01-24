@@ -17,6 +17,7 @@ namespace Bewerbungs.Bot.Luis
             return getDBEntry(ID, commandText, 0);
         }
 
+        //Abruf der Fachfragen aus DB
         public String[,] getQuizDBEntry()
         {
             String[,] quiz = new String[12,6];
@@ -39,6 +40,7 @@ namespace Bewerbungs.Bot.Luis
             return quiz;
         }
 
+        //Setzen des Levels des Bewerbers um ihn bei Inaktivität anzuschreiben
         public void setLevel(int appID, string level)
         {
             using (DataConnection context = new DataConnection())
@@ -50,6 +52,7 @@ namespace Bewerbungs.Bot.Luis
             };
         }
 
+        //Abrufen des Levels des Bewerbers um ihn bei Inaktivität anzuschreiben
         public string getLevel(int appID)
         {
             string level = "";
@@ -62,6 +65,7 @@ namespace Bewerbungs.Bot.Luis
             return level;
         }
 
+        //Setzen von Active des Bewerbers um ihn bei Inaktivität anzuschreiben
         public void setActive(int appID, int active)
         {
             using (DataConnection context = new DataConnection())
@@ -73,6 +77,7 @@ namespace Bewerbungs.Bot.Luis
             };
         }
 
+        //Abrufen von Active des Bewerbers um ihn bei Inaktivität anzuschreiben
         public int getActive(int appID)
         {
             int active = 0;
@@ -85,6 +90,7 @@ namespace Bewerbungs.Bot.Luis
             return active;
         }
 
+        //Setzen der letzten zeitlichen Eingabe des Bewerbers um ihn bei Inaktivität anzuschreiben
         public void setTime(int appID)
         {
             DateTime time = new DateTime();
@@ -98,6 +104,7 @@ namespace Bewerbungs.Bot.Luis
             };
         }
 
+        //Abruf der letzten zeitlichen Eingabe des Bewerbers um ihn bei Inaktivität anzuschreiben
         public DateTime getTime(int appID)
         {
             DateTime time = new DateTime();
@@ -114,6 +121,7 @@ namespace Bewerbungs.Bot.Luis
             return time;
         }
 
+        //Anlegen eines neuen Bewerbers unter Angabe aller Standardwerte und IDs
         public int insertNewApp(string conversationID, string userID, string channel)
         {
             int appID = 0;
@@ -139,6 +147,8 @@ namespace Bewerbungs.Bot.Luis
             };
             return appID;
         }
+
+        //Überprüfung ob Feld beschrieben ist
         public bool checkNull(string column, int appID)
         {
             bool isNull = true;
@@ -147,7 +157,6 @@ namespace Bewerbungs.Bot.Luis
                 BewerberdatenLui applicant = new BewerberdatenLui { };
                 applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
                 int i = applicant.BewerberID;
-
                 var result = context.BewerberdatenLuis.Where(r => r.BewerberID == appID).Select(column);
                 string test = result == null ? null : result.ToString();
                 if (!String.IsNullOrEmpty(test))
@@ -158,6 +167,8 @@ namespace Bewerbungs.Bot.Luis
             return isNull;
         }
 
+
+        //Abfrage ob Bewerbung vom Recruiter schon angesehen wurde
         public bool checkReview(int appID)
         {
             bool review = false;
@@ -206,6 +217,8 @@ namespace Bewerbungs.Bot.Luis
             return DBEntry;
         }
 
+
+        //Rückgabe der hinterlegten Adresse
         public string getAdress(int appID)
         {
             string dbEntry = "";
@@ -217,6 +230,8 @@ namespace Bewerbungs.Bot.Luis
             };
             return dbEntry;
         }
+
+        //Rüchgabe der hinterlegten PLZ
         public string getPostalCode(int appID)
         {
             string dbEntry = "";
@@ -229,6 +244,8 @@ namespace Bewerbungs.Bot.Luis
             return dbEntry;
         }
 
+
+        //Rückgabe der hinterlegten Stadt
         public string getPlace(int appID)
         {
             string dbEntry = "";
@@ -310,7 +327,7 @@ namespace Bewerbungs.Bot.Luis
         //Datenbankanbindung
         //Die Methode insertDatabaseEntry legt bei neuen Bewerbern einen neuen Datenbankeintrag an.
         //Es werden der @card_Name und der Name als Eintrag benötigt und die automatisch generierte BewerberID wird zurückgegeben.
-        public int insertDatabaseEntry(string entryPlace, string databaseEntry)
+        /*public int insertDatabaseEntry(string entryPlace, string databaseEntry)
         {
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = "chatbotlcd2017db.database.windows.net";
@@ -347,8 +364,10 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             return currentEntry;
-        }
+        }*/
 
+
+        //Update-Funktion für die Angaben des Bewerbers
         public void updateDB(string column, int appID, string dbEntry)
         {
             using (DataConnection context = new DataConnection())
@@ -402,6 +421,12 @@ namespace Bewerbungs.Bot.Luis
                     case "Job":
                         applicant.Job = Convert.ToInt32(dbEntry);
                         break;
+                    case "ChannelID":
+                        applicant.ChannelId = dbEntry;
+                        break;
+                    case "ConversationID":
+                        applicant.ConversationID = dbEntry;
+                        break;
                 }
                 context.SaveChanges();
             };
@@ -410,7 +435,7 @@ namespace Bewerbungs.Bot.Luis
         //Datenbankanbindung
         //Speichert die vom Bewerber übergegebenen Daten in der Datenbank. Es wird die BewerberID, die zu aktualisierende Spalte und der entsprechende
         // Eintrag benötigt.
-        public void updateDatabase(string column, int entryID, string databaseEntry)
+       /* public void updateDatabase(string column, int entryID, string databaseEntry)
         {
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = "chatbotlcd2017db.database.windows.net";
@@ -430,10 +455,11 @@ namespace Bewerbungs.Bot.Luis
                     command.ExecuteNonQuery();
                 }
             }
-        }
+        }*/
 
 
-        public void updateNews(int appID)
+        //Update für die Akzeptanz des Newsletters
+        public void updateNewsletter(int appID)
         {
             using (DataConnection context = new DataConnection())
             {
@@ -442,7 +468,7 @@ namespace Bewerbungs.Bot.Luis
                 applicant.Newsletter = "true";
             };
         }
-        public void updateNewsletter(int appID)
+        /*public void updateNewsletter(int appID)
         {
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
             builder.DataSource = "chatbotlcd2017db.database.windows.net";
@@ -463,10 +489,10 @@ namespace Bewerbungs.Bot.Luis
                     command.ExecuteNonQuery();
                 }
             }
-        }
+        }*/
 
-
-        public string[] getData2 (int appID)
+        //Zusammenfassung aller hinterlegten Daten des Bewerbers
+        public string[] getData (int appID)
         {
             string[] data = new string[] {"", "Anzahl Bewerber auf diese Stelle: ", "Job: ", "Name: ", "Adress: ", "PostalCode: ", "Place: ", "PhoneNumber: ", "Email: ",
                 "Birthday: ", "Career: ", "EducationalBackground: ", "ProgrammingLanguage: ", "SocialEngagement: ", "Language: ", "PrivateProjects: ", "StartDate: " };
@@ -504,7 +530,7 @@ namespace Bewerbungs.Bot.Luis
 
         //Die Methode getData sammelt alle Einträge über den Bewerber mit der übergebenen @bewerberID
         //Die gesammelten Daten werden als Array an den DataAssembler weitergegeben.
-        public string[] getData(int bewerberID)
+       /* public string[] getData(int bewerberID)
         {
             string[] active = new string[17];
             //buildDB();
@@ -654,10 +680,10 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             return active;
-        }
+        }*/
 
-
-        public String[] getStellen()
+        //Rückgabe aller hinterlegten, offenen Stellen
+        public String[] getStellenDBEntry()
         {
             String[] jobs;
             int count;
@@ -677,7 +703,7 @@ namespace Bewerbungs.Bot.Luis
             return jobs;
         }
         //Rückgabe aller hinterlegten, offenen Stellen aus der DB
-        public String[] getStellenDBEntry()
+      /*  public String[] getStellenDBEntry()
         {
             int count;
             String[] DBEntry;
@@ -716,8 +742,10 @@ namespace Bewerbungs.Bot.Luis
                     return DBEntry;
                 }
             }
-        }
+        }*/
 
+
+        //Abruf der an den Bewerber zu stellenden Fragen
         public String[] getQuestions(int salutaion)
         {
             String[] questions;
@@ -791,7 +819,7 @@ namespace Bewerbungs.Bot.Luis
         }
 
         //Liest die Fachfrage zu der angegebenen @StellenID aus
-        public String getTechQuestion(int jobID)
+       /* public String getTechQuestion(int jobID)
         {
 
             String DBEntry = "";
@@ -819,10 +847,10 @@ namespace Bewerbungs.Bot.Luis
                 }
                 return DBEntry;
             }
-        }
+        }*/
 
-
-        public string getJobStartdate(int jobID)
+        //Rückgabe des Anfangsdatums für den Job
+        public string getJobDate(int jobID)
         {
             string date = "";
             using (DataConnection context = new DataConnection())
@@ -833,7 +861,7 @@ namespace Bewerbungs.Bot.Luis
             };
             return date;
         }
-        public String getJobDate(int jobID)
+       /* public String getJobDate(int jobID)
         {
 
             String DBEntry = "";
@@ -861,9 +889,10 @@ namespace Bewerbungs.Bot.Luis
                 }
                 return DBEntry;
             }
-        }
+        }*/
 
-        public Int32 countName(string appName)
+        //Überprüfung ob der Angegebene Náme schon existiert
+        public Int32 getCountName(string appName)
         {
             int count;
             using (DataConnection context = new DataConnection())
@@ -873,7 +902,7 @@ namespace Bewerbungs.Bot.Luis
             return count;
         }
 
-        public Int32 getCountName(string checkName)
+        /*public Int32 getCountName(string checkName)
         {
             int count;
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
@@ -895,7 +924,7 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             return count;
-        }
+        }*/
 
        /* public String getAdress(string checkName)
         {
@@ -934,7 +963,8 @@ namespace Bewerbungs.Bot.Luis
         }*/
 
 
-        public int getAppID (string name, string email)
+        //Rückgabe der BewerberID bei einer Wiederanmeldung eines bekannten Bewerbers
+        public int getApplicantIDMail (string name, string email)
         {
             int appID;
             using (DataConnection context = new DataConnection())
@@ -945,7 +975,7 @@ namespace Bewerbungs.Bot.Luis
             };
             return appID;
         }
-        public Int32 getApplicantID(string checkName, string checkAdress)
+       /* public Int32 getApplicantID(string checkName, string checkAdress)
         {
             int applicantID = 0;
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
@@ -968,9 +998,9 @@ namespace Bewerbungs.Bot.Luis
                 }
                 return applicantID;
             }
-        }
+        }*/
 
-        public Int32 getApplicantIDMail(string checkName, string checkMail)
+       /* public Int32 getApplicantIDMail(string checkName, string checkMail)
         {
             int applicantID = 0;
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
@@ -993,9 +1023,11 @@ namespace Bewerbungs.Bot.Luis
                 }
                 return applicantID;
             }
-        }
+        }*/
 
-        public List<bool> getMiss (int appID)
+
+        //Rückgabe einer Liste für schon beantwortete Fragen
+        public List<bool> getMissing(int appID)
         {
             List<bool> Question = new List<bool>();
             bool field;
@@ -1043,7 +1075,7 @@ namespace Bewerbungs.Bot.Luis
             return Question;
         }
 
-        public List<bool> getMissing(int applicantID)
+   /*     public List<bool> getMissing(int applicantID)
         {
             List<bool> Question = new List<bool>();
             bool field;
@@ -1077,7 +1109,7 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
             return Question;
-        }
+        }*/
 
         public void transferData(int appID)
         {

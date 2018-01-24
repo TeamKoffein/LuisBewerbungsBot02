@@ -48,31 +48,41 @@ namespace Bewerbungs.Bot.Luis
         List<bool> QuestionsYesNo = new List<bool>() {true, true, true, true, true, true, true, true, true, true, true,
             false, false, false, false, true};
         //Abspeicherung der Entities zu ihren Intens
-        Dictionary<string, List<string>> EntityTranslation = new Dictionary<string, System.Collections.Generic.List<string>>()
-        {
-            /*{ "Name" , new List<string>(){""} },
-            { "Name" , new List<string>(){""} },
-            { "Name" , new List<string>(){""} },
-            { "Name" , new List<string>(){""} },
-            { "Name" , new List<string>(){""} },
-            { "Name" , new List<string>(){""} },*/
-        };
-        string[] askingPersonal;
-        string[] askingFormal;
-        string[] currentData;
-        bool saveDataConfirmation;
-        bool nameUpdateable;
-        bool currentUpload;
-        bool dataReviewed;
-        int jobID = -1;
-        int sendDataConfirmation = -2;
+        Dictionary<string, List<string>> EntityTranslation = new Dictionary<string, System.Collections.Generic.List<string>>();
+        string[] askingPersonal;//Du-Fragen
+        string[] askingFormal;//Sie-Fragen
+        string[] currentData;//Speicherung der bisherigen Eingaben des Nutzers
+        bool saveDataConfirmation; //bool für die Speicherung der Daten
+        bool currentUpload; //abprüfen, ob aktuell ein Upload verlangt wird
+        bool dataReviewed;//Überprüfung der Daten abgeschlossen
+        int jobID = -1; //Festlegung auf welche Stelle der Bewerber die Bewerbung abgibt. -1 als Kontrollwert, dass diese noch nicht festgelegt wurd
+        int sendDataConfirmation = -2; 
+        /*
+         * Daten an Recruiter senden
+         * -2 nicht überprüft, nicht relevant
+         * -1 nicht überprüft, relevant
+         * 0 nicht akzeptiert
+         * 1 akzeptiert
+         */
         int saveDataLongterm = -2;
+        /*
+         * Speicherung der Daten für zukünftige Bewerbungen
+         * Zahlenwerte siehe sendataConfirmation
+         */
         int correctData = -2;
+        /*
+         * Daten wurden korrigiert
+         * Zahlenwerte siehe sendDataConfirmation
+         */
         int saveNewsConfirmation = -2;
-        string applicantName;
-        string strasse;
-        string city;
-        string postalcode;
+        /*
+         * Anmeldung für den Newsletter
+         * Zahlenwerte siehe senDataConfirmation
+         */
+        string applicantName; //Bewerbername
+        string strasse; //Zwischenspeicher für die Adresse
+        string city;//Zwischenspeicher für die Stadt
+        string postalcode;//Zwischenspeicher für die PLZ
 
         //knowledge dient zur Erkennung der Gesprächsfortsetzung
         // -1= Wert nicht gesetzt; 0= neuer Bewerber; 1= gespräch wird fortgesetzt
@@ -82,6 +92,7 @@ namespace Bewerbungs.Bot.Luis
         int du = -1;
         int applicantID = -1;
 
+        //Bot bekommt die erste Nachricht als Kontaktaufnahme
         bool firstMessage = false;
 
         
@@ -114,7 +125,7 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
-        //StartAsync startet den Gesprächbeginn
+        //StartAsync steht für den Gesprächbeginn
         override public async Task StartAsync(IDialogContext Chat)
         {
             ConfirmationCard confirm = new ConfirmationCard();
@@ -139,7 +150,6 @@ namespace Bewerbungs.Bot.Luis
             string datenschutzLink = "http://luisbewerbungsbot.azurewebsites.net/PrivacyPolicy.html";
             string messageText = willkommensText + "\n\n" + datenschutzText + "\n\n" + datenschutzLink;
             await Chat.PostAsync(messageText);
-            string[,] quiz = databaseConnector.getQuizDBEntry();
             string text = ("Eine kurze Bestätigung reicht uns voll und ganz!");
             await Chat.PostAsync(confirm.AttachedData(Chat, text));
             Chat.Wait(this.MessageReceived);
@@ -173,29 +183,19 @@ namespace Bewerbungs.Bot.Luis
             
         }
 
+        //Verabschiedung
         [LuisIntent("Farewell")]
         public async Task Farewell(IDialogContext context, LuisResult result)
         {
-            if (!firstMessage)
+            if (result.TopScoringIntent.Score.Value >= 0.5)
             {
-                firstMessage = true;
-            }
-            else if (!saveDataConfirmation)
-            {
-                await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
+                String message = "Bis zum nächsten Mal!";
+                await context.PostAsync(message);
+                context.Wait(this.MessageReceived);
             }
             else
             {
-                if (result.TopScoringIntent.Score.Value >= 0.5)
-                {
-                    String message = "Bis zum nächsten Mal!";
-                    await context.PostAsync(message);
-                    context.Wait(this.MessageReceived);
-                }
-                else
-                {
-                    await None(context, result);
-                }
+                await None(context, result);
             }
         }
 
@@ -232,39 +232,19 @@ namespace Bewerbungs.Bot.Luis
                     {
                         applicantName = message.Text;
                         knowledge = -1;
+                        string kenntnis = "";
                         if (du == 0)
                         {
-                            await context.PostAsync("Kennen sie mich schon?");
+                            kenntnis = "Kennen sie mich schon?";
                         }
                         else
                         {
-                            await context.PostAsync("Kennst du mich schon?");
+                            kenntnis = "Kennst du mich schon?";
                         }
+                        ConfirmationCard confirm = new ConfirmationCard();
+                        await context.PostAsync(confirm.AttachedData(context, kenntnis));
                         context.Wait(this.MessageReceived);
                     }
-                    /*var message = await activity;
-                    Text = message.Text; //hier einstetzen von GiveEntities(result);
-                    if (knowledge == 0)
-                    {
-                        await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
-                    }
-                    else
-                    {
-                        DatabaseConnector databaseConnector = new DatabaseConnector();
-                        int count = databaseConnector.getCountName(message.Text);
-                        if (count == 0)
-                        {
-                            knowledge = 0;
-                            await context.PostAsync("Name nicht gefunden. Neuer Name angelegt.");
-                            await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
-                        }
-                        else
-                        {
-                            await context.PostAsync("Name gefunden. " + message.Text);
-
-                            context.Call(new CheckEmail(message.Text), CheckInformation);
-                        }
-                    }*/
                 }
                 else
                 {
@@ -273,6 +253,7 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+        //Dialog, der die Angaben des Nutzers lädt und das Gespräch an der richtigen Stellen fortführt
         private async Task CheckInformation(IDialogContext context, IAwaitable<object> result)
         {
             ConfirmationCard confirm = new ConfirmationCard();
@@ -283,6 +264,7 @@ namespace Bewerbungs.Bot.Luis
                 Question = databaseConnector.getMissing(applicantID);
                 int index = Question.FindIndex(x => x == false);
 
+                //Falls alle Daten gemacht wurden wird dies abgefangen
                 if (index == -1)
                 {
                     await context.PostAsync("Du hast schon alle Angaben gemacht!");
@@ -354,22 +336,16 @@ namespace Bewerbungs.Bot.Luis
             int accept = Convert.ToInt32(await result);
             if (accept == 1)
             {
-                if (nameUpdateable)
-                {
-                    databaseConnector.updateDatabase("Name", applicantID, Text);
-                }
                 //Namenspeicherung
-                else
-                {
-                    var myKey = AnswerDatabase.IndexOf("Name");
-                    Question[index: myKey] = true;
-                    databaseConnector.updateDatabase("Name", applicantID, Text);
-                }
+                var myKey = AnswerDatabase.IndexOf("Name");
+                Question[index: myKey] = true;
+                databaseConnector.updateDB("Name", applicantID, Text);
             }
             //Neue Methode hinzugefügt
             await FindNextAnswer(context, true);
         }
 
+        //Wenn der Bewerber erneut nach den ausgeschriebenen Stellen da, so kann er erneut die Stelle ausählen, auf die er sich bewerben möchte bzw. kann diese ändern
         [LuisIntent("Job")]
         public async Task JobIntent(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
@@ -429,6 +405,8 @@ namespace Bewerbungs.Bot.Luis
                 }
             }
         }
+
+        //Phone Number wird gesondert abgefangen und es wird überprüft, ob die eingegebene Nachricht eine gültige Telefonnummer enthält
         [LuisIntent("PhoneNumber")]
         public async Task Phone(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
@@ -444,8 +422,11 @@ namespace Bewerbungs.Bot.Luis
                 context.Wait(MessageReceived);
             }
         }
+
+        //Überprüfung, ob die Nachricht aus Phone eine Telefonnummer enthält. Bei leerem Rückgabestring ist die Rufnummer nicht korrekt
         private static string phoneNumber(string message)
         {
+            //Filterung, dass nur noch Zahlen enthalten sind. Aussortierung der Buchstaben und Sonderzeichen
             char[] phone = message.ToCharArray();
             message = "";
             for (int i = 0; i < phone.Length; i++)
@@ -455,6 +436,8 @@ namespace Bewerbungs.Bot.Luis
                     message = message + phone[i];
                 }
             }
+
+            //Entfernen der Landesvorwahl für Deutschland
             if (message.StartsWith("0049"))
             {
                 message = message.TrimStart('0', '4');
@@ -469,13 +452,14 @@ namespace Bewerbungs.Bot.Luis
             {
                 message = message.TrimStart('0');
             }
-            else
+            else //Falls keine deutsche Vorwahl, so wird die Telefonnummer nicht erkannt
             {
                 return "";
-            }
+            }//die korrekte Telefonnummer wird zurückgegeben
             return isValidPhoneNumber(message);
         }
 
+        //Zusammenbauen zu einer richtigen Telefonnummer inkl. Landesvorwahl
         private static String isValidPhoneNumber(string phoneNumber)
         {
             if (phoneNumber.Length > 5 && phoneNumber.Length < 12)
@@ -488,6 +472,7 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+        //Aussortierung der E-Mail Eingabe
         [LuisIntent("Email")]
         public async Task Mail(IDialogContext context, IAwaitable<IMessageActivity> activity, LuisResult result)
         {
@@ -504,6 +489,7 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+        //Überprüfung, ob in der eingegeben Nachricht eine Mailadresse enthalten ist
         private String isValidMail(string message)
         {
             try
@@ -550,9 +536,9 @@ namespace Bewerbungs.Bot.Luis
                     {
                         QuestionsYesNo[index: indexYesNo] = true;
                     }
-                    databaseConnector.updateDatabase(LuisTopIntention, applicantID, Text);
-                    databaseConnector.updateDatabase("ChannelID", applicantID, context.Activity.ChannelId);
-                    databaseConnector.updateDatabase("ConversationID", applicantID, context.Activity.Conversation.Id);
+                    databaseConnector.updateDB(LuisTopIntention, applicantID, Text);
+                    databaseConnector.updateDB("ChannelID", applicantID, context.Activity.ChannelId);
+                    databaseConnector.updateDB("ConversationID", applicantID, context.Activity.Conversation.Id);
 
                 }
             }
@@ -567,12 +553,13 @@ namespace Bewerbungs.Bot.Luis
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int accept = Convert.ToInt32(await result);
             Question[index: 1] = true;
-            databaseConnector.updateDatabase("Job", applicantID, Convert.ToString(accept));
+            databaseConnector.updateDB("Job", applicantID, Convert.ToString(accept));
 
             string date = databaseConnector.getJobDate(accept);
             await context.PostAsync("Zu diesem Termin stellen wir ein: " + date);
             //Neue Methode hinzugefügt
             context.Call(new AskingQuestions(), AfterQuestions);
+
         }
         
         //Nachdem der Bewerber das Quiz beantwortet hat
@@ -582,23 +569,6 @@ namespace Bewerbungs.Bot.Luis
             await FindNextAnswer(context, true);
         }
             
-
-        /*public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
-        {
-            int accept = Convert.ToInt32(await result);
-            if (accept == 0)
-            {
-                await context.PostAsync("Schade! Aber wir akzeptieren das mit gebrochenem Herzen. :(");
-            }
-            else
-            {
-                safeNewsConfirmation = true;
-                await context.PostAsync("Wir freuen uns und informieren dich gerne darüber, was bei uns so alles abgeht!");
-                DatabaseConnector databaseConnector = new DatabaseConnector();
-                databaseConnector.updateNewsletter(applicantID);
-            }
-            context.Wait(this.MessageReceived);
-        }*/
 
         [LuisIntent("Benefits")]
         [LuisIntent("Client")]
@@ -664,11 +634,6 @@ namespace Bewerbungs.Bot.Luis
                                         await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
                                     }
                                 }
-                                //  }
-                                //   else
-                                //  {
-                                //      await context.PostAsync("Wenn du mir deine Adresse, Postleitzahl und den Ort angibst, dann sag ich Dir wie lange du zu uns brauchst.");
-                                //  }
 
                             }
                             if (du != -1)
@@ -1067,7 +1032,6 @@ namespace Bewerbungs.Bot.Luis
                 }
                 else
                 {
-                    nameUpdateable = true;
                     await context.PostAsync("Welche Angabe ist falsch?");
                 }
             }
@@ -1100,20 +1064,12 @@ namespace Bewerbungs.Bot.Luis
                     databaseConnector.transferData(applicantID);
                     string text = ("Die Daten werden dauerhaft gespeichert. Sollen wir die angegebene Email-Adresse für unseren Newsletter eintragen?");
                     await context.PostAsync(confirm.AttachedData(context, text));
-
-                    //Abfrage fuer Datenschutz bzgl. Newsletter
-                    //context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
-
                 }
                 else
                 {
                     saveDataLongterm = 0;
                     string text = ("Die Daten werden nicht gespeichert. Sollen wir die angegebene Email-Adresse für unseren Newsletter eintragen?");
                     await context.PostAsync(confirm.AttachedData(context, text));
-
-                    //Abfrage fuer Datenschutz bzgl. Newsletter
-                    //context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
-
                 }
             }
             else if (saveNewsConfirmation == -1)
@@ -1121,7 +1077,7 @@ namespace Bewerbungs.Bot.Luis
                 if (result)
                 {
                     saveNewsConfirmation = 1;
-                    databaseConnector.updateNews(applicantID);
+                    databaseConnector.updateNewsletter(applicantID);
                     await context.PostAsync("Vielen Dank für die Akzeptierung unseres Newsletters.");
                     await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
                 }
