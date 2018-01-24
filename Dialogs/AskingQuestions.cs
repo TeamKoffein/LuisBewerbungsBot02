@@ -119,6 +119,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 await context.PostAsync("Diese Aussage war keine Antwortmöglichkeit. Bitte wähle einen Button als Antwort aus. Fragen an den Bot kannst du nach diesen Fragen Stellen.");
                 await sendCarousel(context, reply);
+                context.Wait(this.MessageReceivedAsync);
             }
             else
             {
@@ -138,10 +139,9 @@ namespace Bewerbungs.Bot.Luis
                     questions.RemoveAt(posAndScoreForThisAnswer[0]);
                     bewerberScore = bewerberScore + posAndScoreForThisAnswer[1];
                     await sendCarousel(context, reply);
-                    
+                    context.Wait(this.MessageReceivedAsync);
                 }
             }
-            context.Wait(this.MessageReceivedAsync);
         }
         //Suche nach der Position und der Wertung und gibt diese in einem Int Array wieder. Bei einer Flascheingabe wird [-1,-1] gepostet.
         private int[] findPosAndScoreForThisAnswer(string answer)
