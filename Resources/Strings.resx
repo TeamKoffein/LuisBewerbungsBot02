@@ -139,10 +139,10 @@
     <value>OK, cancelled.</value>
   </data>
   <data name="ConfirmationAsk" xml:space="preserve">
-    <value>OK, I will ship to {0}. Is that correct? Enter 'yes' or 'no'.</value>
+    <value>Ok, wir speichern {0} als deine Heimatadresse. Ist das richtig? Bitte gib "Ja" oder "Nein" ein.</value>
   </data>
   <data name="ConfirmationInvalidResponse" xml:space="preserve">
-    <value>I didn't understand. Enter 'yes' or 'no'.</value>
+    <value>Tut mir Leid, Ich verstehe nur "Ja" und "Nein".</value>
   </data>
   <data name="Country" xml:space="preserve">
     <value>country</value>
@@ -211,7 +211,7 @@
     <value> Tap 'Send Location' to choose an address.</value>
   </data>
   <data name="AddToFavoritesRetry" xml:space="preserve">
-    <value>Sorry, please reply “yes” or “no” to add the address to your favorite locations.</value>
+    <value>Tut mir Leid, Ich verstehe nur "Ja" und "Nein".</value>
   </data>
   <data name="EnterNewFavoriteLocationName" xml:space="preserve">
     <value>Please type or say a friendly name for this address, for example “Home” or “Work.”</value>

@@ -25,7 +25,7 @@ namespace Bewerbungs.Bot.Resources {
     internal class Strings {
         
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
@@ -45,7 +45,7 @@ namespace Bewerbungs.Bot.Resources {
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
@@ -56,7 +56,7 @@ namespace Bewerbungs.Bot.Resources {
                 return resourceCulture;
             }
             set {
-                resourceCulture = value;
+                resourceCulture = new System.Globalization.CultureInfo("German");
             }
         }
         
@@ -67,6 +67,7 @@ namespace Bewerbungs.Bot.Resources {
             get {
                 return ResourceManager.GetString("AddressSeparator", resourceCulture);
             }
+            
         }
         
         /// <summary>
