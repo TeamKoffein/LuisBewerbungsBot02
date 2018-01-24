@@ -44,7 +44,7 @@ namespace Bewerbungs.Bot.Luis
 
 
 
-            //quiz = databaseConnector.getQuizDBEntry(); //###
+            quiz = databaseConnector.getQuizDBEntry(); //###
 
 
 

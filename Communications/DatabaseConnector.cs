@@ -27,13 +27,12 @@ namespace Bewerbungs.Bot.Luis
                 var list = context.Fachfragens.ToList();
                 foreach (var bl in list)
                 {
-                    quiz[i][0] = bl.FragenID.ToString();
-                    quiz[i][1] = bl.Frage;
-                    quiz[i][2] = bl.AntwortEins;
-                    quiz[i][3] = bl.AntwortZwei;
-                    quiz[i][4] = bl.AntwortDrei;
-                    quiz[i][5] = bl.RichtigeAntwort;
-                    quiz[i][6] = bl.Punkte;
+                    quiz[i][0] = bl.Frage;
+                    quiz[i][1] = bl.AntwortEins;
+                    quiz[i][2] = bl.AntwortZwei;
+                    quiz[i][3] = bl.AntwortDrei;
+                    quiz[i][4] = bl.RichtigeAntwort;
+                    quiz[i][5] = bl.Punkte;
                     i++;
                 }
             }
@@ -195,7 +194,7 @@ namespace Bewerbungs.Bot.Luis
             return DBEntry;
         }
 
-        public String getBingAdress2(int appID)
+        public string getAdress(int appID)
         {
             string dbEntry = "";
             using (DataConnection context = new DataConnection())
@@ -203,7 +202,29 @@ namespace Bewerbungs.Bot.Luis
                 BewerberdatenLui applicant = new BewerberdatenLui { };
                 applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
                 dbEntry = applicant.Adress ?? "";
-                dbEntry = dbEntry + applicant.PostalCode ?? "";
+            };
+            return dbEntry;
+        }
+        public string getPostalCode(int appID)
+        {
+            string dbEntry = "";
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                dbEntry = applicant.PostalCode ?? "";
+            };
+            return dbEntry;
+        }
+
+        public string getPlace(int appID)
+        {
+            string dbEntry = "";
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                dbEntry = applicant.Place ?? "";
             };
             return dbEntry;
         }
@@ -322,8 +343,55 @@ namespace Bewerbungs.Bot.Luis
             {
                 BewerberdatenLui applicant = new BewerberdatenLui { };
                 applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
-                context.BewerberdatenLuis.Where(r => r.BewerberID == appID).Select(column);
-                context.BewerberdatenLuis.SqlQuery("UPDATE BewerberdatenLuis SET " + column + " = " + dbEntry + " WHERE BewerberID = " + appID);  
+                switch (column)
+                {
+                    case "Name":
+                        applicant.Name = dbEntry;
+                        break;
+                    case "Adress":
+                        applicant.Adress = dbEntry;
+                        break;
+                    case "PostalCode":
+                        applicant.PostalCode = dbEntry;
+                        break;
+                    case "Place":
+                        applicant.Place = dbEntry;
+                        break;
+                    case "PhoneNumber":
+                        applicant.PhoneNumber = dbEntry;
+                        break;
+                    case "Email":
+                        applicant.Email = dbEntry;
+                        break;
+                    case "Birthday":
+                        applicant.Birthday = dbEntry;
+                        break;
+                    case "Career":
+                        applicant.Career = dbEntry;
+                        break;
+                    case "EducationalBackground":
+                        applicant.EducationalBackground = dbEntry;
+                        break;
+                    case "ProgrammingLanguage":
+                        applicant.ProgrammingLanguage = dbEntry;
+                        break;
+                    case "SocialEngagement":
+                        applicant.SocialEngagement = dbEntry;
+                        break;
+                    case "Language":
+                        applicant.Language = dbEntry;
+                        break;
+                    case "PrivateProjects":
+                        applicant.PrivateProjects = dbEntry;
+                        break;
+                    case "StartDate":
+                        applicant.StartDate = dbEntry;
+                        break;
+                    case "Job":
+                        applicant.Job = Convert.ToInt32(dbEntry);
+                        break;
+                }
+                context.SaveChanges();
             };
         }
 
@@ -383,6 +451,43 @@ namespace Bewerbungs.Bot.Luis
                     command.ExecuteNonQuery();
                 }
             }
+        }
+
+
+        public string[] getData2 (int appID)
+        {
+            string[] data = new string[] {"", "Anzahl Bewerber auf diese Stelle: ", "Job: ", "Name: ", "Adress: ", "PostalCode: ", "Place: ", "PhoneNumber: ", "Email: ",
+                "Birthday: ", "Career: ", "EducationalBackground: ", "ProgrammingLanguage: ", "SocialEngagement: ", "Language: ", "PrivateProjects: ", "StartDate: " };
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                int jobID = applicant.Job ?? 0;
+                int count = context.BewerberdatenLuis.Where(c => c.Job == applicant.Job).Count();
+                data[1] = data[1] + count.ToString();
+                data[2] = data[2] + applicant.Name ?? "";
+                data[3] = data[3] + applicant.Job ?? "";
+                data[4] = data[4] + applicant.Adress ?? "";
+                data[5] = data[5] + applicant.PostalCode ?? "";
+                data[6] = data[6] + applicant.Place ?? "";
+                data[7] = data[7] + applicant.PhoneNumber ?? "";
+                data[8] = data[8] + applicant.Email ?? "";
+                data[9] = data[9] + applicant.Birthday ?? "";
+                data[10] = data[10] + applicant.Career ?? "";
+                data[11] = data[11] + applicant.EducationalBackground ?? "";
+                data[12] = data[12] + applicant.ProgrammingLanguage ?? "";
+                data[13] = data[13] + applicant.SocialEngagement ?? "";
+                data[14] = data[14] + applicant.Language ?? "";
+                data[15] = data[15] + applicant.PrivateProjects ?? "";
+                data[16] = data[16] + applicant.StartDate ?? "";
+
+                using (DataConnection ctx = new DataConnection()) {
+                    Stellen job = new Stellen { };
+                    job = ctx.Stellens.FirstOrDefault(j => j.StellenID == jobID);
+                    data[0] = "Beworbene Stelle: " + job.Stellenname ?? "";
+                };
+            };
+            return data;
         }
 
         //Die Methode getData sammelt alle Einträge über den Bewerber mit der übergebenen @bewerberID
@@ -540,15 +645,25 @@ namespace Bewerbungs.Bot.Luis
         }
 
 
-      /*  public String[] getStellen()
+        public String[] getStellen()
         {
+            String[] jobs;
+            int count;
             using (DataConnection context = new DataConnection())
             {
                 Stellen stellen = new Stellen { };
-                context.Stellens.Where(o => true).Count();
-                
+                count = context.Stellens.Count();
+                jobs = new String[count];
+                var list = context.Stellens.ToList();
+                int i = 0;
+                foreach (var bl in list)
+                {
+                    jobs[i] = bl.Stellenname;
+                    i++;
+                }
             };
-        }*/
+            return jobs;
+        }
         //Rückgabe aller hinterlegten, offenen Stellen aus der DB
         public String[] getStellenDBEntry()
         {
@@ -591,6 +706,34 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+        public String[] getQuestions(int salutaion)
+        {
+            String[] questions;
+            using (DataConnection context = new DataConnection())
+            {
+                FAQFragen faq = new FAQFragen { };
+                int count = context.FAQFragens.Count();
+                questions = new String[count];
+                var list = context.FAQFragens.ToList();
+                int i = 0;
+                if (salutaion == 0) {
+                    foreach (var bl in list)
+                    {
+                        questions[i] = bl.FAQFrageDU;
+                        i++;
+                    }
+                }
+                else
+                {
+                    foreach (var bl in list)
+                    {
+                        questions[i] = bl.FAQFrageSie;
+                        i++;
+                    }
+                }
+            };
+            return questions;
+        }
 
         // Diese Methode übergibt alle hinterlegten FAQ-Fragen unter Angabe der @anrede
         //Diese Fragen werden gestellt um Daten über den Bewerber zu sammeln
@@ -666,6 +809,18 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+
+        public string getJobStartdate(int jobID)
+        {
+            string date = "";
+            using (DataConnection context = new DataConnection())
+            {
+                Stellen stellen = new Stellen { };
+                stellen = context.Stellens.FirstOrDefault(s => s.StellenID == jobID);
+                date = stellen.Einstellungsdatum;
+            };
+            return date;
+        }
         public String getJobDate(int jobID)
         {
 
@@ -696,6 +851,16 @@ namespace Bewerbungs.Bot.Luis
             }
         }
 
+        public Int32 countName(string appName)
+        {
+            int count;
+            using (DataConnection context = new DataConnection())
+            {
+                count = context.BewerberdatenLuis.Where(n => n.Name == appName).Count();
+            }
+            return count;
+        }
+
         public Int32 getCountName(string checkName)
         {
             int count;
@@ -720,7 +885,7 @@ namespace Bewerbungs.Bot.Luis
             return count;
         }
 
-        public String getAdress(string checkName)
+       /* public String getAdress(string checkName)
         {
             string adress = "";
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
@@ -754,8 +919,20 @@ namespace Bewerbungs.Bot.Luis
                 }
                 return adress;
             }
-        }
+        }*/
 
+
+        public int getAppID (string name, string email)
+        {
+            int appID;
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.Where(n => n.Name == name).FirstOrDefault(e =>e.Email == email);
+                appID = applicant.BewerberID;
+            };
+            return appID;
+        }
         public Int32 getApplicantID(string checkName, string checkAdress)
         {
             int applicantID = 0;
@@ -805,6 +982,55 @@ namespace Bewerbungs.Bot.Luis
                 return applicantID;
             }
         }
+
+        public List<bool> getMiss (int appID)
+        {
+            List<bool> Question = new List<bool>();
+            bool field;
+            Question.Add(true);
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                var list = context.BewerberdatenLuis.Where(i => i.BewerberID == appID).Select(i => new { i.Job, i.Name, i.Adress, i.PostalCode, i.Place,
+                    i.PhoneNumber, i.Email, i.Birthday, i.Career, i.EducationalBackground, i.ProgrammingLanguage, i.SocialEngagement,
+                    i.Language, i.PrivateProjects, i.StartDate }).ToList();
+                foreach (var bl in list)
+                {
+                    field = bl.Job != null;
+                    Question.Add(field);
+                    field = bl.Name != null;
+                    Question.Add(field);
+                    field = bl.Adress != null;
+                    Question.Add(field);
+                    field = bl.PostalCode != null;
+                    Question.Add(field);
+                    field = bl.Place != null;
+                    Question.Add(field);
+                    field = bl.PhoneNumber != null;
+                    Question.Add(field);
+                    field = bl.Email != null;
+                    Question.Add(field);
+                    field = bl.Birthday != null;
+                    Question.Add(field);
+                    field = bl.Career != null;
+                    Question.Add(field);
+                    field = bl.EducationalBackground != null;
+                    Question.Add(field);
+                    field = bl.ProgrammingLanguage != null;
+                    Question.Add(field);
+                    field = bl.SocialEngagement != null;
+                    Question.Add(field);
+                    field = bl.Language != null;
+                    Question.Add(field);
+                    field = bl.PrivateProjects != null;
+                    Question.Add(field);
+                    field = bl.StartDate != null;
+                    Question.Add(field);
+                }
+            };
+            return Question;
+        }
+
         public List<bool> getMissing(int applicantID)
         {
             List<bool> Question = new List<bool>();
@@ -822,7 +1048,6 @@ namespace Bewerbungs.Bot.Luis
                     command.Connection = conn;
                     command.CommandType = CommandType.Text;
                     command.CommandText = "SELECT Job, Name, Adress, PostalCode, Place, PhoneNumber, Email, Birthday, Career, EducationalBackground, ProgrammingLanguage, SocialEngagement, Language, PrivateProjects, StartDate FROM BewerberdatenLuis WHERE BewerberID = @appID";
-                    //command.CommandText = "SELECT * FROM BewerberdatenLuis WHERE BewerberID = @appID";
                     command.Parameters.Add("@appID", SqlDbType.Int).Value = applicantID;
                     conn.Open();
                     SqlDataReader reader = command.ExecuteReader();
