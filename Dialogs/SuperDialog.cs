@@ -110,7 +110,6 @@ namespace Bewerbungs.Bot.Luis
                 double latitude = (double)place.Geo.latitude;
                 double longitude = (double)place.Geo.longitude;
                 string geocode = latitude.ToString() + " " + longitude.ToString();
-                await context.PostAsync(geocode);
                 var bingTrigger = new JsonFileBing
                 {
                     RelatesTo = context.Activity.ToConversationReference(),
@@ -596,8 +595,9 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("overtime")]
 
         //Wenn der Intent nach einer FAQ an Lise erkannt wird, wird der entsprechende Antworteintrag abhängig von der gewählten Anrede ausgelesen.
-        public async Task FAQ(IDialogContext context, LuisResult result)
+        public async Task FAQ(IDialogContext context, IAwaitable<IMessageActivity> activity ,LuisResult result)
         {
+            IMessageActivity mess = (IMessageActivity)activity;
             if (!firstMessage)
             {
                 firstMessage = true;
@@ -618,48 +618,43 @@ namespace Bewerbungs.Bot.Luis
                         {
                             if (key == 6)
                             {
-                                // if (Question[4] && Question[5] && Question[6])
-                                //{
-                                string homeAdress = databaseConnector.getAdress(applicantID);
-                                homeAdress = homeAdress + " " + databaseConnector.getPostalCode(applicantID);
-                                if (!String.IsNullOrEmpty(homeAdress))
-                                {
-                                    await context.PostAsync("Keine Adresse hinterlegt");
-                                }
-                                else
-                                {
-                                    if (!(context.Activity.ChannelId.Equals("facebook")))
-                                    {
-                                        var bingTrigger = new JsonFileBing
-                                        {
-                                            RelatesTo = context.Activity.ToConversationReference(),
-                                            Origin = homeAdress,
-                                            Destination = "Am Butzweilerhofallee 2, Köln"
-                                        };
-                                        await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
-                                    }
-                                }
-
-                            }
-                            if (du != -1)
-                            {
                                 await context.PostAsync(databaseConnector.getDBEntry(key, "SELECT * FROM FAQ WHERE FAQID =@ID", du));
-
-                                var reply = context.MakeMessage();
-                                reply.ChannelData = new FacebookMessage
-                                (
-                                    text: "Wo bist du?",
-                                    quickReplies: new List<FacebookQuickReply>
-                                    {
+                                if (mess.ChannelId.Equals("facebook"))
+                                {
+                                    var reply = context.MakeMessage();
+                                    reply.ChannelData = new FacebookMessage
+                                    (
+                                        text: "Wo bist du?",
+                                        quickReplies: new List<FacebookQuickReply>
+                                        {
                                         new FacebookQuickReply(
                                             contentType: FacebookQuickReply.ContentTypes.Location,
                                             title: default(string),
                                             payload: default(string)
                                     )
+                                        }
+                                    );
+                                    await context.PostAsync(reply);
+                                    context.Wait(this.ReceivedLocation);
+                                }
+                                else
+                                {
+                                    if(Question[6] == true)
+                                    {
+                                        string adresse =  strasse + " " + city + " " + postalcode;
+                                        var bingTrigger = new JsonFileBing
+                                        {
+                                            RelatesTo = context.Activity.ToConversationReference(),
+                                            Origin = adresse,
+                                            Destination = "Am Butzweilerhofallee 2, Köln"
+                                        };
+                                        await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
                                     }
-                                );
-                                await context.PostAsync(reply);
-                                context.Wait(this.ReceivedLocation);
+                                }
+                            }
+                            if (du != -1)
+                            {
+                                
                             }
                             else
                             {
@@ -972,6 +967,11 @@ namespace Bewerbungs.Bot.Luis
             }
         }
         //Abfrage der Anrede nach Bestätigung der Datenschutzerklärung, sowie Abfrage bei allen anderen Szenarien
+        /*
+         * In diesem Dialog werden, abhängig von dem Gesprächsfortschritt, dem Bewerber Bestätigungsfragen gestellt.
+         * Es wird gefragt nach der Anrede, ob der Bewerber den Bot kennt und sein Gespräch fortsetzen will, die Daten korrekt hinterlegt sind,
+         * ob die Daten übermittelt und langfristig gespeichert werden dürfen sowie die Frage ob der Bewerber einen Newslettererhalten will.
+         */
         public async Task FindAcceptance(IDialogContext context, bool result)
         {
             ConfirmationCard confirm = new ConfirmationCard();
@@ -980,6 +980,7 @@ namespace Bewerbungs.Bot.Luis
             int indexYesNo = QuestionsYesNo.FindIndex(x => x == false);
             if (!saveDataConfirmation)
             {
+                //Bestätigung der Datenschutzerklärung und Frage nach Anrede
                 if (result)
                 {
                     saveDataConfirmation = true;
@@ -996,17 +997,19 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync("Wenn du unsere Datenschutzerklärung nicht bestätigst kannst du nicht mit dem Bot schreiben!");
                 }
             }
+            //Antwort ob der Bot dem Bewerber bekannt ist
             else if (knowledge == -1)
             {
+                //Fall unbekannt. Neuer Bewerber wird angelegt
                 if (!result)
                 {
                     knowledge = 0;
                     var myKey = AnswerDatabase.IndexOf("Name");
                     Question[index: myKey] = true;
                     databaseConnector.updateDB("Name", applicantID, applicantName);
-                    await FindNextAnswer(context, false);
-                    //await context.Forward(new Acceptance("Name", applicantName), AfterName, context, CancellationToken.None);                    
+                    await FindNextAnswer(context, false);                    
                 }
+                //Fall bekannt. Frage nach Email-Adresse
                 else
                 {
                     knowledge = 1;
@@ -1016,18 +1019,21 @@ namespace Bewerbungs.Bot.Luis
             else if (du == -1)
             {
                 await context.PostAsync("Dann fangen wir mal an!");
+                //Anrede Fall Du
                 if (result)
                 {
                     du = 1;
                     await context.PostAsync(askingPersonal[2]);
 
                 }
+                //Anrede Fall Sie
                 else
                 {
                     du = 2;
                     await context.PostAsync(askingFormal[2]);
                 }
             }
+            //Frage nach Korrektheit
             else if (correctData == -1)
             {
                 if (result)
@@ -1042,6 +1048,7 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync("Welche Angabe ist falsch?");
                 }
             }
+            //Frage nach Datenübermittlung
             else if (sendDataConfirmation == -1)
             {
                 if (result)
@@ -1062,6 +1069,7 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync(confirm.AttachedData(context, text));
                 }
             }
+            //Frage nach langfristiger Speicherung
             else if (saveDataLongterm == -1)
             {
                 saveNewsConfirmation = -1;
@@ -1079,6 +1087,7 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync(confirm.AttachedData(context, text));
                 }
             }
+            //Frage nach Newsletterabonnierung
             else if (saveNewsConfirmation == -1)
             {
                 if (result)
