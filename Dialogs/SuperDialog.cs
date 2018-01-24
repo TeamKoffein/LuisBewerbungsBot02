@@ -79,19 +79,7 @@ namespace Bewerbungs.Bot.Luis
 
         bool firstMessage = false;
 
-        public class JsonFileBing
-        {
-            public string Origin { get; set; }
-            public string Destination { get; set; }
-            public ConversationReference RelatesTo { get; set; }
-        }
-
-        public class JsonFileRelatesTo
-        {
-            public string ConversationID { get; set; }
-            public ConversationReference relatesTo { get; set; }
-        }
-
+        
         //Geo Koordinaten vom Facebook Messenger erhalten und an Bing weiter versendet
         public async Task ReceivedLocation(IDialogContext context, IAwaitable<IMessageActivity> argument)
         {
@@ -118,39 +106,6 @@ namespace Bewerbungs.Bot.Luis
             {
                 await context.PostAsync("ungültige Ortsangabe");
                 await this.MessageReceived(context, argument);
-            }
-        }
-
-        public static async Task AddMessageToQueueAsync(string message, string queueName)
-        {
-            // Retrieve storage account from connection string.
-            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
-
-            // Create the queue client.
-            var queueClient = storageAccount.CreateCloudQueueClient();
-
-            // Retrieve a reference to a queue.
-            var queue = queueClient.GetQueueReference(queueName);
-
-            // Create the queue if it doesn't already exist.
-            await queue.CreateIfNotExistsAsync();
-
-            // Create a message and add it to the queue.
-            var queuemessage = new CloudQueueMessage(message);
-            await queue.AddMessageAsync(queuemessage);
-        }
-
-        public static async Task AddFileToBlobbAsynch(string containerName, string path, string jsonFile)
-        {
-            //string path = activity.Conversation.Id + ".txt";
-            string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
-            CloudStorageAccount csa = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
-            CloudBlobClient blobClient = csa.CreateCloudBlobClient();
-            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
-            CloudBlockBlob blob = container.GetBlockBlobReference(path);
-            using (StreamWriter writer = new StreamWriter(blob.OpenWrite()))
-            {
-                writer.Write(value: jsonFile);
             }
         }
 
@@ -1022,5 +977,50 @@ namespace Bewerbungs.Bot.Luis
             }
             return returnResult;
         }
+        public static async Task AddMessageToQueueAsync(string message, string queueName)
+        {
+            // Retrieve storage account from connection string.
+            var storageAccount = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
+
+            // Create the queue client.
+            var queueClient = storageAccount.CreateCloudQueueClient();
+
+            // Retrieve a reference to a queue.
+            var queue = queueClient.GetQueueReference(queueName);
+
+            // Create the queue if it doesn't already exist.
+            await queue.CreateIfNotExistsAsync();
+
+            // Create a message and add it to the queue.
+            var queuemessage = new CloudQueueMessage(message);
+            await queue.AddMessageAsync(queuemessage);
+        }
+
+        public static async Task AddFileToBlobbAsynch(string containerName, string path, string jsonFile)
+        {
+            //string path = activity.Conversation.Id + ".txt";
+            string destPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+            CloudStorageAccount csa = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
+            CloudBlobClient blobClient = csa.CreateCloudBlobClient();
+            CloudBlobContainer container = blobClient.GetContainerReference(containerName);
+            CloudBlockBlob blob = container.GetBlockBlobReference(path);
+            using (StreamWriter writer = new StreamWriter(blob.OpenWrite()))
+            {
+                writer.Write(value: jsonFile);
+            }
+        }
+    }
+
+    public class JsonFileBing
+    {
+        public string Origin { get; set; }
+        public string Destination { get; set; }
+        public ConversationReference RelatesTo { get; set; }
+    }
+
+    public class JsonFileRelatesTo
+    {
+        public string ConversationID { get; set; }
+        public ConversationReference relatesTo { get; set; }
     }
 }
