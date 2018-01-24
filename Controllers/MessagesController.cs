@@ -25,6 +25,7 @@ namespace Bewerbungs.Bot.Luis
             // check if activity is of type message
             if (activity.GetActivityType() == ActivityTypes.Message)
             {
+                activity.Locale = "de-DE";
                 await Conversation.SendAsync(activity, () => new SuperDialog());
             }
             else if (activity.Type == ActivityTypes.Event)
