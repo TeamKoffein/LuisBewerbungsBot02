@@ -39,7 +39,16 @@ namespace Bewerbungs.Bot.Luis
             }
             return quiz;
         }
-
+        public void setScore(int appID, int score)
+        {
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                applicant.Score = score;
+                context.SaveChanges();
+            };
+        }
         public void setLevel(int appID, string level)
         {
             using (DataConnection context = new DataConnection())
