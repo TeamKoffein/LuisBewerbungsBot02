@@ -13,51 +13,73 @@ namespace Bewerbungs.Bot.Luis
     [Serializable]
     public class AskingQuestions : IDialog<object>
     {
-        string title;
-        private Boolean[] answeredQuestions;
         private string[,] quiz;
-        int bewerberScore;
+        private int bewerberScore;
+        private int lenght;
+        List<int> questions = new List<int>();
+        private int appID;
 
-        //Array mit der festen Zuordnungen der Antworten (Wert im Array) auf die Fragen (Index des Arrays = Fragennummer)
-        //Zeilen = Erste Antwortoption, zweite Antwortoption, dritte Antwortoptionen
-        //Spalten = Erste Frage, Zweite Frage, usw.
-        string[][] solutionArray = new string[][]
+        public AskingQuestions(int appID)
         {
-                new string[] {"0", "3", "6", "9", "12", "15", "18", "21", "24", "27", "30", "33"},
-                new string[] {"1", "4", "7", "10", "13", "16", "19", "22", "25", "28", "31", "34"},
-                new string[] {"2", "5", "8", "11", "14", "17", "20", "23", "26", "29", "32", "35"}
-        };
-
-        
-
+            this.appID = appID;
+        }
         //Ausgabe aller Jobs
         public async Task StartAsync(IDialogContext context)
         {
+            var rnd = new Random();
+            questions = Enumerable.Range(0,12).OrderBy(x => rnd.Next()).Take(10).ToList();
             DatabaseConnector databaseConnector = new DatabaseConnector();
             //Hole Fragen und Antworten aus DB
-
-
-
-
-
-            quiz = databaseConnector.getQuizDBEntry(); //###
-
-
-
-
-
-
-
-
-            //Setzte alles im Boolean Array auf false (alle Fragen unbeantwortet)
-            for (int i = 0; i < answeredQuestions.Length; i++) { answeredQuestions[i] = false; }
+            quiz = databaseConnector.getQuizDBEntry(); 
             //Setze Score einmalig zum Start auf 0 Punkte
             bewerberScore = 0;
-
+            lenght = 10;
+            await context.PostAsync("Es werden insgesamt 10 Fragen gestellt, von denen 5 Fragen beantwortet werden müssen. Die Fragen, die beantwortet wurden, werden aus dem Katalog entfernt.");
             var reply = context.MakeMessage();
             await sendCarousel(context, reply);
 
             context.Wait(this.MessageReceivedAsync);
+        }
+        
+
+        public IList<Attachment> CardsAttachment()
+        {
+            List<Attachment> attach = new List<Attachment>();
+            for(int outLoop = 0; outLoop < lenght; outLoop++)
+            {
+                List<CardAction> Buttons = new List<CardAction>();
+                for(int inLoop = 1; inLoop < 4; inLoop++)
+                {
+                    string value = quiz[questions[outLoop], 0] + inLoop.ToString();
+                    Buttons.Add(new CardAction(
+                        text: quiz[questions[outLoop], inLoop],
+                        value: value,
+                        type: ActionTypes.ImBack,
+                        displayText: quiz[questions[outLoop], inLoop],
+                        title: quiz[questions[outLoop], inLoop]
+                        )
+                    );
+                }
+                string titel = "Frage" + (outLoop+1).ToString();
+                attach.Add(GetThumbnailCard(titel, quiz[questions[outLoop], 0] , Buttons));
+            }
+            
+                
+            
+            return attach;
+        }
+
+        private Attachment GetThumbnailCard(string title, string text, List<CardAction> cardAction)
+        {
+            var heroCard = new ThumbnailCard
+            {
+                Title = title,
+                Subtitle = "Bitte waehle die richtige Antwort aus.",
+                Text = text,
+                Images = new List<CardImage>() { new CardImage(url: "https://t2.ftcdn.net/jpg/00/60/83/19/500_F_60831978_c24ahi9gJDOsefFT6lvt3VOVjwgeXxZz.jpg") },
+                Buttons = cardAction
+            };
+            return heroCard.ToAttachment();
         }
 
         private async Task sendCarousel(IDialogContext context, IMessageActivity reply)
@@ -70,125 +92,72 @@ namespace Bewerbungs.Bot.Luis
             await context.PostAsync(message);
         }
 
-        public IList<Attachment> CardsAttachment()
-        {
-            List<Attachment> attach = new List<Attachment>();
-            //Array mit den Fragen und moeglichen Antworten
-            int cardLength = quiz.Length;
-            //Anzahl der Karten
-            int cardCounter = 0; 
-            //Anzahl der Antworten
-            int answerCounter = 0;
-
-            //Erstellt Karte fuer jede Fachfrage, wegen Skype auf 10 begrenzt
-            while (cardCounter < cardLength && cardCounter < 10) 
-            {
-                //Anzahl der Antworten pro Karte
-                int optionCounter = 1;
-
-                List<CardAction> Buttons = new List<CardAction>();
-                
-                //Fuegt Antwortungsmoeglichkeiten jeder Fachfrage pro Karte hinzu
-                while (optionCounter<4) 
-                {
-                    Buttons.Add(new CardAction(
-                         text: quiz[cardCounter,optionCounter],
-                            value: answerCounter,
-                            type: ActionTypes.ImBack,
-                            displayText: quiz[cardCounter, optionCounter],
-                            title: quiz[cardCounter, optionCounter]
-                    ));
-                    answeredQuestions[answerCounter] = true;
-                    answerCounter++;
-                    optionCounter++;
-                }
-                //Zaehle Anzahl der Karte hoch, da Karte neu erstellt 
-                cardCounter++;
-                attach.Add(GetThumbnailCard("Fachfragen", quiz[cardCounter, 0], Buttons));
-            }
-            return attach;
-        }
-
-        private Attachment GetThumbnailCard(string title, string text, List<CardAction> cardAction)
-        {
-            var heroCard = new ThumbnailCard
-            {   
-                Title = title,
-                Subtitle = "Bitte waehle die richtige Antwort aus.",
-                Text = text,
-                Images = new List<CardImage>() { new CardImage(url: "https://t2.ftcdn.net/jpg/00/60/83/19/500_F_60831978_c24ahi9gJDOsefFT6lvt3VOVjwgeXxZz.jpg") },
-                Buttons = cardAction
-            };
-            return heroCard.ToAttachment();
-        }
-
-        //Methode: Finde die zu der Nummer der Antwort zugehoerige Nummer der Antwortoption (0, 1 oder 2) oder Fragennummer (0-11)
-        private int FindSolutionToAnswer(String number, int typ)
-        {
-            //typ=0: Gib Fragennummer zurueck, typ=1: Gib Anwortoption zurueck
-
-            //Nummer der Antwort, die der Nutzer ausgewaehlt hat
-            string answerNumber = Convert.ToString(number);
-
-            //Return Wert = Ausgewaehlte Antwort, die 0, 1 oder 2 betragen kann, um mit der in der DB hinterlegten Loesung zu vergleichen
-            int solutionNumber = -1;
-
-            //j gibt Fragennummer (Index des Arrays) zurueck
-            //i gibt Antwortoptionen 0, 1 oder 2 zurueck (mit DB Wert zu vergleichen)
-            for (int i = 0; i < solutionArray.Length; i++)
-            {
-                for (int j = 0; j < solutionArray.Length; j++)
-                {
-                    //Wenn zugehoerige Fragennummer erfragt wird 
-                    if ((answerNumber == solutionArray[i][j]) && (typ==0))
-                    {
-                        return solutionNumber = j;
-                    }
-                    //Wenn Antwortoption erfragt wird
-                    else
-                    {
-                        return solutionNumber = i;
-                    }
-                }
-            }
-            return solutionNumber;
-        }
+    
         private async Task MessageReceivedAsync(IDialogContext context, IAwaitable<IMessageActivity> result)
         {
-            var message = context.MakeMessage();
-            Boolean endLoop = false;
-            String answerNumber =result.ToString();
+            var message = await result;
+            string answer = message.Text;
+            var reply = context.MakeMessage();
             //questionNumber enthaelt Nummer der Frage
-            int questionNumber = FindSolutionToAnswer(answerNumber, 0);
-            //solutionNumber enthaelt vom Nutzer gewaehlte Antwortoption 
-            String solutionNumber = Convert.ToString(FindSolutionToAnswer(answerNumber, 1));
-            //Score des Bewerbers
-            
+            int[] posAndScoreForThisAnswer = findPosAndScoreForThisAnswer(answer);
 
-            //Vergleiche vom Nutzer gewaehlte Antwortoption mit der in der Datenbank hinterlegten, richtigen Antwortoption
-            if (solutionNumber == quiz[questionNumber, 4])
+            if(posAndScoreForThisAnswer[0] == -1 && posAndScoreForThisAnswer[0] == -1)
             {
-                //Addiere aktuellen Punktewert des Bewerbers mit der in der DB hinterlegten Anzahl der Punkte
-                bewerberScore = bewerberScore + Convert.ToInt32(quiz[questionNumber, 5]);
-
-                //#AN DB ZU SENDEN
+                await sendCarousel(context, reply);
+                context.Wait(this.MessageReceivedAsync);
             }
-
-            while (endLoop)
-            for (int i = 0; i < answeredQuestions.Length; i++)
+            lenght = lenght - 1;
+            if(lenght == 5)
             {
-                if (answeredQuestions[i] == false)
-                {
-                   await sendCarousel(context, message);
-                    endLoop = true;
-                }
-                else
-                {
-                    context.Done(true);
-                }
+                bewerberScore = bewerberScore + posAndScoreForThisAnswer[1];
+                DatabaseConnector databaseConnector = new DatabaseConnector();
+                databaseConnector.setScore(appID, bewerberScore);
+                await context.PostAsync("Der erreichte Score ist: "+ bewerberScore.ToString());
+                context.Done(bewerberScore);
+            }
+            else
+            {
+                questions.RemoveAt(posAndScoreForThisAnswer[0]);
+                bewerberScore = bewerberScore + posAndScoreForThisAnswer[1];
+                await sendCarousel(context, reply);
+                context.Wait(this.MessageReceivedAsync);
             }
         }
 
+        private int[] findPosAndScoreForThisAnswer(string answer)
+        {
+            int[] returnArray = new int[2] {-1, -1};
+            string lastChar = answer.Substring(answer.Length - 1, 1);
+            int pos;
+            bool isNumeric = int.TryParse(lastChar, out pos);
+            if (!isNumeric)
+            {
+                return new int[2] { -1, -1 };
+            }
 
+            for (int outLoop = 0; outLoop < lenght; outLoop++)
+            {
+                List<CardAction> Buttons = new List<CardAction>();
+                for (int inLoop = 1; inLoop < 4; inLoop++)
+                {
+                    string value = quiz[questions[outLoop], 0] + inLoop.ToString();
+                    if (value.Equals(answer))
+                    {
+                        returnArray[0] = outLoop;
+                        returnArray[1] = 0;
+                        if (inLoop == Convert.ToInt32(quiz[questions[outLoop], 4]))
+                        {
+                            returnArray[1] = Convert.ToInt32(quiz[questions[outLoop], 5]);
+                            return returnArray;
+                        }
+                        else
+                        {
+                            return returnArray;
+                        }
+                    }
+                }
+            }
+            return new int[2] { -1, -1 };
+        }
     }
 }
