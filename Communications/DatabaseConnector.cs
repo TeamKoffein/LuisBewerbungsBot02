@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Linq.Dynamic;
+using System.Web.Configuration;
 
 namespace Bewerbungs.Bot.Luis
 {
@@ -136,6 +137,8 @@ namespace Bewerbungs.Bot.Luis
         //Anlegen eines neuen Bewerbers unter Angabe aller Standardwerte und IDs
         public int insertNewApp(string conversationID, string userID, string channel)
         {
+            DateTime time = new DateTime();
+            time = DateTime.Today;
             int appID = 0;
             using (DataConnection context = new DataConnection())
             {
@@ -147,6 +150,8 @@ namespace Bewerbungs.Bot.Luis
                 applicant.Newsletter = "false";
                 applicant.JobInterview = "false";
                 applicant.ApplicationReviewed = 0;
+                applicant.Active = 0;
+                applicant.TimeStamp = time;
                 if (channel.Equals("emulator") || channel.Equals("webchat")) {
                     applicant.Level = "4";
                 }
@@ -209,6 +214,7 @@ namespace Bewerbungs.Bot.Luis
 
 
             using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
+            //using (SqlConnection conn = new SqlConnection(WebConfigurationManager.ConnectionStrings["DataConnection"].ToString()))
             {
                 using (SqlCommand command = new SqlCommand())
                 {
@@ -345,34 +351,13 @@ namespace Bewerbungs.Bot.Luis
                 applicant.Newsletter = "true";
             };
         }
-        /*public void updateNewsletter(int appID)
-        {
-            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-            builder.DataSource = "chatbotlcd2017db.database.windows.net";
-            builder.UserID = "TeamKoffein";
-            builder.Password = "LCD2017!";
-            builder.InitialCatalog = "ChatBotLCD";
-            string entry = "true";
-            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
-            {
-                using (SqlCommand command = new SqlCommand())
-                {
-                    command.Connection = conn;
-                    command.CommandType = CommandType.Text;
-                    command.CommandText = "UPDATE GespeicherteBewerber SET Newsletter = @entry WHERE BewerberID = @appID";
-                    command.Parameters.Add("@entry", SqlDbType.NVarChar).Value = entry;
-                    command.Parameters.Add("@appID", SqlDbType.Int).Value = appID;
-                    conn.Open();
-                    command.ExecuteNonQuery();
-                }
-            }
-        }*/
+        
 
         //Zusammenfassung aller hinterlegten Daten des Bewerbers
         public string[] getData (int appID)
         {
             string[] data = new string[] {"", "Anzahl Bewerber auf diese Stelle: ", "Job: ", "Name: ", "Adress: ", "PostalCode: ", "Place: ", "PhoneNumber: ", "Email: ",
-                "Birthday: ", "Career: ", "EducationalBackground: ", "ProgrammingLanguage: ", "SocialEngagement: ", "Language: ", "PrivateProjects: ", "StartDate: " };
+                "Birthday: ", "Career: ", "EducationalBackground: ", "ProgrammingLanguage: ", "SocialEngagement: ", "Language: ", "PrivateProjects: ", "StartDate: ", "Score: " };
             using (DataConnection context = new DataConnection())
             {
                 BewerberdatenLui applicant = new BewerberdatenLui { };
@@ -395,6 +380,7 @@ namespace Bewerbungs.Bot.Luis
                 data[14] = data[14] + applicant.Language ?? "";
                 data[15] = data[15] + applicant.PrivateProjects ?? "";
                 data[16] = data[16] + applicant.StartDate ?? "";
+                data[17] = data[17] + applicant.Score ?? "";
 
                 using (DataConnection ctx = new DataConnection()) {
                     Stellen job = new Stellen { };

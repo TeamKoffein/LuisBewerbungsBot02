@@ -39,7 +39,6 @@ namespace ProactiveBot
         public string Level { get; set; }
         public Nullable<System.DateTime> Time { get; set; }
         public string Newsletter { get; set; }
-        public Nullable<int> Salutation { get; set; }
         public Nullable<int> Active { get; set; }
         public string UserID { get; set; }
         public Nullable<int> Score { get; set; }
