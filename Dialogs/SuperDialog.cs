@@ -631,7 +631,7 @@ namespace Bewerbungs.Bot.Luis
                                             contentType: FacebookQuickReply.ContentTypes.Location,
                                             title: default(string),
                                             payload: default(string)
-                                    )
+                                        )
                                         }
                                     );
                                     await context.PostAsync(reply);
@@ -639,7 +639,7 @@ namespace Bewerbungs.Bot.Luis
                                 }
                                 else
                                 {
-                                    if (Question[6] == true)
+                                    if (Question[3] == true)
                                     {
                                         string adresse = strasse + " " + city + " " + postalcode;
                                         var bingTrigger = new JsonFileBing
