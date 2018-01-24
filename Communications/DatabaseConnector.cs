@@ -194,7 +194,7 @@ namespace Bewerbungs.Bot.Luis
             return DBEntry;
         }
 
-        public String getBingAdress2(int appID)
+        public string getAdress(int appID)
         {
             string dbEntry = "";
             using (DataConnection context = new DataConnection())
@@ -202,7 +202,29 @@ namespace Bewerbungs.Bot.Luis
                 BewerberdatenLui applicant = new BewerberdatenLui { };
                 applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
                 dbEntry = applicant.Adress ?? "";
-                dbEntry = dbEntry + " " + applicant.PostalCode ?? "";
+            };
+            return dbEntry;
+        }
+        public string getPostalCode(int appID)
+        {
+            string dbEntry = "";
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                dbEntry = applicant.PostalCode ?? "";
+            };
+            return dbEntry;
+        }
+
+        public string getPlace(int appID)
+        {
+            string dbEntry = "";
+            using (DataConnection context = new DataConnection())
+            {
+                BewerberdatenLui applicant = new BewerberdatenLui { };
+                applicant = context.BewerberdatenLuis.FirstOrDefault(r => r.BewerberID == appID);
+                dbEntry = applicant.Place ?? "";
             };
             return dbEntry;
         }
