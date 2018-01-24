@@ -114,7 +114,7 @@ namespace Bewerbungs.Bot.Luis
             return time;
         }
 
-        public int insertNewApp(string conversationID, string userID)
+        public int insertNewApp(string conversationID, string userID, string channel)
         {
             int appID = 0;
             using (DataConnection context = new DataConnection())
@@ -122,6 +122,18 @@ namespace Bewerbungs.Bot.Luis
                 BewerberdatenLui applicant = new BewerberdatenLui { ConversationID = conversationID };
                 context.BewerberdatenLuis.Add(applicant);
                 applicant.UserID = userID;
+                applicant.ChannelId = channel;
+                applicant.Score = 0;
+                applicant.Newsletter = "false";
+                applicant.JobInterview = "false";
+                applicant.ApplicationReviewed = 0;
+                if (channel.Equals("emulator") || channel.Equals("webchat")) {
+                    applicant.Level = "4";
+                }
+                else
+                {
+                    applicant.Level = "0";
+                }
                 context.SaveChanges();
                 appID = applicant.BewerberID;
             };

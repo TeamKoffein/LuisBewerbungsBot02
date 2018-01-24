@@ -51,6 +51,7 @@
           <Property Name="Salutation" Type="int" />
           <Property Name="Active" Type="int" />
           <Property Name="UserID" Type="nvarchar" MaxLength="50" />
+          <Property Name="Score" Type="int" />
         </EntityType>
         <EntityType Name="BewerberTable">
           <Key>
@@ -370,6 +371,7 @@
           <Property Name="Active" Type="Int32" />
           <Property Name="UserID" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
           <NavigationProperty Name="Stellen" Relationship="ChatBotDataModel.FK_BewerberdatenLuis_Stellen" FromRole="BewerberdatenLui" ToRole="Stellen" />
+          <Property Name="Score" Type="Int32" />
         </EntityType>
         <Association Name="FK_BewerberdatenLuis_Stellen">
           <End Type="ChatBotDataModel.Stellen" Role="Stellen" Multiplicity="0..1" />
@@ -526,6 +528,7 @@
           <EntitySetMapping Name="BewerberdatenLuis">
             <EntityTypeMapping TypeName="ChatBotDataModel.BewerberdatenLui">
               <MappingFragment StoreEntitySet="BewerberdatenLuis">
+                <ScalarProperty Name="Score" ColumnName="Score" />
                 <ScalarProperty Name="UserID" ColumnName="UserID" />
                 <ScalarProperty Name="Active" ColumnName="Active" />
                 <ScalarProperty Name="Salutation" ColumnName="Salutation" />

@@ -668,7 +668,6 @@ namespace Bewerbungs.Bot.Luis
                     //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
                     Text = "Ja";
                     await FindAcceptance(context, true);
-                  //  context.Wait(this.MessageReceived);
                 }
                 else
                 {
@@ -746,7 +745,6 @@ namespace Bewerbungs.Bot.Luis
 
                     Text = "Nein";
                     await FindAcceptance(context, false);
-                    //context.Wait(this.MessageReceived);
                     
                 }
                 else
@@ -907,7 +905,8 @@ namespace Bewerbungs.Bot.Luis
                     string conversationID = context.Activity.Conversation.Id;
                     string userID = context.Activity.From.Id;
                     string id = context.Activity.Recipient.Id;
-                    applicantID = databaseConnector.insertNewApp(conversationID, userID);
+                    string channel = context.Activity.ChannelId;
+                    applicantID = databaseConnector.insertNewApp(conversationID, userID, channel);
                     string text = "Danke für das Akzeptieren der Datenschutzerklärung. Darf ich sie duzen?";
                     await context.PostAsync(confirm.AttachedData(context, text));
                 }
