@@ -38,6 +38,7 @@ namespace Bewerbungs.Bot.Luis
     {
         //Text und LuisTopIntention sind Zwischenspeicher von Aktuellen Eingaben des Bewerber.
         string Text;
+        string channelID;
         string LuisTopIntention;
         List<string> FAQDatabase = new List<string>() { "","Holiday", "WorkingHours", "Salary", "FlexTime", "HolidayDistribution",
             "Location", "HomeOffice", "PublicTransport", "Parking", "Benefits", "Client", "Ethics", "StaffTraining", "Promotion", "Eliza",
@@ -595,9 +596,8 @@ namespace Bewerbungs.Bot.Luis
         [LuisIntent("overtime")]
 
         //Wenn der Intent nach einer FAQ an Lise erkannt wird, wird der entsprechende Antworteintrag abhängig von der gewählten Anrede ausgelesen.
-        public async Task FAQ(IDialogContext context, IAwaitable<IMessageActivity> activity ,LuisResult result)
+        public async Task FAQ(IDialogContext context, LuisResult result)
         {
-            IMessageActivity mess = (IMessageActivity)activity;
             if (!firstMessage)
             {
                 firstMessage = true;
@@ -619,7 +619,7 @@ namespace Bewerbungs.Bot.Luis
                             if (key == 6)
                             {
                                 await context.PostAsync(databaseConnector.getDBEntry(key, "SELECT * FROM FAQ WHERE FAQID =@ID", du));
-                                if (mess.ChannelId.Equals("facebook"))
+                                if (channelID.Equals("facebook"))
                                 {
                                     var reply = context.MakeMessage();
                                     reply.ChannelData = new FacebookMessage
@@ -639,9 +639,9 @@ namespace Bewerbungs.Bot.Luis
                                 }
                                 else
                                 {
-                                    if(Question[6] == true)
+                                    if (Question[6] == true)
                                     {
-                                        string adresse =  strasse + " " + city + " " + postalcode;
+                                        string adresse = strasse + " " + city + " " + postalcode;
                                         var bingTrigger = new JsonFileBing
                                         {
                                             RelatesTo = context.Activity.ToConversationReference(),
@@ -650,16 +650,20 @@ namespace Bewerbungs.Bot.Luis
                                         };
                                         await AddMessageToQueueAsync(JsonConvert.SerializeObject(bingTrigger), "bingtrigger");
                                     }
+                                    context.Wait(MessageReceived);
                                 }
-                            }
-                            if (du != -1)
-                            {
-                                
                             }
                             else
                             {
-                                await context.PostAsync("Bitte verrate mir vorher, ob wir beim 'Du' bleiben sollen");
-                                context.Wait(this.MessageReceived);
+                                if (du != -1)
+                                {
+                                    await context.PostAsync(databaseConnector.getDBEntry(key, "SELECT * FROM FAQ WHERE FAQID =@ID", du));
+                                }
+                                else
+                                {
+                                    await context.PostAsync("Bitte verrate mir vorher, ob wir beim 'Du' bleiben sollen");
+                                    context.Wait(this.MessageReceived);
+                                }
                             }
                         }
                         else
@@ -855,7 +859,7 @@ namespace Bewerbungs.Bot.Luis
                     {
                         var apiKey = WebConfigurationManager.AppSettings["BingMapsApiKey"];
                         var prompt = "Wie lautet deine Adresse? Bitte gebe hierzu die Straße, Postleitzahl und Stadt an.";
-                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt,  LocationOptions.SkipFavorites | LocationOptions.SkipFinalConfirmation, LocationRequiredFields.StreetAddress);
+                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt,  LocationOptions.SkipFavorites, LocationRequiredFields.StreetAddress);
                         context.Call(locationDialog, async (contextIn, result) =>
                         {
                             Place place = await result;
@@ -918,7 +922,7 @@ namespace Bewerbungs.Bot.Luis
                     {
                         var apiKey = WebConfigurationManager.AppSettings["BingMapsApiKey"];
                         var prompt = "Wie lautet deine Adresse? Bitte gebe hierzu die Straße, Postleitzahl und Stadt an.";
-                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt,   LocationOptions.SkipFavorites | LocationOptions.UseNativeControl, LocationRequiredFields.StreetAddress);
+                        var locationDialog = new LocationDialog(apiKey, context.Activity.ChannelId, prompt,   LocationOptions.SkipFavorites, LocationRequiredFields.StreetAddress);
                         context.Call(locationDialog, async (contextIn, result) =>
                         {
                             Place place = await result;
@@ -987,8 +991,8 @@ namespace Bewerbungs.Bot.Luis
                     string conversationID = context.Activity.Conversation.Id;
                     string userID = context.Activity.From.Id;
                     string id = context.Activity.Recipient.Id;
-                    string channel = context.Activity.ChannelId;
-                    applicantID = databaseConnector.insertNewApp(conversationID, userID, channel);
+                    channelID = context.Activity.ChannelId;
+                    applicantID = databaseConnector.insertNewApp(conversationID, userID, channelID);
                     string text = "Danke für das Akzeptieren der Datenschutzerklärung. Darf ich sie duzen?";
                     await context.PostAsync(confirm.AttachedData(context, text));
                 }
