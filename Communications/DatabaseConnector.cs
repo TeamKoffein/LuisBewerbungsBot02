@@ -138,6 +138,7 @@ namespace Bewerbungs.Bot.Luis
         public int insertNewApp(string conversationID, string userID, string channel)
         {
             DateTime time = new DateTime();
+            DateTime deftime = new DateTime(3018, 1, 1);
             time = DateTime.Today;
             int appID = 0;
             using (DataConnection context = new DataConnection())
@@ -152,6 +153,7 @@ namespace Bewerbungs.Bot.Luis
                 applicant.ApplicationReviewed = 0;
                 applicant.Active = 0;
                 applicant.TimeStamp = time;
+                applicant.InterviewDate = deftime;
                 if (channel.Equals("emulator") || channel.Equals("webchat")) {
                     applicant.Level = "4";
                 }
@@ -412,17 +414,18 @@ namespace Bewerbungs.Bot.Luis
             return jobs;
         }
 
-        //Abruf der an den Bewerber zu stellenden Fragen
-        public String[] getQuestions(int salutaion)
+        // Diese Methode übergibt alle hinterlegten FAQ-Fragen unter Angabe der @anrede
+        //Diese Fragen werden gestellt um Daten über den Bewerber zu sammeln
+        public String[] getFAQQuestions(int salutaion)
         {
             String[] questions;
             using (DataConnection context = new DataConnection())
             {
                 FAQFragen faq = new FAQFragen { };
                 int count = context.FAQFragens.Count();
-                questions = new String[count];
+                questions = new String[count + 1];
                 var list = context.FAQFragens.ToList();
-                int i = 0;
+                int i = 1;
                 if (salutaion == 0) {
                     foreach (var bl in list)
                     {
@@ -442,50 +445,8 @@ namespace Bewerbungs.Bot.Luis
             return questions;
         }
 
-        // Diese Methode übergibt alle hinterlegten FAQ-Fragen unter Angabe der @anrede
-        //Diese Fragen werden gestellt um Daten über den Bewerber zu sammeln
-        public String[] getFAQQuestions(int anrede)
-        {
-            int count;
-            String[] DBEntry;
-            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder();
-            builder.DataSource = "chatbotlcd2017db.database.windows.net";
-            builder.UserID = "TeamKoffein";
-            builder.Password = "LCD2017!";
-            builder.InitialCatalog = "ChatBotLCD";
-            using (SqlConnection conn = new SqlConnection(builder.ConnectionString))
-            {
-                using (SqlCommand command = new SqlCommand())
-                {
-                    command.Connection = conn;
-                    command.CommandType = CommandType.Text;
-                    command.CommandText = "SELECT COUNT (FAQFragenID) FROM FAQFragen";
-                    conn.Open();
-                    count = (Int32)command.ExecuteScalar();
-                    conn.Close();
-                }
-                using (SqlCommand command = new SqlCommand())
-                {
-                    command.Connection = conn;
-                    command.CommandType = CommandType.Text;
-                    command.CommandText = "SELECT * FROM FAQFragen";
-                    conn.Open();
 
-                    SqlDataReader reader = command.ExecuteReader();
-                    int i = 1;
-                    DBEntry = new String[count + 1];
-                    while (reader.Read())
-                    {
-                        DBEntry[i] = reader.GetString(anrede);
-                        i++;
-                    }
-                    reader.Close();
-                    return DBEntry;
-                }
-            }
-        }
-
-
+  
         //Rückgabe des Anfangsdatums für den Job
         public string getJobDate(int jobID)
         {
