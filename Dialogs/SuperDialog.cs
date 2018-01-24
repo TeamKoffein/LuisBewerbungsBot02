@@ -57,18 +57,20 @@ namespace Bewerbungs.Bot.Luis
         string[] askingPersonal;
         string[] askingFormal;
         string[] currentData;
-        bool safeDataConfirmation;
-        bool safeNewsConfirmation;
+        bool saveDataConfirmation;
         bool nameUpdateable;
         bool currentUpload;
+        bool dataReviewed;
         int jobID = -1;
         int sendDataConfirmation = -2;
         int saveDataLongterm = -2;
         int correctData = -2;
+        int saveNewsConfirmation = -2;
+        string applicantName;
 
         //knowledge dient zur Erkennung der Gesprächsfortsetzung
         // -1= Wert nicht gesetzt; 0= neuer Bewerber; 1= gespräch wird fortgesetzt
-        int knowledge = -1;
+        int knowledge = -2;
 
         //1= Du , 2 = Sie
         int du = -1;
@@ -157,9 +159,7 @@ namespace Bewerbungs.Bot.Luis
             ConfirmationCard confirm = new ConfirmationCard();
             DatabaseConnector databaseConnector = new DatabaseConnector();
             //Initialisierung der Grundvariablen
-            safeDataConfirmation = false;
-            safeNewsConfirmation = false;
-
+            saveDataConfirmation = false;
 
             //Speicherung der Fragen für Du und Sie
             askingPersonal = databaseConnector.getFAQQuestions(1);
@@ -193,7 +193,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
-            else if (!safeDataConfirmation)
+            else if (!saveDataConfirmation)
             {
                 await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
@@ -218,7 +218,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
-            else if (!safeDataConfirmation)
+            else if (!saveDataConfirmation)
             {
                 await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
@@ -247,7 +247,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
-            else if (!safeDataConfirmation)
+            else if (!saveDataConfirmation)
             {
                 await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
@@ -256,6 +256,31 @@ namespace Bewerbungs.Bot.Luis
                 if (result.TopScoringIntent.Score.Value >= 0.5)
                 {
                     var message = await activity;
+                    Text = message.Text;
+                    DatabaseConnector databaseConnector = new DatabaseConnector();
+                    int count = databaseConnector.getCountName(message.Text);
+
+                    if (count == 0)
+                    {
+                        knowledge = 0;
+                        await context.PostAsync("Name nicht gefunden. Neuer Name angelegt.");
+                        await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
+                    }
+                    else
+                    {
+                        applicantName = message.Text;
+                        knowledge = -1;
+                        if (du == 0)
+                        {
+                            await context.PostAsync("Kennen sie mich schon?");
+                        }
+                        else
+                        {
+                            await context.PostAsync("Kennst du mich schon?");
+                        }
+                        context.Wait(this.MessageReceived);
+                    }
+                    /*var message = await activity;
                     Text = message.Text; //hier einstetzen von GiveEntities(result);
                     if (knowledge == 0)
                     {
@@ -277,7 +302,7 @@ namespace Bewerbungs.Bot.Luis
 
                             context.Call(new CheckEmail(message.Text), CheckInformation);
                         }
-                    }
+                    }*/
                 }
                 else
                 {
@@ -390,7 +415,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
-            else if (!safeDataConfirmation)
+            else if (!saveDataConfirmation)
             {
                 await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
@@ -422,7 +447,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
-            else if (!safeDataConfirmation)
+            else if (!saveDataConfirmation)
             {
                 await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
@@ -508,7 +533,7 @@ namespace Bewerbungs.Bot.Luis
         }
             
 
-        public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
+        /*public async Task AfterNewsletter(IDialogContext context, IAwaitable<object> result)
         {
             int accept = Convert.ToInt32(await result);
             if (accept == 0)
@@ -523,7 +548,7 @@ namespace Bewerbungs.Bot.Luis
                 databaseConnector.updateNewsletter(applicantID);
             }
             context.Wait(this.MessageReceived);
-        }
+        }*/
 
         [LuisIntent("Benefits")]
         [LuisIntent("Client")]
@@ -553,7 +578,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
-            else if (!safeDataConfirmation)
+            else if (!saveDataConfirmation)
             {
                 await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
@@ -561,7 +586,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 if (result.TopScoringIntent.Score.Value >= 0.5)
                 {
-                    if (safeDataConfirmation)
+                    if (saveDataConfirmation)
                     {
                         DatabaseConnector databaseConnector = new DatabaseConnector();
                         int key = FAQDatabase.IndexOf(result.TopScoringIntent.Intent.ToString());
@@ -652,7 +677,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
-            else if (!safeDataConfirmation)
+            else if (!saveDataConfirmation)
             {
                 await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
@@ -685,7 +710,7 @@ namespace Bewerbungs.Bot.Luis
                     //Abspeicherung der Letzten Nachricht, damit eine Abspeicherung in der Datenbank möglich ist
                     Text = "Ja";
                     await FindAcceptance(context, true);
-                    context.Wait(this.MessageReceived);
+                  //  context.Wait(this.MessageReceived);
                 }
                 else
                 {
@@ -702,7 +727,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
-            else if (!safeDataConfirmation)
+            else if (!saveDataConfirmation)
             {
                 await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
@@ -728,7 +753,7 @@ namespace Bewerbungs.Bot.Luis
             {
                 firstMessage = true;
             }
-            else if (!safeDataConfirmation)
+            else if (!saveDataConfirmation)
             {
                 await context.PostAsync("Bitte Bestätigen sie die Datenschutzerklärung");
             }
@@ -763,7 +788,7 @@ namespace Bewerbungs.Bot.Luis
 
                     Text = "Nein";
                     await FindAcceptance(context, false);
-                    context.Wait(this.MessageReceived);
+                    //context.Wait(this.MessageReceived);
                     
                 }
                 else
@@ -782,17 +807,21 @@ namespace Bewerbungs.Bot.Luis
             int index = Question.FindIndex(x => x == false);
             if (index == -1)
             {
-                currentData = databaseConnector.getData(applicantID);
-                string data = "";
-                for (int i = 0; i < currentData.Length; i++)
+                if (!dataReviewed)
                 {
-                    data = data + "" + "\n\n" + currentData[i];
+                    dataReviewed = true;
+                    currentData = databaseConnector.getData(applicantID);
+                    string data = "";
+                    for (int i = 0; i < currentData.Length; i++)
+                    {
+                        data = data + "" + "\n\n" + currentData[i];
+                    }
+                    await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
+                    correctData = -1;
+                    string text = ("Sind diese Angaben korrekt?");
+                    await context.PostAsync(confirm.AttachedData(context, text));
                 }
-                await context.PostAsync("Dies sind deine Angaben: " + Environment.NewLine + data);
 
-                correctData = -1;
-                string text = ("Sind diese Angaben korrekt?");
-                await context.PostAsync(confirm.AttachedData(context, text));
             }
             else
             {
@@ -838,16 +867,16 @@ namespace Bewerbungs.Bot.Luis
             DatabaseConnector databaseConnector = new DatabaseConnector();
             int index = Question.FindIndex(x => x == false);
             int indexYesNo = QuestionsYesNo.FindIndex(x => x == false);
-            if (!safeDataConfirmation)
+            if (!saveDataConfirmation)
             {
                 if (result)
                 {
-                    safeDataConfirmation = true;
+                    saveDataConfirmation = true;
                     string conversationID = context.Activity.Conversation.Id;
                     string userID = context.Activity.From.Id;
                     string id = context.Activity.Recipient.Id;
                     applicantID = databaseConnector.insertNewApp(conversationID, userID);
-                    string text = "Danke für das Akzeptieren der Datenschutzerklärung. Kennst du mich schon?";
+                    string text = "Danke für das Akzeptieren der Datenschutzerklärung. Darf ich sie duzen?";
                     await context.PostAsync(confirm.AttachedData(context, text));
                 }
                 else
@@ -860,14 +889,16 @@ namespace Bewerbungs.Bot.Luis
                 if (!result)
                 {
                     knowledge = 0;
-                    string text = ("Darf ich Sie duzen?");
-                    await context.PostAsync(confirm.AttachedData(context, text));
+                    var myKey = AnswerDatabase.IndexOf("Name");
+                    Question[index: myKey] = true;
+                    databaseConnector.updateDB("Name", applicantID, applicantName);
+                    await FindNextAnswer(context, false);
+                    //await context.Forward(new Acceptance("Name", applicantName), AfterName, context, CancellationToken.None);                    
                 }
                 else
                 {
                     knowledge = 1;
-                    string text = ("Darf ich Sie duzen?");
-                    await context.PostAsync(confirm.AttachedData(context, text));
+                    context.Call(new CheckEmail(applicantName), CheckInformation);
                 }
             }
             else if (du == -1)
@@ -909,7 +940,8 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync("Dann versende ich die Daten an den Recruiter.");
                     DataAssembler assemble = new DataAssembler();
                     assemble.sendData(applicantID);
-                    await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
+                    string text = ("Möchtest du deine Daten dauerhaft speichern?");
+                    await context.PostAsync(confirm.AttachedData(context, text));
                 }
                 else
                 {
@@ -919,6 +951,47 @@ namespace Bewerbungs.Bot.Luis
                     await context.PostAsync(confirm.AttachedData(context, text));
                 }
             }
+            else if (saveDataLongterm == -1)
+            {
+                saveNewsConfirmation = -1;
+                if (result)
+                {
+                    saveDataLongterm = 1;
+                    databaseConnector.transferData(applicantID);
+                    string text = ("Die Daten werden dauerhaft gespeichert. Sollen wir die angegebene Email-Adresse für unseren Newsletter eintragen?");
+                    await context.PostAsync(confirm.AttachedData(context, text));
+
+                    //Abfrage fuer Datenschutz bzgl. Newsletter
+                    //context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
+
+                }
+                else
+                {
+                    saveDataLongterm = 0;
+                    string text = ("Die Daten werden nicht gespeichert. Sollen wir die angegebene Email-Adresse für unseren Newsletter eintragen?");
+                    await context.PostAsync(confirm.AttachedData(context, text));
+
+                    //Abfrage fuer Datenschutz bzgl. Newsletter
+                    //context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
+
+                }
+            }
+            else if (saveNewsConfirmation == -1)
+            {
+                if (result)
+                {
+                    saveNewsConfirmation = 1;
+                    databaseConnector.updateNews(applicantID);
+                    await context.PostAsync("Vielen Dank für die Akzeptierung unseres Newsletters.");
+                    await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
+                }
+                else
+                {
+                    saveNewsConfirmation = 0;
+                    await context.PostAsync("Es werden keine Newsletter an die angegebene Email-Adresse verschickt.");
+                    await context.PostAsync("Wir sind hier mit unseren Fragen fertig. Deine Daten werden an den Recruiter übermittelt, aber du kannst mir gerne weiterhin Fragen stellen.");
+                }
+            }
             //Neu Hinzugefügte Abfrage, welche bei einer Seperaten Liste checkt, ob man diese Frage mit Ja oder nein beantworten kann.
             else if (index != -1 && index == indexYesNo)
             {
@@ -926,29 +999,8 @@ namespace Bewerbungs.Bot.Luis
                 QuestionsYesNo[index] = true;
                 await FindNextAnswer(context, false);
             }
-            else if (saveDataLongterm == -1)
-            {
-                if (result)
-                {
-                    saveDataLongterm = 1;
-                    databaseConnector.transferData(applicantID);
-                    string text = ("Daten dauerhaft gespeichert.");
-                    await context.PostAsync(confirm.AttachedData(context, text));
+            
 
-                    //Abfrage fuer Datenschutz bzgl. Newsletter
-                    context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
-
-                }
-                else
-                {
-                    saveDataLongterm = 0;
-                    await context.PostAsync("Daten nicht gespeichert.");
-
-                    //Abfrage fuer Datenschutz bzgl. Newsletter
-                    context.Call(new Acceptance("Wie versprochen erheben wir deine Daten nur für die Bewerbungszwecke. Möchtest du, dass wir dich auch ueber Neuigkeiten informieren?"), AfterNewsletter);
-
-                }
-            }
             //Hinzufügen eines nicht abgehandelten falls, dass eine Frage gestellt wird.
             else
             {
