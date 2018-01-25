@@ -25,17 +25,17 @@ namespace ProactiveBot
 
         [WebMethod]
         //Methode: Lies JSON Objekt aus und schreibe diese formatiert zur Kontrolle in einer Textdatei auf dem Desktop gespeichert
-        public static Boolean readXingData(String rawText, String responseName)
+        public static bool readXingData(String rawText, String responseName)
         {
-            Boolean success;
+            bool success;
             
             CloudStorageAccount csa = CloudStorageAccount.Parse(ConfigurationManager.AppSettings["StorageConnectionString"]);
             CloudBlobClient blobClient = csa.CreateCloudBlobClient();
-            var blobContainer = blobClient.GetContainerReference("xing");
-            var newBlockBlob = blobContainer.GetBlockBlobReference("profile");
-            using (var ms = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(rawText.ToString())))
+            CloudBlobContainer container = blobClient.GetContainerReference("xing");
+            CloudBlockBlob blob = container.GetBlockBlobReference(responseName);
+            using (StreamWriter writer = new StreamWriter(blob.OpenWrite()))
             {
-                newBlockBlob.UploadFromStream(ms);
+                writer.Write(value: rawText);
             }
             
             try

@@ -70,7 +70,7 @@
                              document.getElementById('output').innerHTML = output;
 
                              filecontent = JSON.stringify(response);
-                             filename = "jsonXing_"+responseName;
+                             filename = "jsonXing_"+responseName+".json";
 
                              //Rufe c# Methode auf, um das Objekt auszuwerten
                              success = PageMethods.readXingData(filecontent, responseName);

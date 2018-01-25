@@ -426,7 +426,7 @@ namespace Bewerbungs.Bot.Luis
                 questions = new String[count + 1];
                 var list = context.FAQFragens.ToList();
                 int i = 1;
-                if (salutaion == 0) {
+                if (salutaion == 1) {
                     foreach (var bl in list)
                     {
                         questions[i] = bl.FAQFrageDU;

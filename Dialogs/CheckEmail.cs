@@ -42,7 +42,7 @@ namespace Bewerbungs.Bot.Luis
             }
             catch (Exception e)
             {
-                await context.PostAsync("falsche Angaben " + e.Message);
+                await context.PostAsync("Email-Adresse nicht gefunden.");
             }
             context.Done(appID);
 

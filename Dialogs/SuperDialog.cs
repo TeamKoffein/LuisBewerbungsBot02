@@ -151,7 +151,8 @@ namespace Bewerbungs.Bot.Luis
             string willkommensText = "Herzlich Willkommen bei unserem Bewerbungsbot! Wir freuen uns, dass du dich für eine unserer Stellen interessierst.";
             string datenschutzText = "Wir würden gerne die erhaltenen Daten speichern. Bitte bestätige uns die Datenschutzerklärung, die über folgenden Link aufgerufen werden kann:";
             string datenschutzLink = "http://luisbewerbungsbot.azurewebsites.net/PrivacyPolicy.html";
-            string messageText = willkommensText + "\n\n" + datenschutzText + "\n\n" + datenschutzLink;
+            string help = "Schreibe 'help' um weiter Informationen zu bekommen.";
+            string messageText = willkommensText + "\n\n" + datenschutzText + "\n\n" + datenschutzLink + "\n\n" + help;
             await Chat.PostAsync(messageText);
             string text = ("Eine kurze Bestätigung reicht uns voll und ganz!");
             await Chat.PostAsync(confirm.AttachedData(Chat, text));
@@ -174,7 +175,7 @@ namespace Bewerbungs.Bot.Luis
             }
             else if (result.Query == "help" || result.Query == "Help")
             {
-                string message = "Tippen Sie 'upload' um Daten an den Bot zu senden, 'xing' um ihr Xing-Profil anzugeben oder stellen Sie mir eine Frage";
+                string message = "Tippen Sie 'upload' um Daten an den Bot zu senden, 'xing' um ihr Xing-Profil anzugeben oder stellen Sie mir eine Frage. Bei sonstigen Problemen schreiben Sie an teamkoffein@outlook.de.";
                 await context.PostAsync(message);
             }
             else
@@ -228,7 +229,6 @@ namespace Bewerbungs.Bot.Luis
                     if (count == 0)
                     {
                         knowledge = 0;
-                        await context.PostAsync("Name nicht gefunden. Neuer Name angelegt.");
                         await context.Forward(new Acceptance(result.TopScoringIntent.Intent.ToString(), message.Text), AfterName, message, CancellationToken.None);
                     }
                     else
@@ -261,17 +261,17 @@ namespace Bewerbungs.Bot.Luis
         {
             ConfirmationCard confirm = new ConfirmationCard();
             DatabaseConnector databaseConnector = new DatabaseConnector();
-            applicantID = Convert.ToInt32(await result);
-            if (applicantID > 0)
+            int tempApplicantID = Convert.ToInt32(await result);
+            if (tempApplicantID > 0)
             {
-                Question = databaseConnector.getMissing(applicantID);
+                Question = databaseConnector.getMissing(tempApplicantID);
                 int index = Question.FindIndex(x => x == false);
 
                 //Falls alle Daten gemacht wurden wird dies abgefangen
                 if (index == -1)
                 {
                     await context.PostAsync("Du hast schon alle Angaben gemacht!");
-                    currentData = databaseConnector.getData(applicantID);
+                    currentData = databaseConnector.getData(tempApplicantID);
                     string data = "";
                     for (int i = 0; i < currentData.Length; i++)
                     {
@@ -285,7 +285,7 @@ namespace Bewerbungs.Bot.Luis
                 }
                 else
                 {
-                    currentData = databaseConnector.getData(applicantID);
+                    currentData = databaseConnector.getData(tempApplicantID);
                     string data = "";
                     for (int i = 0; i < currentData.Length; i++)
                     {
@@ -852,7 +852,7 @@ namespace Bewerbungs.Bot.Luis
                     if (index == 1)
                     {
                         //Frage nach beworbene Stelle mit Du
-                        context.Call(new AskingJob(askingFormal[index]), AfterStellen);
+                        context.Call(new AskingJob(askingPersonal[index]), AfterStellen);
                     }
                     //Bei der Frage nach der Adresse wird die Funktion Location des Bot.Builders benutzt um mit Bing die Adresse des Users zu finden und in der DB zu hinterlegen.
                     else if (2 < index && index <6)
@@ -873,9 +873,18 @@ namespace Bewerbungs.Bot.Luis
                                     $"{address.StreetAddress},{address.PostalCode} {address.Locality}, {address.Region}, {address.Country}" :
                                     "the pinned location";
                                 await contextIn.PostAsync($"Die  Adresse {name} ist abgespeichert.");
-                                Question[3] = true;
+                                if (!String.IsNullOrEmpty(strasse))
+                                {
+                                    Question[3] = true;
+                                }
+                                if (!String.IsNullOrEmpty(postalcode))
+                                {
                                 Question[4] = true;
+                                }
+                                if (!String.IsNullOrEmpty(city))
+                                {
                                 Question[5] = true;
+                                }
                                 int indexa = Question.FindIndex(x => x == false);
                                 if (Question[2] == false)
                                 {
@@ -936,15 +945,24 @@ namespace Bewerbungs.Bot.Luis
                                     $"{address.StreetAddress},{address.PostalCode} {address.Locality}, {address.Region}, {address.Country}" :
                                     "the pinned location";
                                 await contextIn.PostAsync($"Die  Adresse {name} ist abgespeichert.");
-                                Question[3] = true;
+                                if (!String.IsNullOrEmpty(strasse))
+                                {
+                                    Question[3] = true;
+                                }
+                                if (!String.IsNullOrEmpty(postalcode))
+                                {
                                 Question[4] = true;
+                                }
+                                if (!String.IsNullOrEmpty(city))
+                                {
                                 Question[5] = true;
+                                }
                                 int indexa = Question.FindIndex(x => x == false);
                                 if (Question[2] == false)
                                 {
                                     indexa = 2;
                                 }
-                                await contextIn.PostAsync(askingPersonal[indexa]);
+                                await contextIn.PostAsync(askingFormal[indexa]);
                             }
                             else
                             {
@@ -993,7 +1011,7 @@ namespace Bewerbungs.Bot.Luis
                     string id = context.Activity.Recipient.Id;
                     channelID = context.Activity.ChannelId;
                     applicantID = databaseConnector.insertNewApp(conversationID, userID, channelID);
-                    string text = "Danke für das Akzeptieren der Datenschutzerklärung. Darf ich sie duzen?";
+                    string text = "Danke für das Akzeptieren der Datenschutzerklärung. Darf ich Sie duzen?";
                     await context.PostAsync(confirm.AttachedData(context, text));
                 }
                 else
